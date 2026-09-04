@@ -1,0 +1,15 @@
+node_modules
+generated
+dist
+.env
+/generated/prisma
+.vscode
+/generated/prisma
+.vercel
+.env*
+!.env.example
+/generated/prisma
+/generated/prisma
+.agents
+.claude
+.windsurf
