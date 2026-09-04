@@ -1,0 +1,13 @@
+model CitizenProfile {
+  id          String              @id @default(uuid())
+  userId      String              @unique
+  firstName   String
+  lastName    String
+  trustLevel  CitizenTrustLevel   @default(NEW)
+  
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+}
+

@@ -1,0 +1,14 @@
+model Zone {
+  id             String                @id @default(uuid())
+  name           String
+  municipalityId String
+  coverageStatus ServiceCoverageStatus @default(ACTIVE)
+  
+  municipality   Municipality          @relation(fields: [municipalityId], references: [id], onDelete: Cascade)
+  wards          Ward[]
+  locations      Location[]
+
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+}
+

@@ -1,0 +1,15 @@
+model Municipality {
+  id             String                @id @default(uuid())
+  name           String
+  code           String                @unique
+  countryCode    String?
+  timezone       String?
+  coverageStatus ServiceCoverageStatus @default(ACTIVE)
+
+  zones          Zone[]
+  locations      Location[]
+
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+}
+

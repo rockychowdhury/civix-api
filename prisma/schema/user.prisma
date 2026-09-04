@@ -1,0 +1,17 @@
+model User {
+  id              String     @id @default(uuid())
+  email           String     @unique
+  phone           String?    @unique
+  passwordHash    String
+  isEmailVerified Boolean    @default(false)
+  isPhoneVerified Boolean    @default(false)
+  status          UserStatus @default(INACTIVE)
+
+  citizenProfile CitizenProfile?
+  staffProfile   StaffProfile?
+  userRoles      UserRole[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}

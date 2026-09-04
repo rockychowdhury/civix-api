@@ -1,0 +1,16 @@
+model Ward {
+  id             String                @id @default(uuid())
+  name           String
+  number         String
+  zoneId         String
+  coverageStatus ServiceCoverageStatus @default(ACTIVE)
+  
+  zone           Zone                  @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  locations      Location[]
+
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  @@unique([number, zoneId])
+}
+

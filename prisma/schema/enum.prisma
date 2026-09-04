@@ -1,0 +1,20 @@
+enum UserStatus {
+  INACTIVE
+  ACTIVE
+  SUSPENDED
+  BANNED
+}
+
+enum CitizenTrustLevel {
+  NEW
+  REGULAR
+  TRUSTED
+  RESTRICTED
+}
+
+enum ServiceCoverageStatus {
+  ACTIVE
+  INACTIVE
+  PLANNED
+}
+

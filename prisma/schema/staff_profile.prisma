@@ -1,0 +1,13 @@
+model StaffProfile {
+  id           String    @id @default(uuid())
+  userId       String    @unique
+  employeeId   String    @unique
+  firstName    String
+  lastName     String
+  
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
