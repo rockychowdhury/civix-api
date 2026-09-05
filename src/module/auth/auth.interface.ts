@@ -29,7 +29,7 @@ export interface IForgotPassword {
 }
 
 export interface IResetPassword {
-	token: string;
+	email: string;
+	otp: string;
 	newPassword: string;
 }
-

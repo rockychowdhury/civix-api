@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
 import httpStatus from "http-status";
-import {catchAsync} from "../../utils/catchAsync";
-import {sendResponse} from "../../utils/sendResponse";
+import { catchAsync } from "../../utils/catchAsync";
+import { sendResponse } from "../../utils/sendResponse";
 import { AuthService } from "./auth.service";
 
 const registerCitizen = catchAsync(async (req: Request, res: Response) => {
 	const payload = req.body;
-	
+
 	const result = await AuthService.registerCitizen(payload);
 
 	sendResponse(res, {
@@ -19,7 +19,7 @@ const registerCitizen = catchAsync(async (req: Request, res: Response) => {
 
 const login = catchAsync(async (req: Request, res: Response) => {
 	const payload = req.body;
-	
+
 	const result = await AuthService.loginUser(payload);
 
 	sendResponse(res, {
@@ -32,7 +32,7 @@ const login = catchAsync(async (req: Request, res: Response) => {
 
 const verifyEmail = catchAsync(async (req: Request, res: Response) => {
 	const payload = req.body;
-	
+
 	const result = await AuthService.verifyEmail(payload);
 
 	sendResponse(res, {
@@ -46,7 +46,7 @@ const verifyEmail = catchAsync(async (req: Request, res: Response) => {
 const getMe = catchAsync(async (req: Request, res: Response) => {
 	// Assuming user ID is attached to req.user by an auth middleware
 	const userId = (req as any).user?.userId; // Adjust this based on your auth middleware
-	
+
 	const result = await AuthService.getMe(userId);
 
 	sendResponse(res, {
@@ -59,7 +59,7 @@ const getMe = catchAsync(async (req: Request, res: Response) => {
 
 const refreshToken = catchAsync(async (req: Request, res: Response) => {
 	const { refreshToken } = req.cookies;
-	
+
 	const result = await AuthService.refreshToken(refreshToken);
 
 	sendResponse(res, {
@@ -72,7 +72,7 @@ const refreshToken = catchAsync(async (req: Request, res: Response) => {
 
 const googleLogin = catchAsync(async (req: Request, res: Response) => {
 	const payload = req.body;
-	
+
 	const result = await AuthService.googleLogin(payload);
 
 	sendResponse(res, {
@@ -85,7 +85,7 @@ const googleLogin = catchAsync(async (req: Request, res: Response) => {
 
 const forgotPassword = catchAsync(async (req: Request, res: Response) => {
 	const payload = req.body;
-	
+
 	const result = await AuthService.forgotPassword(payload);
 
 	sendResponse(res, {
@@ -98,7 +98,7 @@ const forgotPassword = catchAsync(async (req: Request, res: Response) => {
 
 const resetPassword = catchAsync(async (req: Request, res: Response) => {
 	const payload = req.body;
-	
+
 	const result = await AuthService.resetPassword(payload);
 
 	sendResponse(res, {
@@ -119,4 +119,3 @@ export const AuthController = {
 	forgotPassword,
 	resetPassword,
 };
-

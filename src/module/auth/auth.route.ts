@@ -9,50 +9,45 @@ const router = Router();
 router.post(
 	"/register-citizen",
 	validateRequest(AuthValidation.registerCitizenValidationSchema),
-	AuthController.registerCitizen
+	AuthController.registerCitizen,
 );
 
 router.post(
 	"/login",
 	validateRequest(AuthValidation.loginValidationSchema),
-	AuthController.login
+	AuthController.login,
 );
 
 router.post(
 	"/verify-email",
 	validateRequest(AuthValidation.verifyEmailValidationSchema),
-	AuthController.verifyEmail
+	AuthController.verifyEmail,
 );
 
-router.get(
-	"/me",
-	requirePermission("read", "profile"),
-	AuthController.getMe
-);
+router.get("/me", requirePermission("read", "profile"), AuthController.getMe);
 
 router.post(
 	"/refresh-token",
 	validateRequest(AuthValidation.refreshTokenValidationSchema),
-	AuthController.refreshToken
+	AuthController.refreshToken,
 );
 
 router.post(
 	"/google",
 	validateRequest(AuthValidation.googleAuthValidationSchema),
-	AuthController.googleLogin
+	AuthController.googleLogin,
 );
 
 router.post(
 	"/forgot-password",
 	validateRequest(AuthValidation.forgotPasswordValidationSchema),
-	AuthController.forgotPassword
+	AuthController.forgotPassword,
 );
 
 router.post(
 	"/reset-password",
 	validateRequest(AuthValidation.resetPasswordValidationSchema),
-	AuthController.resetPassword
+	AuthController.resetPassword,
 );
 
 export const AuthRoutes = router;
-
