@@ -1,3 +1,70 @@
 <h1>Welcome to Civix, <%= name %>!</h1>
 <p>Your account has been successfully created and verified.</p>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Civix</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f9fafb; margin: 0; padding: 0; line-height: 1.6; color: #374151; }
+        .container { max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .header { background-color: #2563eb; color: #ffffff; text-align: center; padding: 24px; }
+        .header h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: 1px; }
+        .content { padding: 32px; }
+        .greeting { font-size: 20px; font-weight: 600; color: #111827; margin-bottom: 20px; }
+        .text { font-size: 16px; margin-bottom: 24px; }
+        .feature-list { background-color: #f8fafc; padding: 24px; border-radius: 8px; margin: 24px 0; border: 1px solid #e2e8f0; }
+        .feature-item { margin-bottom: 12px; display: flex; align-items: flex-start; }
+        .feature-item:last-child { margin-bottom: 0; }
+        .button-container { text-align: center; margin: 32px 0; }
+        .button { background-color: #2563eb; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block; }
+        .footer { background-color: #f3f4f6; padding: 24px; text-align: center; font-size: 14px; color: #6b7280; }
+        .footer a { color: #2563eb; text-decoration: none; }
+        .security-note { font-size: 13px; color: #6b7280; margin-top: 32px; padding-top: 24px; border-top: 1px solid #e5e7eb; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Civix</h1>
+        </div>
+        <div class="content">
+            <div class="greeting">Welcome to Civix, <%= name %>! 🎉</div>
+            <div class="text">
+                Your account has been successfully verified and activated. We are thrilled to have you on board! 
+            </div>
+            
+            <div class="feature-list">
+                <div class="text" style="font-weight: 600; color: #0f172a; margin-bottom: 16px;">With your new Civix account, you can:</div>
+                <div class="feature-item">
+                    • Seamlessly manage your civic engagements and profiles.
+                </div>
+                <div class="feature-item">
+                    • Access real-time updates and notifications securely.
+                </div>
+                <div class="feature-item">
+                    • Connect with dedicated services tailored to your needs.
+                </div>
+            </div>
 
+            <div class="button-container">
+                <a href="#" class="button">Go to Dashboard</a>
+            </div>
+
+            <div class="text">
+                If you have any questions or need assistance getting started, our team is always here to help.
+            </div>
+
+            <div class="security-note">
+                <strong>Security Alert:</strong> Please remember that Civix will never ask for your password via email. Keep your credentials secure.
+            </div>
+        </div>
+        <div class="footer">
+            <p>&copy; 2026 Civix. All rights reserved.</p>
+            <p>Need help? Contact our <a href="#">Support Team</a></p>
+            <p>Please do not reply to this automated email.</p>
+        </div>
+    </div>
+</body>
+</html>
