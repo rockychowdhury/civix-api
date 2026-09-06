@@ -1,0 +1,17 @@
+model Resolution {
+  id                 String       @id @default(uuid())
+  workOrderId        String       @unique
+  submittedByUserId  String?
+  summary            String
+
+  submittedAt        DateTime     @default(now())
+  approvedAt         DateTime?
+  rejectedAt         DateTime?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  workOrder          WorkOrder    @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  submittedByUser    StaffProfile? @relation(fields: [submittedByUserId], references: [userId], onDelete: SetNull)
+
+  attachments        Attachment[]
+}

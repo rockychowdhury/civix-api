@@ -1,0 +1,16 @@
+model Feedback {
+  id               String           @id @default(uuid())
+  serviceRequestId String           @unique
+  citizenId        String
+  rating           Int
+  comment          String?
+  
+  createdAt        DateTime         @default(now())
+
+  serviceRequest   ServiceRequest   @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+  citizen          CitizenProfile   @relation(fields: [citizenId], references: [userId], onDelete: Cascade)
+  
+  resolutionVerification ResolutionVerification?
+
+  @@index([citizenId, createdAt])
+}

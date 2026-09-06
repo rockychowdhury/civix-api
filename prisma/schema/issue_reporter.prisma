@@ -1,0 +1,17 @@
+model IssueReporter {
+  id               String          @id @default(uuid())
+  civicIssueId     String
+  serviceRequestId String
+  citizenId        String
+  
+  createdAt        DateTime        @default(now())
+  deletedAt        DateTime?
+
+  civicIssue       CivicIssue      @relation(fields: [civicIssueId], references: [id], onDelete: Cascade)
+  serviceRequest   ServiceRequest  @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+  citizen          CitizenProfile  @relation(fields: [citizenId], references: [userId], onDelete: Cascade)
+
+  @@unique([civicIssueId, citizenId])
+  @@index([citizenId])
+  @@index([serviceRequestId])
+}

@@ -1,0 +1,46 @@
+model CivicIssue {
+  id                 String           @id @default(uuid())
+  issueNumber        String           @unique
+  municipalityId     String
+  categoryId         String?
+  locationId         String?
+  departmentId       String?
+  wardId             String?
+  title              String
+  description        String
+  status             LifecycleStatus  @default(SUBMITTED)
+  priority           IssuePriority    @default(MEDIUM)
+  reportedCount      Int              @default(1)
+
+  firstReportedAt    DateTime         @default(now())
+  lastReportedAt     DateTime         @default(now())
+  targetResponseAt   DateTime?
+  targetResolutionAt DateTime?
+  closedAt           DateTime?
+  resolvedAt         DateTime?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  deletedAt          DateTime?
+
+  municipality       Municipality     @relation(fields: [municipalityId], references: [id], onDelete: Cascade)
+  category           ServiceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  location           Location?        @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  department         Department?      @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  ward               Ward?            @relation(fields: [wardId], references: [id], onDelete: SetNull)
+
+  serviceRequests    ServiceRequest[]
+  reporters          IssueReporter[]
+  statusHistory      CivicIssueHistory[]
+  workOrders         WorkOrder[]
+  escalations        Escalation[]
+  verifications      ResolutionVerification[]
+
+  @@index([municipalityId, status])
+  @@index([municipalityId, priority, status])
+  @@index([status, targetResolutionAt])
+  @@index([categoryId, status])
+  @@index([municipalityId, createdAt])
+  @@index([locationId])
+  @@index([departmentId, status])
+  @@index([wardId, status])
+}

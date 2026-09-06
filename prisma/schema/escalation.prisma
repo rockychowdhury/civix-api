@@ -1,0 +1,18 @@
+model Escalation {
+  id               String     @id @default(uuid())
+  civicIssueId     String
+  escalationLevel  Int        @default(1)
+  reason           String
+  escalatedFromId  String?
+  escalatedToId    String?
+  acknowledgedAt   DateTime?
+
+  escalatedAt      DateTime   @default(now())
+  resolvedAt       DateTime?
+
+  civicIssue       CivicIssue @relation(fields: [civicIssueId], references: [id], onDelete: Cascade)
+  escalatedFrom    User?      @relation("EscalatedFrom", fields: [escalatedFromId], references: [id], onDelete: SetNull)
+  escalatedTo      User?      @relation("EscalatedTo", fields: [escalatedToId], references: [id], onDelete: SetNull)
+
+  @@index([civicIssueId, escalatedAt])
+}

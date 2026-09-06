@@ -1,0 +1,15 @@
+model ResolutionVerification {
+  id               String                       @id @default(uuid())
+  civicIssueId     String
+  feedbackId       String?                      @unique
+  verifiedById     String?
+  status           ResolutionVerificationStatus @default(PENDING)
+  notes            String?
+  
+  createdAt        DateTime                     @default(now())
+  updatedAt        DateTime                     @updatedAt
+
+  civicIssue       CivicIssue                   @relation(fields: [civicIssueId], references: [id], onDelete: Cascade)
+  feedback         Feedback?                    @relation(fields: [feedbackId], references: [id], onDelete: SetNull)
+  verifiedBy       StaffProfile?                @relation(fields: [verifiedById], references: [userId], onDelete: SetNull)
+}

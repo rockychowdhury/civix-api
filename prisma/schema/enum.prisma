@@ -1,3 +1,5 @@
+// ─── User & Auth ─────────────────────────────────────────────
+
 enum UserStatus {
   INACTIVE
   ACTIVE
@@ -12,9 +14,161 @@ enum CitizenTrustLevel {
   RESTRICTED
 }
 
+// ─── Geography & Coverage ────────────────────────────────────
+
 enum ServiceCoverageStatus {
   ACTIVE
   INACTIVE
   PLANNED
 }
 
+// ─── RBAC ────────────────────────────────────────────────────
+
+enum Action {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  MANAGE
+  ASSIGN
+  REASSIGN
+  ESCALATE
+  VERIFY
+  CLOSE
+  REOPEN
+  MERGE
+  APPROVE
+}
+
+enum Resource {
+  USER
+  PROFILE
+  CITIZEN
+  STAFF
+  ROLE
+  PERMISSION
+  ALL
+  SERVICE_REQUEST
+  CIVIC_ISSUE
+  WORK_ORDER
+  ASSIGNMENT
+  RESOLUTION
+  FEEDBACK
+  ATTACHMENT
+  NOTIFICATION
+  SLA_POLICY
+  CATEGORY
+  ESCALATION
+  AUDIT_LOG
+  MUNICIPALITY
+  ZONE
+  WARD
+  LOCATION
+  DEPARTMENT
+}
+
+// ─── Department ──────────────────────────────────────────────
+
+enum DepartmentStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum DepartmentRole {
+  HEAD
+  MANAGER
+  DISPATCHER
+  TECHNICIAN
+  MEMBER
+}
+
+// ─── Civic Issue & Service Request ───────────────────────────
+
+enum LifecycleStatus {
+  SUBMITTED
+  TRIAGED
+  ASSIGNED
+  ACCEPTED
+  IN_PROGRESS
+  PENDING_VERIFICATION
+  RESOLVED
+  CLOSED
+  REOPENED
+  REJECTED
+  DUPLICATE
+  INSUFFICIENT_INFORMATION
+  CANCELLED
+}
+
+enum IssuePriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum RequestType {
+  COMPLAINT
+  SERVICE_REQUEST
+}
+
+// ─── Assignment & Work ───────────────────────────────────────
+
+enum AssignmentStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum WorkUpdateType {
+  ACCEPTED
+  ON_SITE
+  PROGRESS
+  BLOCKED
+  DELAYED
+  PAUSED
+  RESUMED
+  COMPLETED
+}
+
+// ─── Attachments ─────────────────────────────────────────────
+
+enum AttachmentFileType {
+  IMAGE
+  VIDEO
+  DOCUMENT
+  OTHER
+}
+
+enum AttachmentPurpose {
+  REPORT_EVIDENCE
+  BEFORE_WORK
+  DURING_WORK
+  AFTER_WORK
+  VERIFICATION
+  DOCUMENT
+  OTHER
+}
+
+// ─── Resolution ──────────────────────────────────────────────
+
+enum ResolutionVerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+// ─── Notifications ───────────────────────────────────────────
+
+enum NotificationType {
+  REQUEST_SUBMITTED
+  REQUEST_ASSIGNED
+  STATUS_CHANGED
+  WORK_STARTED
+  RESOLUTION_SUBMITTED
+  FEEDBACK_REQUESTED
+  SLA_WARNING
+  SLA_BREACHED
+  ESCALATION
+  SYSTEM
+}

@@ -1,0 +1,31 @@
+model ServiceRequest {
+  id               String          @id @default(uuid())
+  trackingNumber   String          @unique
+  civicIssueId     String?
+  municipalityId   String
+  citizenId        String
+  locationId       String?
+  title            String
+  description      String
+  requestType      RequestType     @default(COMPLAINT)
+  status           LifecycleStatus @default(SUBMITTED)
+  isAnonymous      Boolean         @default(false)
+
+  submittedAt      DateTime        @default(now())
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  deletedAt        DateTime?
+
+  civicIssue       CivicIssue?     @relation(fields: [civicIssueId], references: [id], onDelete: SetNull)
+  municipality     Municipality    @relation(fields: [municipalityId], references: [id], onDelete: Cascade)
+  citizen          CitizenProfile  @relation(fields: [citizenId], references: [userId], onDelete: Cascade)
+  location         Location?       @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  reporters        IssueReporter[]
+  feedback         Feedback?
+  attachments      Attachment[]
+
+  @@index([citizenId, createdAt])
+  @@index([municipalityId, status])
+  @@index([civicIssueId])
+  @@index([status, submittedAt])
+}

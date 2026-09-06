@@ -1,0 +1,23 @@
+model Department {
+  id             String           @id @default(uuid())
+  municipalityId String
+  name           String
+  code           String
+  description    String?
+  email          String?
+  phone          String?
+  status         DepartmentStatus @default(ACTIVE)
+
+  municipality    Municipality          @relation(fields: [municipalityId], references: [id], onDelete: Cascade)
+  serviceCategories ServiceCategory[]
+  members           DepartmentMember[]
+  serviceAreas      DepartmentServiceArea[]
+  civicIssues       CivicIssue[]
+
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  deletedAt      DateTime?
+
+  @@unique([municipalityId, code])
+}
+

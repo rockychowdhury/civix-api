@@ -7,6 +7,8 @@ model Ward {
   
   zone           Zone                  @relation(fields: [zoneId], references: [id], onDelete: Cascade)
   locations      Location[]
+  departmentServiceAreas DepartmentServiceArea[]
+  civicIssues    CivicIssue[]
 
   createdAt      DateTime              @default(now())
   updatedAt      DateTime              @updatedAt

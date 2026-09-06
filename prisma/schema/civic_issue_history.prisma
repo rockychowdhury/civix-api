@@ -1,0 +1,16 @@
+model CivicIssueHistory {
+  id               String          @id @default(uuid())
+  civicIssueId     String
+  changedById      String?
+  previousStatus   LifecycleStatus?
+  newStatus        LifecycleStatus
+  notes            String?
+
+  createdAt        DateTime        @default(now())
+
+  civicIssue       CivicIssue      @relation(fields: [civicIssueId], references: [id], onDelete: Cascade)
+  changedBy        User?           @relation(fields: [changedById], references: [id], onDelete: SetNull)
+
+  @@index([civicIssueId, createdAt])
+  @@index([changedById])
+}

@@ -8,6 +8,10 @@ model Municipality {
 
   zones          Zone[]
   locations      Location[]
+  departments    Department[]
+  civicIssues    CivicIssue[]
+  serviceRequests ServiceRequest[]
+  slaPolicies    SlaPolicy[]
 
   createdAt      DateTime              @default(now())
   updatedAt      DateTime              @updatedAt

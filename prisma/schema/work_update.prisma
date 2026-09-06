@@ -1,0 +1,15 @@
+model WorkUpdate {
+  id                String           @id @default(uuid())
+  workOrderId       String
+  technicianId      String
+  updateType        WorkUpdateType
+  note              String?
+  
+  occurredAt        DateTime         @default(now())
+  createdAt         DateTime         @default(now())
+
+  workOrder         WorkOrder        @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  technician        StaffProfile     @relation(fields: [technicianId], references: [userId], onDelete: Cascade)
+  
+  attachments       Attachment[]
+}

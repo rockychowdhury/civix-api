@@ -1,0 +1,14 @@
+model DepartmentServiceArea {
+  id           String      @id @default(uuid())
+  departmentId String
+  wardId       String
+  
+  effectiveFrom DateTime   @default(now())
+  effectiveTo   DateTime?
+  createdAt    DateTime    @default(now())
+
+  department   Department  @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  ward         Ward        @relation(fields: [wardId], references: [id], onDelete: Cascade)
+
+  @@unique([departmentId, wardId])
+}

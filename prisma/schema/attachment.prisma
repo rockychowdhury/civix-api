@@ -1,0 +1,25 @@
+model Attachment {
+  id               String            @id @default(uuid())
+  serviceRequestId String?
+  workUpdateId     String?
+  resolutionId     String?
+  fileType         AttachmentFileType
+  purpose          AttachmentPurpose
+  url              String
+  publicId         String?
+  fileName         String?
+  fileSize         Int?
+  uploadedById     String
+
+  createdAt        DateTime          @default(now())
+
+  serviceRequest   ServiceRequest?   @relation(fields: [serviceRequestId], references: [id], onDelete: SetNull)
+  workUpdate       WorkUpdate?       @relation(fields: [workUpdateId], references: [id], onDelete: SetNull)
+  resolution       Resolution?       @relation(fields: [resolutionId], references: [id], onDelete: SetNull)
+  uploadedBy       User              @relation(fields: [uploadedById], references: [id])
+
+  @@index([serviceRequestId])
+  @@index([workUpdateId])
+  @@index([resolutionId])
+  @@index([uploadedById])
+}

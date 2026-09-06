@@ -1,0 +1,24 @@
+model ServiceCategory {
+  id           String            @id @default(uuid())
+  parentId     String?
+  departmentId String?
+  name         String
+  slug         String            @unique
+  description  String?
+  sortOrder    Int               @default(0)
+  isActive     Boolean           @default(true)
+
+  parent       ServiceCategory?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children     ServiceCategory[] @relation("CategoryTree")
+  department   Department?       @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+
+  civicIssues  CivicIssue[]
+  slaPolicies  SlaPolicy[]
+
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  deletedAt    DateTime?
+
+  @@index([parentId])
+  @@index([departmentId])
+}

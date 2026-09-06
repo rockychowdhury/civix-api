@@ -1,0 +1,19 @@
+model SlaPolicy {
+  id                 String          @id @default(uuid())
+  municipalityId     String
+  categoryId         String
+  priority           IssuePriority
+
+  responseMinutes    Int
+  resolutionMinutes  Int
+  version            Int             @default(1)
+
+  effectiveFrom      DateTime        @default(now())
+  effectiveTo        DateTime?
+  createdAt          DateTime        @default(now())
+
+  municipality       Municipality    @relation(fields: [municipalityId], references: [id], onDelete: Cascade)
+  category           ServiceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@index([municipalityId, categoryId, priority])
+}

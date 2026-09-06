@@ -1,0 +1,21 @@
+model Assignment {
+  id                String           @id @default(uuid())
+  workOrderId       String
+  assignedToId      String
+  assignedById      String?
+  teamId            String?
+  
+  assignedAt        DateTime         @default(now())
+  acceptedAt        DateTime?
+  unassignedAt      DateTime?
+  status            AssignmentStatus @default(PENDING)
+  reason            String?
+  createdAt         DateTime         @default(now())
+
+  workOrder         WorkOrder        @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  assignedTo        StaffProfile     @relation("AssignedTo", fields: [assignedToId], references: [userId], onDelete: Cascade)
+  assignedBy        User?            @relation("AssignedBy", fields: [assignedById], references: [id], onDelete: SetNull)
+
+  @@index([assignedToId, status])
+  @@index([workOrderId, status])
+}
