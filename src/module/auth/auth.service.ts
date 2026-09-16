@@ -37,10 +37,17 @@ const registerCitizen = async (payload: IRegisterCitizen) => {
 			"User with this email already exists",
 		);
 	}
+	if (!password) {
+		throw new AppError(
+			httpStatus.BAD_REQUEST,
+			"Password is required for citizen registration",
+		);
+	}
 
-	const hashedPassword = password
-		? await bcrypt.hash(password, Number(config.bcrypt_salt_rounds) || 8)
-		: "";
+	const hashedPassword = await bcrypt.hash(
+		password,
+		Number(config.bcrypt_salt_rounds) || 8,
+	);
 
 	const expirationSeconds = 5 * 60;
 	const otpKey = `citizen-registration-otp:${email}`;
@@ -112,18 +119,14 @@ const verifyEmail = async (payload: IVerifyEmail) => {
 	}
 
 	if (isUserExist?.deletedAt) {
-		throw new AppError(httpStatus.FORBIDDEN, "User is Deleted");
+		throw new AppError(httpStatus.FORBIDDEN, "User does not exists");
 	}
 
 	const otpKey = `citizen-registration-otp:${email}`;
 	const redisOtp = await redisClient.get(otpKey);
 
-	if (!redisOtp) {
+	if (!redisOtp || redisOtp !== otp) {
 		throw new AppError(httpStatus.BAD_REQUEST, "Invalid OTP");
-	}
-
-	if (redisOtp !== otp) {
-		throw new AppError(httpStatus.BAD_REQUEST, "OTP Does Not Match");
 	}
 
 	await redisClient.del(otpKey);
@@ -142,7 +145,7 @@ const verifyEmail = async (payload: IVerifyEmail) => {
 
 	// Optional: Assign a default role for citizens
 	const citizenRole = await prisma.role.findUnique({
-		where: { name: "CITIZEN" },
+		where: { code: "CITIZEN" },
 	});
 
 	const createdUser = await prisma.user.create({
@@ -407,7 +410,7 @@ const googleLogin = async (payload: IGoogleAuth) => {
 		}
 	} else {
 		const citizenRole = await prisma.role.findUnique({
-			where: { name: "CITIZEN" },
+			where: { code: "CITIZEN" },
 		});
 		user = await prisma.user.create({
 			data: {

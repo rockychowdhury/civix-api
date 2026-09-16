@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import httpStatus from "http-status";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
@@ -22,6 +22,19 @@ const login = catchAsync(async (req: Request, res: Response) => {
 
 	const result = await AuthService.loginUser(payload);
 
+	res.cookie("accessToken", result.accessToken, {
+		httpOnly: true,
+		secure: false,
+		sameSite: "none",
+		maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
+	});
+	res.cookie("refreshToken", result.refreshToken, {
+		httpOnly: true,
+		secure: false,
+		sameSite: "none",
+		maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+	});
+
 	sendResponse(res, {
 		statusCode: httpStatus.OK,
 		success: true,
@@ -34,6 +47,19 @@ const verifyEmail = catchAsync(async (req: Request, res: Response) => {
 	const payload = req.body;
 
 	const result = await AuthService.verifyEmail(payload);
+
+	res.cookie("accessToken", result.accessToken, {
+		httpOnly: true,
+		secure: false,
+		sameSite: "none",
+		maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
+	});
+	res.cookie("refreshToken", result.refreshToken, {
+		httpOnly: true,
+		secure: false,
+		sameSite: "none",
+		maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+	});
 
 	sendResponse(res, {
 		statusCode: httpStatus.OK,
@@ -62,6 +88,19 @@ const refreshToken = catchAsync(async (req: Request, res: Response) => {
 
 	const result = await AuthService.refreshToken(refreshToken);
 
+	res.cookie("accessToken", result.accessToken, {
+		httpOnly: true,
+		secure: false,
+		sameSite: "none",
+		maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
+	});
+	res.cookie("refreshToken", result.refreshToken, {
+		httpOnly: true,
+		secure: false,
+		sameSite: "none",
+		maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+	});
+
 	sendResponse(res, {
 		statusCode: httpStatus.OK,
 		success: true,
@@ -74,6 +113,19 @@ const googleLogin = catchAsync(async (req: Request, res: Response) => {
 	const payload = req.body;
 
 	const result = await AuthService.googleLogin(payload);
+
+	res.cookie("accessToken", result.accessToken, {
+		httpOnly: true,
+		secure: false,
+		sameSite: "none",
+		maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
+	});
+	res.cookie("refreshToken", result.refreshToken, {
+		httpOnly: true,
+		secure: false,
+		sameSite: "none",
+		maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+	});
 
 	sendResponse(res, {
 		statusCode: httpStatus.OK,

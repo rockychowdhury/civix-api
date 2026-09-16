@@ -24,7 +24,13 @@ router.post(
 	AuthController.verifyEmail,
 );
 
-router.get("/me", requirePermission("read", "profile"), AuthController.getMe);
+import { Action, Resource } from "../../../generated/prisma/enums";
+
+router.get(
+	"/me",
+	requirePermission(Action.READ, Resource.PROFILE),
+	AuthController.getMe,
+);
 
 router.post(
 	"/refresh-token",
