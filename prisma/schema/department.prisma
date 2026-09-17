@@ -8,16 +8,15 @@ model Department {
   phone          String?
   status         DepartmentStatus @default(ACTIVE)
 
-  municipality    Municipality          @relation(fields: [municipalityId], references: [id], onDelete: Cascade)
+  municipality      Municipality            @relation(fields: [municipalityId], references: [id], onDelete: Cascade)
   serviceCategories ServiceCategory[]
   members           DepartmentMember[]
   serviceAreas      DepartmentServiceArea[]
   civicIssues       CivicIssue[]
 
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  deletedAt      DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   @@unique([municipalityId, code])
 }
-

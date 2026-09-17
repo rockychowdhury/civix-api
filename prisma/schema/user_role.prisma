@@ -1,12 +1,11 @@
 model UserRole {
-  userId    String
-  roleId    String
+  userId String
+  roleId String
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
   @@id([userId, roleId])
 }
-

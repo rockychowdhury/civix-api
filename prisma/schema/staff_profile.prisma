@@ -1,22 +1,22 @@
 model StaffProfile {
-  userId           String                  @id
-  employeeId       String                  @unique
-  firstName        String
-  lastName         String
-  designation      String?
-  isAvailable      Boolean                 @default(true)
-  currentWorkload  Int                     @default(0)
-  maxWorkload      Int                     @default(5)
+  userId          String  @id
+  employeeId      String  @unique
+  firstName       String
+  lastName        String
+  designation     String?
+  isAvailable     Boolean @default(true)
+  currentWorkload Int     @default(0)
+  maxWorkload     Int     @default(5)
 
-  user             User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  workOrders       WorkOrder[]
+  workOrders        WorkOrder[]
   departmentMembers DepartmentMember[]
-  assignments       Assignment[]           @relation("AssignedTo")
+  assignments       Assignment[]             @relation("AssignedTo")
   workUpdates       WorkUpdate[]
   resolutions       Resolution[]
   verifications     ResolutionVerification[]
 
-  createdAt        DateTime                @default(now())
-  updatedAt        DateTime                @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

@@ -6,14 +6,13 @@ model Municipality {
   timezone       String?
   coverageStatus ServiceCoverageStatus @default(ACTIVE)
 
-  zones          Zone[]
-  locations      Location[]
-  departments    Department[]
-  civicIssues    CivicIssue[]
+  zones           Zone[]
+  locations       Location[]
+  departments     Department[]
+  civicIssues     CivicIssue[]
   serviceRequests ServiceRequest[]
-  slaPolicies    SlaPolicy[]
+  slaPolicies     SlaPolicy[]
 
-  createdAt      DateTime              @default(now())
-  updatedAt      DateTime              @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
-

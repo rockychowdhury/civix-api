@@ -1,5 +1,5 @@
 model Location {
-  id             String        @id @default(uuid())
+  id             String  @id @default(uuid())
   latitude       Float?
   longitude      Float?
   address        String
@@ -9,16 +9,15 @@ model Location {
   zoneId         String?
   municipalityId String?
 
-  ward           Ward?         @relation(fields: [wardId], references: [id], onDelete: SetNull)
-  zone           Zone?         @relation(fields: [zoneId], references: [id], onDelete: SetNull)
-  municipality   Municipality? @relation(fields: [municipalityId], references: [id], onDelete: SetNull)
-  civicIssues    CivicIssue[]
+  ward            Ward?            @relation(fields: [wardId], references: [id], onDelete: SetNull)
+  zone            Zone?            @relation(fields: [zoneId], references: [id], onDelete: SetNull)
+  municipality    Municipality?    @relation(fields: [municipalityId], references: [id], onDelete: SetNull)
+  civicIssues     CivicIssue[]
   serviceRequests ServiceRequest[]
 
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([wardId])
   @@index([municipalityId])
 }
-

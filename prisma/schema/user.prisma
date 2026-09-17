@@ -1,25 +1,25 @@
 model User {
-  id              String                  @id @default(uuid())
-  email           String                  @unique
-  phone           String?                 @unique
+  id              String     @id @default(uuid())
+  email           String     @unique
+  phone           String?    @unique
   passwordHash    String
   displayName     String?
-  isEmailVerified Boolean                 @default(false)
-  isPhoneVerified Boolean                 @default(false)
-  status          UserStatus              @default(INACTIVE)
+  isEmailVerified Boolean    @default(false)
+  isPhoneVerified Boolean    @default(false)
+  status          UserStatus @default(INACTIVE)
 
-  citizenProfile  CitizenProfile?
-  staffProfile    StaffProfile?
-  userRoles       UserRole[]
+  citizenProfile CitizenProfile?
+  staffProfile   StaffProfile?
+  userRoles      UserRole[]
 
   civicIssueHistory   CivicIssueHistory[]
   notifications       Notification[]
   preference          NotificationPreference?
   auditLogs           AuditLog[]
-  assignedAssignments Assignment[]        @relation("AssignedBy")
+  assignedAssignments Assignment[]            @relation("AssignedBy")
   attachments         Attachment[]
-  escalationsFrom     Escalation[]        @relation("EscalatedFrom")
-  escalationsTo       Escalation[]        @relation("EscalatedTo")
+  escalationsFrom     Escalation[]            @relation("EscalatedFrom")
+  escalationsTo       Escalation[]            @relation("EscalatedTo")
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt

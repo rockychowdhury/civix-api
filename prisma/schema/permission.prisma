@@ -1,14 +1,13 @@
 model Permission {
-  id              String           @id @default(uuid())
-  action          Action
-  resource        Resource
-  description     String?
+  id          String   @id @default(uuid())
+  action      Action
+  resource    Resource
+  description String?
 
   rolePermissions RolePermission[]
 
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([action, resource])
 }
-

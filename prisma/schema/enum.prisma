@@ -104,12 +104,8 @@ enum IssuePriority {
   LOW
   MEDIUM
   HIGH
-  CRITICAL
-}
-
-enum RequestType {
-  COMPLAINT
-  SERVICE_REQUEST
+  URGENT
+  EMERGENCY
 }
 
 // ─── Assignment & Work ───────────────────────────────────────

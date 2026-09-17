@@ -4,13 +4,13 @@ model DepartmentMember {
   staffId      String
   role         DepartmentRole @default(MEMBER)
 
-  joinedAt     DateTime       @default(now())
-  leftAt       DateTime?
-  isPrimary    Boolean        @default(true)
-  createdAt    DateTime       @default(now())
+  joinedAt  DateTime  @default(now())
+  leftAt    DateTime?
+  isPrimary Boolean   @default(true)
+  createdAt DateTime  @default(now())
 
-  department   Department     @relation(fields: [departmentId], references: [id], onDelete: Cascade)
-  staff        StaffProfile   @relation(fields: [staffId], references: [userId], onDelete: Cascade)
+  department Department   @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  staff      StaffProfile @relation(fields: [staffId], references: [userId], onDelete: Cascade)
 
   @@unique([departmentId, staffId])
   @@index([staffId])

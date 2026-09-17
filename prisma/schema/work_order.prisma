@@ -7,19 +7,19 @@ model WorkOrder {
   status            LifecycleStatus @default(ASSIGNED)
   priority          IssuePriority   @default(MEDIUM)
 
-  scheduledAt       DateTime?
-  startedAt         DateTime?
-  completedAt       DateTime?
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-  deletedAt         DateTime?
+  scheduledAt DateTime?
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
 
-  civicIssue        CivicIssue      @relation(fields: [civicIssueId], references: [id], onDelete: Cascade)
-  currentAssignee   StaffProfile?   @relation(fields: [currentAssigneeId], references: [userId], onDelete: SetNull)
+  civicIssue      CivicIssue    @relation(fields: [civicIssueId], references: [id], onDelete: Cascade)
+  currentAssignee StaffProfile? @relation(fields: [currentAssigneeId], references: [userId], onDelete: SetNull)
 
-  assignments       Assignment[]
-  updates           WorkUpdate[]
-  resolution        Resolution?
+  assignments Assignment[]
+  updates     WorkUpdate[]
+  resolution  Resolution?
 
   @@index([civicIssueId])
   @@index([currentAssigneeId, status])
