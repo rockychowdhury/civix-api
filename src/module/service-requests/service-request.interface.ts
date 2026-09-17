@@ -6,7 +6,6 @@ import { from } from "stream/iter";
 
 export interface ICreateServiceRequestPayload {
 	request: {
-		title: string;
 		description: string;
 		categoryId: string;
 	};

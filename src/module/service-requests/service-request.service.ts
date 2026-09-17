@@ -2,10 +2,7 @@ import { prisma } from "../../lib/prisma";
 import { AppError } from "../../utils/AppError";
 import httpStatus from "http-status";
 import type { ICreateServiceRequestPayload } from "./service-request.interface";
-import {
-	generateTrackingNumber,
-	generateIssueNumber,
-} from "../../utils/generateTrackingNumber"; // We will create this utility
+
 import {
 	Action,
 	Resource,
@@ -15,6 +12,16 @@ import {
 import { createAuditLog } from "../../utils/auditLogger";
 import { buildPrismaQuery } from "../../utils/QueryBuilder";
 import { serviceRequestSearchableFields } from "./service-request.constant";
+import {
+	generateIssueTitle,
+	generateIssueDescription,
+	priorityScore,
+	getIssuePriority,
+	calculateResponseDeadline,
+	calculateResolutionDeadline,
+	generateTrackingNumber,
+	generateIssueNumber,
+} from "./service-request.utils";
 
 const createServiceRequest = async (
 	userId: string,
@@ -51,31 +58,6 @@ const createServiceRequest = async (
 			throw new AppError(httpStatus.BAD_REQUEST, "Invalid category ID");
 		}
 
-		// const civicIssue = await tx.civicIssue.create({
-		// 	data: {
-		// 		issueNumber,
-		// 		municipalityId: payload.request.municipalityId,
-		// 		categoryId: payload.request.categoryId,
-		// 		locationId: location.id,
-		// 		departmentId: category.departmentId,
-		// 		title: payload.request.title,
-		// 		description: payload.request.description,
-		// 		status: LifecycleStatus.SUBMITTED,
-		// 	},
-		// });
-
-		// Create WorkOrder if department is assigned
-		// if (category.departmentId) {
-		// 	await tx.workOrder.create({
-		// 		data: {
-		// 			civicIssueId: civicIssue.id,
-		// 			title: `Fix: ${payload.request.title}`,
-
-		// 			description: payload.request.description,
-		// 		},
-		// 	});
-		// }
-
 		const location = await tx.location.create({
 			data: {
 				latitude: payload.location.latitude,
@@ -91,7 +73,6 @@ const createServiceRequest = async (
 		const request = await tx.serviceRequest.create({
 			data: {
 				trackingNumber,
-				title: payload.request.title,
 				description: payload.request.description,
 				municipalityId: payload.location.municipalityId,
 				categoryId: category.id,
@@ -99,6 +80,164 @@ const createServiceRequest = async (
 				locationId: location.id,
 			},
 		});
+
+		const threeDaysAgo = new Date();
+		threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+
+		const duplicateIssue = await tx.civicIssue.findFirst({
+			where: {
+				categoryId: category.id,
+				wardId: payload.location.wardId,
+				createdAt: { gte: threeDaysAgo },
+				status: {
+					in: [
+						LifecycleStatus.IN_PROGRESS,
+						LifecycleStatus.REOPENED,
+						LifecycleStatus.ASSIGNED,
+					],
+				},
+			},
+		});
+
+		let finalStatus: LifecycleStatus = LifecycleStatus.SUBMITTED;
+
+		if (duplicateIssue) {
+			const reportedCount = duplicateIssue.reportedCount + 1;
+			const hoursSinceFirstReport =
+				Math.abs(
+					new Date().getTime() - duplicateIssue.firstReportedAt.getTime(),
+				) / 3600000;
+			const pScore = priorityScore(
+				category.baseSeverity,
+				reportedCount,
+				hoursSinceFirstReport,
+			);
+			const newPriority = getIssuePriority(pScore);
+
+			let responseDeadlineAt = duplicateIssue.responseDeadlineAt;
+			let resolutionDeadlineAt = duplicateIssue.resolutionDeadlineAt;
+
+			if (
+				newPriority !== duplicateIssue.priority &&
+				duplicateIssue.status === LifecycleStatus.IN_PROGRESS
+			) {
+				const slaPolicy = await tx.slaPolicy.findFirst({
+					where: {
+						municipalityId: payload.location.municipalityId,
+						categoryId: category.id,
+						priority: newPriority,
+					},
+				});
+				if (slaPolicy) {
+					responseDeadlineAt = calculateResponseDeadline(
+						slaPolicy.responseMinutes,
+						duplicateIssue.createdAt,
+					);
+					resolutionDeadlineAt = calculateResolutionDeadline(
+						slaPolicy.resolutionMinutes,
+						duplicateIssue.createdAt,
+					);
+				}
+			}
+
+			await tx.civicIssue.update({
+				where: { id: duplicateIssue.id },
+				data: {
+					reportedCount,
+					lastReportedAt: new Date(),
+					priority: newPriority,
+					responseDeadlineAt,
+					resolutionDeadlineAt,
+				},
+			});
+
+			finalStatus = duplicateIssue.status;
+
+			await tx.serviceRequest.update({
+				where: { id: request.id },
+				data: { civicIssueId: duplicateIssue.id, status: finalStatus },
+			});
+			(request as any).status = finalStatus;
+			(request as any).civicIssueId = duplicateIssue.id;
+		} else {
+			const pScore = priorityScore(category.baseSeverity, 1, 0);
+			const initialPriority = getIssuePriority(pScore);
+			const slaPolicy = await tx.slaPolicy.findFirst({
+				where: {
+					municipalityId: payload.location.municipalityId,
+					categoryId: category.id,
+					priority: initialPriority,
+				},
+			});
+
+			let responseDeadlineAt = null;
+			let resolutionDeadlineAt = null;
+			if (slaPolicy) {
+				responseDeadlineAt = calculateResponseDeadline(
+					slaPolicy.responseMinutes,
+				);
+				resolutionDeadlineAt = calculateResolutionDeadline(
+					slaPolicy.resolutionMinutes,
+				);
+			}
+
+			let wardName = payload.location.wardId;
+			if (payload.location.wardId) {
+				const ward = await tx.ward.findUnique({
+					where: { id: payload.location.wardId },
+				});
+				if (ward) wardName = ward.name;
+			}
+
+			let zoneName = payload.location.zoneId;
+			if (payload.location.zoneId) {
+				const zone = await tx.zone.findUnique({
+					where: { id: payload.location.zoneId },
+				});
+				if (zone) zoneName = zone.name;
+			}
+
+			const newIssue = await tx.civicIssue.create({
+				data: {
+					issueNumber,
+					municipalityId: payload.location.municipalityId,
+					categoryId: category.id,
+					locationId: location.id,
+					departmentId: category.departmentId,
+					title: generateIssueTitle(
+						category.name,
+						wardName,
+						zoneName,
+					),
+					description: generateIssueDescription(
+						category.name,
+						category.description,
+						{
+							...payload.location,
+							wardId: wardName,
+							zoneId: zoneName,
+						},
+						payload.request.description,
+						new Date(),
+					),
+					status: LifecycleStatus.IN_PROGRESS,
+					priority: initialPriority,
+					reportedCount: 1,
+					wardId: payload.location.wardId,
+					responseDeadlineAt,
+					resolutionDeadlineAt,
+				},
+			});
+
+			finalStatus = newIssue.status;
+
+			await tx.serviceRequest.update({
+				where: { id: request.id },
+				data: { civicIssueId: newIssue.id, status: finalStatus },
+			});
+			(request as any).status = finalStatus;
+			(request as any).civicIssueId = newIssue.id;
+		}
 		await createAuditLog({
 			userId,
 			action: Action.CREATE,

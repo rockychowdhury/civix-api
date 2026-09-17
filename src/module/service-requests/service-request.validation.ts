@@ -3,7 +3,6 @@ import { z } from "zod";
 const createServiceRequestSchema = z.object({
 	body: z.object({
 		request: z.object({
-			title: z.string().min(5).max(100),
 			description: z.string().min(10).max(1000),
 			categoryId: z.string().uuid(),
 		}),
