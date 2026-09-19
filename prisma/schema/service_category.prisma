@@ -1,13 +1,14 @@
 model ServiceCategory {
-  id           String  @id @default(uuid())
-  parentId     String?
-  departmentId String?
-  name         String
-  slug         String  @unique
-  description  String?
-  baseSeverity Int     @default(10)
-  sortOrder    Int     @default(0)
-  isActive     Boolean @default(true)
+  id               String  @id @default(uuid())
+  parentId         String?
+  departmentId     String?
+  name             String
+  slug             String  @unique
+  description      String?
+  workInstructions String? @db.Text // Markdown instructions for technicians
+  baseSeverity     Int     @default(10)
+  sortOrder        Int     @default(0)
+  isActive         Boolean @default(true)
 
   parent     ServiceCategory?  @relation("CategoryTree", fields: [parentId], references: [id])
   children   ServiceCategory[] @relation("CategoryTree")

@@ -1,0 +1,18 @@
+model TeamMember {
+  id      String   @id @default(uuid())
+  teamId  String
+  staffId String
+  role    TeamRole @default(MEMBER)
+
+  joinedAt DateTime  @default(now())
+  leftAt   DateTime?
+
+  team  Team         @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  staff StaffProfile @relation("TeamMembers", fields: [staffId], references: [userId], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([teamId, staffId])
+  @@index([staffId, role])
+}

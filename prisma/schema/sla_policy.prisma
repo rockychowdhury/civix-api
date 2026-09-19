@@ -6,7 +6,8 @@ model SlaPolicy {
 
   responseMinutes   Int
   resolutionMinutes Int
-  version           Int @default(1)
+  version           Int            @default(1)
+  assignmentType    AssignmentType @default(INDIVIDUAL)
 
   effectiveFrom DateTime  @default(now())
   effectiveTo   DateTime?

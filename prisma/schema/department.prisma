@@ -13,6 +13,8 @@ model Department {
   members           DepartmentMember[]
   serviceAreas      DepartmentServiceArea[]
   civicIssues       CivicIssue[]
+  workOrders        WorkOrder[]
+  teams             Team[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt

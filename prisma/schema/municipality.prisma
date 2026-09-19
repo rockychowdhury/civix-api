@@ -9,6 +9,7 @@ model Municipality {
   zones           Zone[]
   locations       Location[]
   departments     Department[]
+  staffProfiles   StaffProfile[]
   civicIssues     CivicIssue[]
   serviceRequests ServiceRequest[]
   slaPolicies     SlaPolicy[]

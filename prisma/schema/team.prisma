@@ -1,0 +1,20 @@
+model Team {
+  id           String     @id @default(uuid())
+  code         String     @unique
+  name         String
+  departmentId String
+  leaderId     String?
+  status       TeamStatus @default(ACTIVE)
+
+  department  Department    @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  leader      StaffProfile? @relation("TeamLeader", fields: [leaderId], references: [userId], onDelete: SetNull)
+  members     TeamMember[]
+  assignments Assignment[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([departmentId, status])
+  @@index([leaderId])
+}

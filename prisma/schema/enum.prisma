@@ -65,6 +65,7 @@ enum Resource {
   WARD
   LOCATION
   DEPARTMENT
+  TEAM
 }
 
 // ─── Department ──────────────────────────────────────────────
@@ -90,6 +91,8 @@ enum LifecycleStatus {
   ASSIGNED
   ACCEPTED
   IN_PROGRESS
+  WORK_ORDER_CREATED
+  TEAM_ASSIGNED
   PENDING_VERIFICATION
   RESOLVED
   CLOSED
@@ -108,12 +111,32 @@ enum IssuePriority {
   EMERGENCY
 }
 
+// ─── Team & Assignment Type ──────────────────────────────────
+
+enum AssignmentType {
+  INDIVIDUAL
+  TEAM
+}
+
+enum TeamStatus {
+  ACTIVE
+  INACTIVE
+  DISBANDED
+}
+
+enum TeamRole {
+  LEAD
+  MEMBER
+  SPECIALIST
+}
+
 // ─── Assignment & Work ───────────────────────────────────────
 
 enum AssignmentStatus {
   PENDING
   ACCEPTED
   REJECTED
+  UNASSIGNED
 }
 
 enum WorkUpdateType {

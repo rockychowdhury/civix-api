@@ -1,7 +1,7 @@
 model Assignment {
   id           String  @id @default(uuid())
   workOrderId  String
-  assignedToId String
+  assignedToId String?
   assignedById String?
   teamId       String?
 
@@ -10,11 +10,13 @@ model Assignment {
   unassignedAt DateTime?
   status       AssignmentStatus @default(PENDING)
   reason       String?
+  notes        String?
   createdAt    DateTime         @default(now())
 
-  workOrder  WorkOrder    @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
-  assignedTo StaffProfile @relation("AssignedTo", fields: [assignedToId], references: [userId], onDelete: Cascade)
-  assignedBy User?        @relation("AssignedBy", fields: [assignedById], references: [id], onDelete: SetNull)
+  workOrder  WorkOrder     @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  team       Team?         @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  assignedTo StaffProfile? @relation("AssignedTo", fields: [assignedToId], references: [userId], onDelete: Cascade)
+  assignedBy StaffProfile? @relation("AssignedBy", fields: [assignedById], references: [userId], onDelete: SetNull)
 
   @@index([assignedToId, status])
   @@index([workOrderId, status])

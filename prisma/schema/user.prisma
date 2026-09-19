@@ -12,14 +12,13 @@ model User {
   staffProfile   StaffProfile?
   userRoles      UserRole[]
 
-  civicIssueHistory   CivicIssueHistory[]
-  notifications       Notification[]
-  preference          NotificationPreference?
-  auditLogs           AuditLog[]
-  assignedAssignments Assignment[]            @relation("AssignedBy")
-  attachments         Attachment[]
-  escalationsFrom     Escalation[]            @relation("EscalatedFrom")
-  escalationsTo       Escalation[]            @relation("EscalatedTo")
+  civicIssueHistory CivicIssueHistory[]
+  notifications     Notification[]
+  preference        NotificationPreference?
+  auditLogs         AuditLog[]
+  attachments       Attachment[]
+  escalationsFrom   Escalation[]            @relation("EscalatedFrom")
+  escalationsTo     Escalation[]            @relation("EscalatedTo")
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt

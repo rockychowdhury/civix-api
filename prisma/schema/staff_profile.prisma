@@ -7,12 +7,17 @@ model StaffProfile {
   isAvailable     Boolean @default(true)
   currentWorkload Int     @default(0)
   maxWorkload     Int     @default(5)
+  municipalityId  String?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  municipality Municipality? @relation(fields: [municipalityId], references: [id])
 
   workOrders        WorkOrder[]
   departmentMembers DepartmentMember[]
   assignments       Assignment[]             @relation("AssignedTo")
+  assignmentsGiven  Assignment[]             @relation("AssignedBy")
+  ledTeams          Team[]                   @relation("TeamLeader")
+  teamMemberships   TeamMember[]             @relation("TeamMembers")
   workUpdates       WorkUpdate[]
   resolutions       Resolution[]
   verifications     ResolutionVerification[]

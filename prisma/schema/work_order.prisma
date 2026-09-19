@@ -1,10 +1,11 @@
 model WorkOrder {
   id                String          @id @default(uuid())
   civicIssueId      String
+  departmentId      String
   currentAssigneeId String?
   title             String
   description       String?
-  status            LifecycleStatus @default(ASSIGNED)
+  status            LifecycleStatus @default(WORK_ORDER_CREATED)
   priority          IssuePriority   @default(MEDIUM)
 
   scheduledAt DateTime?
@@ -15,6 +16,7 @@ model WorkOrder {
   deletedAt   DateTime?
 
   civicIssue      CivicIssue    @relation(fields: [civicIssueId], references: [id], onDelete: Cascade)
+  department      Department    @relation(fields: [departmentId], references: [id])
   currentAssignee StaffProfile? @relation(fields: [currentAssigneeId], references: [userId], onDelete: SetNull)
 
   assignments Assignment[]
@@ -22,6 +24,7 @@ model WorkOrder {
   resolution  Resolution?
 
   @@index([civicIssueId])
+  @@index([departmentId])
   @@index([currentAssigneeId, status])
   @@index([status, createdAt])
 }
