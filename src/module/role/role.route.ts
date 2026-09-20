@@ -7,7 +7,11 @@ import { RoleValidation } from "./role.validation";
 
 const router = Router();
 
-router.get("/", requirePermission(Action.READ, Resource.ROLE), RoleController.getRoles);
+router.get(
+	"/",
+	requirePermission(Action.READ, Resource.ROLE),
+	RoleController.getRoles,
+);
 
 router.post(
 	"/",
@@ -16,7 +20,11 @@ router.post(
 	RoleController.createRole,
 );
 
-router.get("/:roleId", requirePermission(Action.READ, Resource.ROLE), RoleController.getRoleById);
+router.get(
+	"/:roleId",
+	requirePermission(Action.READ, Resource.ROLE),
+	RoleController.getRoleById,
+);
 
 router.patch(
 	"/:roleId",
@@ -25,7 +33,11 @@ router.patch(
 	RoleController.updateRole,
 );
 
-router.delete("/:roleId", requirePermission(Action.DELETE, Resource.ROLE), RoleController.deleteRole);
+router.delete(
+	"/:roleId",
+	requirePermission(Action.DELETE, Resource.ROLE),
+	RoleController.deleteRole,
+);
 
 router.get(
 	"/:roleId/permissions",
@@ -41,4 +53,3 @@ router.put(
 );
 
 export const RoleRoutes = router;
-

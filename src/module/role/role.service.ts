@@ -1,19 +1,47 @@
 import httpStatus from "http-status";
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../utils/AppError";
-import type { ICreateRole, IReplaceRolePermissions, IUpdateRole } from "./role.interface";
+import type {
+	ICreateRole,
+	IReplaceRolePermissions,
+	IUpdateRole,
+} from "./role.interface";
+import { buildPrismaQuery } from "../../utils/QueryBuilder";
+import { roleSearchableFields } from "./role.constant";
 
-const getRoles = async () => {
-	return await prisma.role.findMany();
+const getRoles = async (filters: any = {}, options: any = {}) => {
+	const { where, orderBy, skip, take, page, limit } = buildPrismaQuery(
+		filters,
+		options,
+		roleSearchableFields,
+	);
+
+	const [data, total] = await Promise.all([
+		prisma.role.findMany({
+			where,
+			orderBy: Object.keys(orderBy).length ? orderBy : { name: "asc" },
+			skip,
+			take,
+		}),
+		prisma.role.count({ where }),
+	]);
+
+	return {
+		data,
+		meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+	};
 };
 
 const createRole = async (payload: ICreateRole) => {
 	const isRoleExists = await prisma.role.findUnique({
 		where: { name: payload.name },
 	});
-	if (isRoleExists) throw new AppError(httpStatus.CONFLICT, "Role already exists");
+	if (isRoleExists)
+		throw new AppError(httpStatus.CONFLICT, "Role already exists");
 
-	return await prisma.role.create({ data: payload });
+	return await prisma.role.create({
+		data: { ...payload, code: payload.name.toUpperCase().replace(/\s+/g, "_") },
+	});
 };
 
 const getRoleById = async (roleId: string) => {
@@ -28,9 +56,14 @@ const updateRole = async (roleId: string, payload: IUpdateRole) => {
 
 	if (payload.name) {
 		const isRoleExists = await prisma.role.findFirst({
-			where: { name: payload.name, id: { not: roleId } },
+			where: {
+				name: payload.name,
+				code: payload.name.toUpperCase().replace(/\s+/g, "_"),
+				id: { not: roleId },
+			},
 		});
-		if (isRoleExists) throw new AppError(httpStatus.CONFLICT, "Role name already exists");
+		if (isRoleExists)
+			throw new AppError(httpStatus.CONFLICT, "Role name already exists");
 	}
 
 	return await prisma.role.update({
@@ -58,7 +91,10 @@ const getRolePermissions = async (roleId: string) => {
 	return rolePermissions.map((rp) => rp.permission);
 };
 
-const replaceRolePermissions = async (roleId: string, payload: IReplaceRolePermissions) => {
+const replaceRolePermissions = async (
+	roleId: string,
+	payload: IReplaceRolePermissions,
+) => {
 	const role = await prisma.role.findUnique({ where: { id: roleId } });
 	if (!role) throw new AppError(httpStatus.NOT_FOUND, "Role not found");
 
@@ -69,7 +105,10 @@ const replaceRolePermissions = async (roleId: string, payload: IReplaceRolePermi
 	});
 
 	if (permissions.length !== permissionIds.length) {
-		throw new AppError(httpStatus.BAD_REQUEST, "One or more permission IDs are invalid");
+		throw new AppError(
+			httpStatus.BAD_REQUEST,
+			"One or more permission IDs are invalid",
+		);
 	}
 
 	await prisma.$transaction([
@@ -94,4 +133,3 @@ export const RoleService = {
 	getRolePermissions,
 	replaceRolePermissions,
 };
-
