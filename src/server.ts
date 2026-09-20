@@ -3,7 +3,9 @@ import config from "./config";
 import { transporter } from "./lib/nodemailer";
 import { prisma } from "./lib/prisma";
 import { redisClient } from "./lib/redis";
-import { seedRolesAndPermissions, seedSuperAdmin } from "./utils/seed";
+import { seedInitialData } from "./utils/seed";
+
+import { initSLAWorker } from "./module/sla/sla.worker";
 
 const PORT = config.port;
 
@@ -18,9 +20,8 @@ const main = async () => {
 		await transporter.verify();
 		console.log("Nodemailer Connected Successfully.");
 
-		// Seed initial data
-		await seedRolesAndPermissions();
-		await seedSuperAdmin();
+		// Start Background Workers
+		// initSLAWorker();
 
 		app.listen(PORT, () => {
 			console.log(`Server is running on port ${PORT}`);
