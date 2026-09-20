@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import httpStatus from "http-status";
 import { Prisma } from "../../generated/prisma/client";
+import { ZodError } from "zod";
 import config from "../config";
 import { AppError } from "../utils/AppError";
 
@@ -16,23 +17,35 @@ export const globalErrorHandler = async (
 
 	let statusCode: number = httpStatus.INTERNAL_SERVER_ERROR;
 	let errorMessage = err.message || "Internal Server Error";
-	const errorName = err.name || "Internal Server Error";
-	// let errorDetails = err.stack
+	let errorName = err.name || "Internal Server Error";
+	let errorSources: Array<{ path: string | number; message: string }> = [];
 
-	if (err instanceof Prisma.PrismaClientValidationError) {
+	if (err instanceof ZodError) {
+		statusCode = httpStatus.BAD_REQUEST;
+		errorName = "ZodValidationError";
+		errorMessage = "Validation Error";
+		errorSources = err.issues.map((issue) => ({
+			path: issue.path.join("."),
+			message: issue.message,
+		}));
+		// Also construct a readable string for the generic message
+		errorMessage = err.issues
+			.map((i) => `${i.path.join(".")}: ${i.message}`)
+			.join(" | ");
+	} else if (err instanceof Prisma.PrismaClientValidationError) {
 		statusCode = httpStatus.BAD_REQUEST;
 		errorMessage = "You have provided incorrect field type or missing fields";
 	} else if (err instanceof Prisma.PrismaClientKnownRequestError) {
 		if (err.code === "P2002") {
-			(statusCode = httpStatus.BAD_REQUEST),
-				(errorMessage = "Duplicate Key Error");
+			statusCode = httpStatus.BAD_REQUEST;
+			errorMessage = "Duplicate Key Error";
 		} else if (err.code === "P2003") {
-			(statusCode = httpStatus.BAD_REQUEST),
-				(errorMessage = "Foreign key constraint failed");
+			statusCode = httpStatus.BAD_REQUEST;
+			errorMessage = "Foreign key constraint failed";
 		} else if (err.code === "P2025") {
-			(statusCode = httpStatus.BAD_REQUEST),
-				(errorMessage =
-					"An operation failed because it depends on one or more records that were required but not found.");
+			statusCode = httpStatus.BAD_REQUEST;
+			errorMessage =
+				"An operation failed because it depends on one or more records that were required but not found.";
 		}
 	} else if (err instanceof Prisma.PrismaClientInitializationError) {
 		if (err.errorCode === "P1000") {
@@ -62,6 +75,7 @@ export const globalErrorHandler = async (
 			config.node_env === "development"
 				? errorMessage
 				: "Internal Server Error",
+		errorSources: errorSources.length > 0 ? errorSources : undefined,
 		error: config.node_env === "development" ? err : undefined,
 		stack: config.node_env === "development" ? err.stack : undefined,
 	});

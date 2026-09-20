@@ -15,10 +15,7 @@ export const validateRequest = (schema: ZodObject<any>) => {
 		});
 
 		if (!result.success) {
-			const errorMessages = result.error.issues
-				.map((issue: ZodIssue) => issue.message)
-				.join(", ");
-			throw new AppError(httpStatus.BAD_REQUEST, errorMessages);
+			throw result.error;
 		}
 
 		// Reassign validated data back to request object to get the sanitized values

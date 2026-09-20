@@ -20,7 +20,9 @@ declare global {
 	}
 }
 
-export const requirePermission = (action: string, resource: string) => {
+import { Action, Resource } from "../../generated/prisma/enums";
+
+export const requirePermission = (action: Action, resource: Resource) => {
 	return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 		const token = req.cookies.accessToken
 			? req.cookies.accessToken
@@ -71,7 +73,7 @@ export const requirePermission = (action: string, resource: string) => {
 							permission: {
 								OR: [
 									{ action, resource },
-									{ action: "manage", resource: "all" },
+									{ action: Action.MANAGE, resource: Resource.ALL },
 								],
 							},
 						},
@@ -95,3 +97,36 @@ export const requirePermission = (action: string, resource: string) => {
 		next();
 	});
 };
+
+export const requireAuth = catchAsync(
+	async (req: Request, res: Response, next: NextFunction) => {
+		const token = req.cookies.accessToken
+			? req.cookies.accessToken
+			: req.headers.authorization?.startsWith("Bearer ")
+				? req.headers.authorization?.split(" ")[1]
+				: req.headers.authorization;
+
+		if (!token) {
+			throw new AppError(httpStatus.UNAUTHORIZED, "You are not logged in.");
+		}
+
+		const verifiedToken = jwtUtils.verifyToken(token, config.jwt_access_secret);
+		if (!verifiedToken.success) {
+			throw new AppError(httpStatus.UNAUTHORIZED, verifiedToken.error);
+		}
+
+		const { userId, email } = verifiedToken.data as JwtPayload;
+
+		const user = await prisma.user.findUnique({
+			where: { id: userId },
+			select: { id: true, email: true, status: true },
+		});
+
+		if (!user) throw new AppError(httpStatus.UNAUTHORIZED, "User not found.");
+		if (user.status !== "ACTIVE")
+			throw new AppError(httpStatus.FORBIDDEN, `Account is ${user.status}.`);
+
+		req.user = { email: user.email, userId: user.id };
+		next();
+	},
+);
