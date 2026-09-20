@@ -12,7 +12,10 @@ import {
 } from "../../../generated/prisma/enums";
 import { buildPrismaQuery } from "../../utils/QueryBuilder";
 import { workOrderSearchableFields } from "./work-order.constant";
-import { generateWorkOrderTitle, generateWorkOrderDescription } from "./work-order.utils";
+import {
+	generateWorkOrderTitle,
+	generateWorkOrderDescription,
+} from "./work-order.utils";
 
 const createWorkOrder = async (
 	userId: string,
@@ -30,16 +33,32 @@ const createWorkOrder = async (
 		throw new AppError(httpStatus.NOT_FOUND, "Civic issue not found");
 	}
 
-	const title = payload.title || generateWorkOrderTitle(civicIssue.category?.name || "Issue", civicIssue.issueNumber);
-	const description = payload.description || generateWorkOrderDescription(
-		civicIssue.category?.workInstructions || null,
-		civicIssue.location
-	);
+	const title =
+		payload.title ||
+		generateWorkOrderTitle(
+			civicIssue.category?.name || "Issue",
+			civicIssue.issueNumber,
+		);
+	const description =
+		payload.description ||
+		generateWorkOrderDescription(
+			civicIssue.category?.workInstructions || null,
+			civicIssue.location,
+		);
+
+	const departmentId = civicIssue.departmentId;
+	if (!departmentId) {
+		throw new AppError(
+			httpStatus.BAD_REQUEST,
+			"Civic issue must be assigned to a department to create a work order",
+		);
+	}
 
 	const result = await prisma.$transaction(async (tx) => {
 		const workOrder = await tx.workOrder.create({
 			data: {
 				civicIssueId: payload.civicIssueId,
+				departmentId,
 				title,
 				description,
 				scheduledAt: payload.scheduledAt,

@@ -1,8 +1,11 @@
 /**
  * Generate Work Order title tailored for technicians.
  */
-export const generateWorkOrderTitle = (categoryName: string, issueNumber: string): string => {
-	return `[${categoryName}] - Action Required (${issueNumber})`;
+export const generateWorkOrderTitle = (
+	categoryName: string,
+	issueNumber: string,
+): string => {
+	return `${categoryName} - Action Required (${issueNumber})`;
 };
 
 /**
@@ -10,16 +13,27 @@ export const generateWorkOrderTitle = (categoryName: string, issueNumber: string
  */
 export const generateWorkOrderDescription = (
 	workInstructions: string | null,
-	location: { address?: string | null; landmark?: string | null; postalCode?: string | null } | null
+	location: {
+		address?: string | null;
+		landmark?: string | null;
+		postalCode?: string | null;
+		ward?: string | null;
+		zone?: string | null;
+	} | null,
 ): string => {
-	const instructions = workInstructions || "Standard operating procedure applies. Assess the situation and report updates.";
-	
+	const instructions =
+		workInstructions ||
+		"Standard operating procedure applies. Assess the situation and report updates.";
+
 	const locationParts: string[] = [];
 	if (location?.address) locationParts.push(location.address);
 	if (location?.landmark) locationParts.push(`Landmark: ${location.landmark}`);
-	if (location?.postalCode) locationParts.push(`Postal Code: ${location.postalCode}`);
-	
+	if (location?.postalCode)
+		locationParts.push(`Postal Code: ${location.postalCode}`);
+	if (location?.ward) locationParts.push(`Ward: ${location.ward}`);
+	if (location?.zone) locationParts.push(`Zone: ${location.zone}`);
+
 	const locationDetails = locationParts.join(", ");
-	
+
 	return `Location: ${locationDetails || "N/A"}\n\nInstructions:\n${instructions}`;
 };
