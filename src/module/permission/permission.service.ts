@@ -1,9 +1,30 @@
 import httpStatus from "http-status";
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../utils/AppError";
+import { buildPrismaQuery } from "../../utils/QueryBuilder";
+import { permissionSearchableFields } from "./permission.constant";
 
-const getPermissions = async () => {
-	return await prisma.permission.findMany();
+const getPermissions = async (filters: any = {}, options: any = {}) => {
+	const { where, orderBy, skip, take, page, limit } = buildPrismaQuery(
+		filters,
+		options,
+		permissionSearchableFields,
+	);
+
+	const [data, total] = await Promise.all([
+		prisma.permission.findMany({
+			where,
+			orderBy: Object.keys(orderBy).length ? orderBy : { action: "asc" },
+			skip,
+			take,
+		}),
+		prisma.permission.count({ where }),
+	]);
+
+	return {
+		data,
+		meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+	};
 };
 
 const getPermissionById = async (permissionId: string) => {
@@ -20,4 +41,3 @@ export const PermissionService = {
 	getPermissions,
 	getPermissionById,
 };
-

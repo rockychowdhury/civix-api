@@ -5,7 +5,11 @@ import { PermissionController } from "./permission.controller";
 
 const router = Router();
 
-router.get("/", requirePermission(Action.READ, Resource.PERMISSION), PermissionController.getPermissions);
+router.get(
+	"/",
+	requirePermission(Action.READ, Resource.PERMISSION),
+	PermissionController.getPermissions,
+);
 
 router.get(
 	"/:permissionId",
@@ -14,4 +18,3 @@ router.get(
 );
 
 export const PermissionRoutes = router;
-
