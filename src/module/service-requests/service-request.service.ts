@@ -10,6 +10,7 @@ import {
 	LifecycleStatus,
 } from "../../../generated/prisma/enums";
 import { createAuditLog } from "../../utils/auditLogger";
+import { createCivicIssueHistory } from "../../utils/civicIssueHistory";
 import { buildPrismaQuery } from "../../utils/QueryBuilder";
 import { serviceRequestSearchableFields } from "./service-request.constant";
 import {
@@ -204,11 +205,7 @@ const createServiceRequest = async (
 					categoryId: category.id,
 					locationId: location.id,
 					departmentId: category.departmentId,
-					title: generateIssueTitle(
-						category.name,
-						wardName,
-						zoneName,
-					),
+					title: generateIssueTitle(category.name, wardName, zoneName),
 					description: generateIssueDescription(
 						category.name,
 						category.description,
@@ -230,6 +227,16 @@ const createServiceRequest = async (
 			});
 
 			finalStatus = newIssue.status;
+
+			// Record the birth of this civic issue in the history timeline
+			await createCivicIssueHistory({
+				civicIssueId: newIssue.id,
+				changedById: null, // System-generated from citizen report
+				previousStatus: null,
+				newStatus: finalStatus,
+				notes: `Auto-created from service request ${trackingNumber}`,
+				tx,
+			});
 
 			await tx.serviceRequest.update({
 				where: { id: request.id },

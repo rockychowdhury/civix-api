@@ -4,7 +4,11 @@ import { IssuePriority } from "../../../generated/prisma/enums";
 /**
  * Generate issue title from category name and location.
  */
-export const generateIssueTitle = (categoryName: string, ward?: string | null, zone?: string | null): string => {
+export const generateIssueTitle = (
+	categoryName: string,
+	ward?: string | null,
+	zone?: string | null,
+): string => {
 	let title = `${categoryName} reported`;
 	const locationParts: string[] = [];
 	if (ward) locationParts.push(`Ward ${ward}`);
@@ -22,7 +26,13 @@ export const generateIssueTitle = (categoryName: string, ward?: string | null, z
 export const generateIssueDescription = (
 	categoryName: string,
 	categoryDescription: string | null | undefined,
-	location: { address?: string | null; wardId?: string | null; zoneId?: string | null; landmark?: string | null; postalCode?: string | null },
+	location: {
+		address?: string | null;
+		wardId?: string | null;
+		zoneId?: string | null;
+		landmark?: string | null;
+		postalCode?: string | null;
+	},
 	initialDescription: string,
 	date: Date,
 ): string => {
@@ -47,7 +57,11 @@ export const generateIssueDescription = (
 /**
  * Calculate priority score.
  */
-export const priorityScore = (baseSeverity: number, reportCount: number, hoursSinceFirstReport: number): number => {
+export const priorityScore = (
+	baseSeverity: number,
+	reportCount: number,
+	hoursSinceFirstReport: number,
+): number => {
 	const reportCountWeight = Math.min(reportCount * 2, 20); // Cap the report count contribution
 	const ageWeight = Math.min(hoursSinceFirstReport * 0.5, 20); // Cap the age contribution
 
@@ -68,14 +82,20 @@ export const getIssuePriority = (score: number): IssuePriority => {
 /**
  * Calculate response deadline.
  */
-export const calculateResponseDeadline = (responseMinutes: number, fromDate: Date = new Date()): Date => {
+export const calculateResponseDeadline = (
+	responseMinutes: number,
+	fromDate: Date = new Date(),
+): Date => {
 	return new Date(fromDate.getTime() + responseMinutes * 60 * 1000);
 };
 
 /**
  * Calculate resolution deadline.
  */
-export const calculateResolutionDeadline = (resolutionMinutes: number, fromDate: Date = new Date()): Date => {
+export const calculateResolutionDeadline = (
+	resolutionMinutes: number,
+	fromDate: Date = new Date(),
+): Date => {
 	return new Date(fromDate.getTime() + resolutionMinutes * 60 * 1000);
 };
 
