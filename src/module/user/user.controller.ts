@@ -1,7 +1,8 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import httpStatus from "http-status";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
+import { pick } from "../../utils/pick";
 import { UserService } from "./user.service";
 import { UserValidation } from "./user.validation";
 
@@ -39,7 +40,10 @@ const deleteMe = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getUsers = catchAsync(async (req: Request, res: Response) => {
-	const result = await UserService.getUsers(req);
+	const filters = pick(req.query, ["status", "isEmailVerified", "searchTerm"]);
+	const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
+
+	const result = await UserService.getUsers(filters, options);
 
 	sendResponse(res, {
 		statusCode: httpStatus.OK,

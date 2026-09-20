@@ -4,6 +4,8 @@ import type { IUser } from "./user.interface";
 import type { Request } from "express";
 import { AppError } from "../../utils/AppError";
 import httpStatus from "http-status";
+import { buildPrismaQuery } from "../../utils/QueryBuilder";
+import { userSearchableFields } from "./user.constant";
 
 const getMe = async (req: Request): Promise<IUser> => {
 	const userId = (req as any).user?.userId;
@@ -31,19 +33,29 @@ const getMe = async (req: Request): Promise<IUser> => {
 };
 
 const getUsers = async (
-	req: Request,
+	filters: any = {},
+	options: any = {},
 ): Promise<{
 	data: IUser[];
 	meta: { page: number; limit: number; total: number; totalPages: number };
 }> => {
-	const page = parseInt((req.query as any).page as string) || 1;
-	const limit = parseInt((req.query as any).limit as string) || 10;
-	const skip = (page - 1) * limit;
+	const { where, orderBy, skip, take, page, limit } = buildPrismaQuery(
+		filters,
+		options,
+		userSearchableFields,
+	);
 
-	const where = {
-		deletedAt: null,
-		status: UserStatus.ACTIVE,
-	};
+	// Default filters
+	if (!where.deletedAt) where.deletedAt = null;
+	if (!where.status) where.status = UserStatus.ACTIVE;
+
+	// Handle boolean conversion if needed
+	if (
+		where.isEmailVerified !== undefined &&
+		typeof where.isEmailVerified === "string"
+	) {
+		where.isEmailVerified = where.isEmailVerified === "true";
+	}
 
 	const [users, total] = await Promise.all([
 		prisma.user.findMany({
@@ -54,8 +66,8 @@ const getUsers = async (
 				userRoles: { include: { role: true } },
 			},
 			skip,
-			take: limit,
-			orderBy: { createdAt: "desc" },
+			take,
+			orderBy: Object.keys(orderBy).length ? orderBy : { createdAt: "desc" },
 		}),
 		prisma.user.count({ where }),
 	]);
