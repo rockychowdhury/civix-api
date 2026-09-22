@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { UserStatus } from "../../../generated/prisma/enums";
 
 const getMeValidationSchema = z.object({
 	params: z.object({
@@ -11,6 +12,8 @@ const updateMeValidationSchema = z.object({
 		firstName: z.string().trim().optional(),
 		lastName: z.string().trim().optional(),
 		phone: z.string().trim().optional(),
+		displayName: z.string().trim().optional(),
+		nidNumber: z.string().trim().optional(),
 	}),
 });
 
@@ -27,9 +30,10 @@ const getUserByIdValidationSchema = z.object({
 	}),
 });
 
+
 const updateUserStatusValidationSchema = z.object({
 	body: z.object({
-		status: z.enum(["ACTIVE", "SUSPENDED", "BANNED", "INACTIVE"]),
+		status: z.nativeEnum(UserStatus),
 	}),
 });
 
@@ -39,11 +43,12 @@ const deleteUserValidationSchema = z.object({
 	}),
 });
 
-const assignRoleValidationSchema = z.object({
-	body: z.object({
-		role_id: z.string({ message: "Role ID must be a string" }),
+const restoreUserValidationSchema = z.object({
+	params: z.object({
+		userId: z.string(),
 	}),
 });
+
 
 export const UserValidation = {
 	getMeValidationSchema,
@@ -52,5 +57,6 @@ export const UserValidation = {
 	getUserByIdValidationSchema,
 	updateUserStatusValidationSchema,
 	deleteUserValidationSchema,
-	assignRoleValidationSchema,
+	restoreUserValidationSchema,
+
 };

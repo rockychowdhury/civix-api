@@ -1,3 +1,5 @@
+import type { UserStatus } from "../../../generated/prisma/enums";
+
 export interface IUser {
 	id: string;
 	email: string;
@@ -53,12 +55,15 @@ export interface IUserUpdatePayload {
 	firstName?: string;
 	lastName?: string;
 	phone?: string;
+	displayName?: string;
+	nidNumber?: string;
 }
 
+
 export interface IUserStatusUpdate {
-	status: string;
+	status: UserStatus;
 }
 
 export interface IAssignRolePayload {
-	role_id: string;
+	roleId: string;
 }

@@ -1,15 +1,14 @@
 import { prisma } from "../../lib/prisma";
 import { UserStatus } from "../../../generated/prisma/enums";
-import type { IUser } from "./user.interface";
+import type { IUser, IUserUpdatePayload } from "./user.interface";
 import type { Request } from "express";
 import { AppError } from "../../utils/AppError";
 import httpStatus from "http-status";
 import { buildPrismaQuery } from "../../utils/QueryBuilder";
 import { userSearchableFields } from "./user.constant";
+import { checkRoleManagementPrivilege } from "../../utils/role.utils";
 
-const getMe = async (req: Request): Promise<IUser> => {
-	const userId = (req as any).user?.userId;
-
+const getMe = async (userId: string): Promise<IUser> => {
 	if (!userId) {
 		throw new Error("User not authenticated");
 	}
@@ -108,25 +107,42 @@ const getUserById = async (userId: string): Promise<IUser> => {
 };
 
 const updateMe = async (
-	req: Request,
-	payload: { firstName?: string; lastName?: string; phone?: string },
+	userId: string,
+	payload: IUserUpdatePayload,
 ): Promise<IUser> => {
-	const userId = (req as any).user?.userId;
-
 	if (!userId) {
 		throw new Error("User not authenticated");
+	}
+
+	const existingUser = await prisma.user.findUnique({
+		where: { id: userId },
+		include: { userRoles: { include: { role: true } } },
+	});
+
+	if (!existingUser) {
+		throw new Error("User not found");
+	}
+
+	const isCitizen = existingUser.userRoles.some((ur) => ur.role.code === "CITIZEN");
+	if (!isCitizen) {
+		throw new AppError(
+			httpStatus.FORBIDDEN,
+			"Profile updates via this endpoint are only allowed for Citizens.",
+		);
 	}
 
 	const user = await prisma.user.update({
 		where: { id: userId },
 		data: {
-			...(payload.firstName && {
-				citizenProfile: { update: { firstName: payload.firstName } },
-			}),
-			...(payload.lastName && {
-				citizenProfile: { update: { lastName: payload.lastName } },
-			}),
+			...(payload.displayName !== undefined && { displayName: payload.displayName }),
 			...(payload.phone !== undefined && { phone: payload.phone }),
+			citizenProfile: {
+				update: {
+					...(payload.firstName && { firstName: payload.firstName }),
+					...(payload.lastName && { lastName: payload.lastName }),
+					...(payload.nidNumber && { nidNumber: payload.nidNumber }),
+				},
+			},
 		},
 		include: {
 			citizenProfile: true,
@@ -140,9 +156,7 @@ const updateMe = async (
 	return userWithoutPassword as IUser;
 };
 
-const deleteMe = async (req: Request): Promise<IUser> => {
-	const userId = (req as any).user?.userId;
-
+const deleteMe = async (userId: string): Promise<IUser> => {
 	if (!userId) {
 		throw new Error("User not authenticated");
 	}
@@ -163,9 +177,12 @@ const deleteMe = async (req: Request): Promise<IUser> => {
 };
 
 const updateUserStatus = async (
+	requesterId: string,
 	userId: string,
 	payload: { status: UserStatus },
 ): Promise<IUser> => {
+	await checkRoleManagementPrivilege(requesterId, userId);
+
 	const user = await prisma.user.update({
 		where: { id: userId },
 		data: { status: payload.status },
@@ -181,7 +198,9 @@ const updateUserStatus = async (
 	return userWithoutPassword as IUser;
 };
 
-const deleteUser = async (userId: string): Promise<IUser> => {
+const deleteUser = async (requesterId: string, userId: string): Promise<IUser> => {
+	await checkRoleManagementPrivilege(requesterId, userId);
+
 	const user = await prisma.user.update({
 		where: { id: userId },
 		data: { deletedAt: new Date() },
@@ -197,60 +216,24 @@ const deleteUser = async (userId: string): Promise<IUser> => {
 	return userWithoutPassword as IUser;
 };
 
-const getUserRoles = async (userId: string) => {
-	const user = await prisma.user.findUnique({ where: { id: userId } });
-	if (!user) throw new AppError(httpStatus.NOT_FOUND, "User not found");
+const restoreUser = async (requesterId: string, userId: string): Promise<IUser> => {
+	await checkRoleManagementPrivilege(requesterId, userId);
 
-	const userRoles = await prisma.userRole.findMany({
-		where: { userId },
-		include: { role: true },
-	});
-
-	return userRoles.map((ur) => ur.role);
-};
-
-const assignRole = async (userId: string, roleId: string) => {
-	const user = await prisma.user.findUnique({ where: { id: userId } });
-	if (!user) throw new AppError(httpStatus.NOT_FOUND, "User not found");
-
-	const role = await prisma.role.findUnique({ where: { id: roleId } });
-	if (!role) throw new AppError(httpStatus.NOT_FOUND, "Role not found");
-
-	const existingUserRole = await prisma.userRole.findFirst({
-		where: { userId, roleId },
-	});
-
-	if (existingUserRole) {
-		throw new AppError(httpStatus.CONFLICT, "User already has this role");
-	}
-
-	await prisma.userRole.create({
-		data: { userId, roleId },
-	});
-
-	return await getUserRoles(userId);
-};
-
-const removeRole = async (userId: string, roleId: string) => {
-	const userRole = await prisma.userRole.findFirst({
-		where: { userId, roleId },
-	});
-
-	if (!userRole) {
-		throw new AppError(httpStatus.NOT_FOUND, "User does not have this role");
-	}
-
-	await prisma.userRole.delete({
-		where: {
-			userId_roleId: {
-				userId,
-				roleId,
-			},
+	const user = await prisma.user.update({
+		where: { id: userId },
+		data: { deletedAt: null },
+		include: {
+			citizenProfile: true,
+			staffProfile: true,
+			userRoles: { include: { role: true } },
 		},
 	});
 
-	return await getUserRoles(userId);
+	const { passwordHash, ...userWithoutPassword } = user as any;
+
+	return userWithoutPassword as IUser;
 };
+
 
 export const UserService = {
 	getMe,
@@ -260,7 +243,5 @@ export const UserService = {
 	deleteMe,
 	updateUserStatus,
 	deleteUser,
-	getUserRoles,
-	assignRole,
-	removeRole,
+	restoreUser,
 };

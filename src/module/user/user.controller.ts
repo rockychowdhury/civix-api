@@ -7,7 +7,8 @@ import { UserService } from "./user.service";
 import { UserValidation } from "./user.validation";
 
 const getMe = catchAsync(async (req: Request, res: Response) => {
-	const result = await UserService.getMe(req);
+	const userId = (req as any).user.userId;
+	const result = await UserService.getMe(userId);
 
 	sendResponse(res, {
 		statusCode: httpStatus.OK,
@@ -18,7 +19,8 @@ const getMe = catchAsync(async (req: Request, res: Response) => {
 });
 
 const updateMe = catchAsync(async (req: Request, res: Response) => {
-	const result = await UserService.updateMe(req, req.body);
+	const userId = (req as any).user.userId;
+	const result = await UserService.updateMe(userId, req.body);
 
 	sendResponse(res, {
 		statusCode: httpStatus.OK,
@@ -29,7 +31,8 @@ const updateMe = catchAsync(async (req: Request, res: Response) => {
 });
 
 const deleteMe = catchAsync(async (req: Request, res: Response) => {
-	const result = await UserService.deleteMe(req);
+	const userId = (req as any).user.userId;
+	const result = await UserService.deleteMe(userId);
 
 	sendResponse(res, {
 		statusCode: httpStatus.OK,
@@ -68,10 +71,11 @@ const getUserById = catchAsync(async (req: Request, res: Response) => {
 });
 
 const updateUserStatus = catchAsync(async (req: Request, res: Response) => {
+	const requesterId = (req as any).user.userId;
 	const { userId } = req.params as { userId: string };
 	const { status } = req.body;
 
-	const result = await UserService.updateUserStatus(userId, { status });
+	const result = await UserService.updateUserStatus(requesterId, userId, { status });
 
 	sendResponse(res, {
 		statusCode: httpStatus.OK,
@@ -82,9 +86,10 @@ const updateUserStatus = catchAsync(async (req: Request, res: Response) => {
 });
 
 const deleteUser = catchAsync(async (req: Request, res: Response) => {
+	const requesterId = (req as any).user.userId;
 	const { userId } = req.params as { userId: string };
 
-	const result = await UserService.deleteUser(userId);
+	const result = await UserService.deleteUser(requesterId, userId);
 
 	sendResponse(res, {
 		statusCode: httpStatus.OK,
@@ -94,39 +99,20 @@ const deleteUser = catchAsync(async (req: Request, res: Response) => {
 	});
 });
 
-const getUserRoles = catchAsync(async (req: Request, res: Response) => {
+const restoreUser = catchAsync(async (req: Request, res: Response) => {
+	const requesterId = (req as any).user.userId;
 	const { userId } = req.params as { userId: string };
-	const result = await UserService.getUserRoles(userId);
+
+	const result = await UserService.restoreUser(requesterId, userId);
+
 	sendResponse(res, {
 		statusCode: httpStatus.OK,
 		success: true,
-		message: "User roles retrieved successfully",
+		message: "User restored successfully",
 		data: result,
 	});
 });
 
-const assignRole = catchAsync(async (req: Request, res: Response) => {
-	const { userId } = req.params as { userId: string };
-	const { role_id } = req.body;
-	const result = await UserService.assignRole(userId, role_id);
-	sendResponse(res, {
-		statusCode: httpStatus.OK,
-		success: true,
-		message: "Role assigned successfully",
-		data: result,
-	});
-});
-
-const removeRole = catchAsync(async (req: Request, res: Response) => {
-	const { userId, roleId } = req.params as { userId: string; roleId: string };
-	const result = await UserService.removeRole(userId, roleId);
-	sendResponse(res, {
-		statusCode: httpStatus.OK,
-		success: true,
-		message: "Role removed successfully",
-		data: result,
-	});
-});
 
 export const UserController = {
 	getMe,
@@ -136,7 +122,6 @@ export const UserController = {
 	getUserById,
 	updateUserStatus,
 	deleteUser,
-	getUserRoles,
-	assignRole,
-	removeRole,
+	restoreUser,
+
 };
