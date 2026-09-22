@@ -6,7 +6,7 @@ import type { TokenPayload } from "google-auth-library";
 import httpStatus from "http-status";
 import type { JwtPayload, SignOptions } from "jsonwebtoken";
 import path from "path";
-import { UserStatus } from "../../../generated/prisma/enums";
+import { AuthProvider, UserStatus } from "../../../generated/prisma/enums";
 import config from "../../config";
 import { googleClient } from "../../lib/googleAuth";
 import { transporter } from "../../lib/nodemailer";
@@ -243,7 +243,7 @@ const loginUser = async (payload: ILogin) => {
 		throw new AppError(httpStatus.FORBIDDEN, "User is deleted");
 	}
 
-	if (user.passwordHash === "" && password) {
+	if (!password && user.passwordHash) {
 		throw new AppError(
 			httpStatus.BAD_REQUEST,
 			"User Might Have Registered With Google. Try To Login With Google.",
@@ -251,7 +251,7 @@ const loginUser = async (payload: ILogin) => {
 	}
 
 	if (password) {
-		const isPasswordMatched = await bcrypt.compare(password, user.passwordHash);
+		const isPasswordMatched = await bcrypt.compare(password, user.passwordHash as string);
 
 		if (!isPasswordMatched) {
 			throw new AppError(httpStatus.UNAUTHORIZED, "Invalid credentials");
@@ -380,7 +380,7 @@ const googleLogin = async (payload: IGoogleAuth) => {
 	if (!googleIdTokenPayload.email) {
 		throw new AppError(httpStatus.BAD_REQUEST, "Google Email Not Found");
 	}
-	if (!googleIdTokenPayload.given_name || !googleIdTokenPayload.family_name) {
+	if (!googleIdTokenPayload.name) {
 		throw new AppError(httpStatus.BAD_REQUEST, "Google User Name Not Found");
 	}
 
@@ -390,10 +390,24 @@ const googleLogin = async (payload: IGoogleAuth) => {
 	});
 
 	if (user) {
-		if (!user.isEmailVerified) {
+		if (!user.isEmailVerified || !user.googleId) {
 			user = await prisma.user.update({
 				where: { id: user.id },
-				data: { isEmailVerified: true },
+				data: {
+					isEmailVerified: true,
+					googleId: googleIdTokenPayload.sub,
+					authProvider: AuthProvider.GOOGLE,
+				},
+				include: { userRoles: { include: { role: true } } },
+			});
+		}
+
+		if (user.displayName === null) {
+			user = await prisma.user.update({
+				where: { id: user.id },
+				data: {
+					displayName: googleIdTokenPayload.name,
+				},
 				include: { userRoles: { include: { role: true } } },
 			});
 		}
@@ -406,7 +420,7 @@ const googleLogin = async (payload: IGoogleAuth) => {
 		}
 
 		if (user.deletedAt) {
-			throw new AppError(httpStatus.FORBIDDEN, "User Is Deleted");
+			throw new AppError(httpStatus.FORBIDDEN, "User has been deleted!");
 		}
 	} else {
 		const citizenRole = await prisma.role.findUnique({
@@ -415,13 +429,15 @@ const googleLogin = async (payload: IGoogleAuth) => {
 		user = await prisma.user.create({
 			data: {
 				email: googleIdTokenPayload.email,
-				passwordHash: "",
+				passwordHash: null,
+				authProvider: AuthProvider.GOOGLE,
+				googleId: googleIdTokenPayload.sub,
 				status: UserStatus.ACTIVE,
 				isEmailVerified: true,
 				citizenProfile: {
 					create: {
-						firstName: googleIdTokenPayload.given_name,
-						lastName: googleIdTokenPayload.family_name || "",
+						firstName: googleIdTokenPayload.name.split(" ")[0]!,
+						lastName: googleIdTokenPayload.name.split(" ").slice(1).join(" ") || "",
 					},
 				},
 				...(citizenRole && {
@@ -501,11 +517,14 @@ const forgotPassword = async (payload: IForgotPassword) => {
 	}
 
 	if (isUserExist.deletedAt) {
-		throw new AppError(httpStatus.FORBIDDEN, "User is Deleted");
+		throw new AppError(httpStatus.FORBIDDEN, "No active account found!");
 	}
 
-	if (isUserExist.passwordHash === "") {
-		throw new AppError(httpStatus.BAD_REQUEST, "User Has Account With Google");
+	if (isUserExist.authProvider !== AuthProvider.CREDENTIAL) {
+		throw new AppError(
+			httpStatus.BAD_REQUEST,
+			`Use ${isUserExist.authProvider} to login`,
+		);
 	}
 
 	const otp = crypto.randomInt(100000, 1000000).toString();
@@ -525,7 +544,7 @@ const forgotPassword = async (payload: IForgotPassword) => {
 	);
 
 	const templateData = {
-		name: isUserExist.email.split("@")[0],
+		name: isUserExist.displayName || isUserExist.email.split("@")[0],
 		otp,
 		expirationMinutes: expirationSeconds / 60,
 	};
