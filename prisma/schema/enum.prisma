@@ -6,7 +6,10 @@ enum UserStatus {
   SUSPENDED
   BANNED
 }
-
+enum AuthProvider {
+  CREDENTIAL
+  GOOGLE
+}
 enum CitizenTrustLevel {
   NEW
   REGULAR
