@@ -33,6 +33,12 @@ router.get(
 );
 
 router.get(
+	"/civic-issue/:civicIssueId",
+	requirePermission(Action.READ, Resource.SERVICE_REQUEST),
+	ServiceRequestController.getServiceRequestsByCivicIssue,
+);
+
+router.get(
 	"/:id",
 	requirePermission(Action.READ, Resource.SERVICE_REQUEST),
 	ServiceRequestController.getServiceRequestById,

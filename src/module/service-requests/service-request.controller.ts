@@ -122,10 +122,33 @@ const getMunicipalityServiceRequests = catchAsync(
 	},
 );
 
+const getServiceRequestsByCivicIssue = catchAsync(async (req: Request, res: Response) => {
+	const userId = (req as any).user.userId;
+	const civicIssueId = req.params.civicIssueId as string;
+	const filters = pick(req.query, ["status", "requestType", "searchTerm", "categoryId"]);
+	const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
+
+	const result = await ServiceRequestService.getServiceRequestsByCivicIssue(
+		civicIssueId,
+		userId,
+		filters,
+		options,
+	);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "Service requests for civic issue retrieved successfully",
+		data: result.data,
+		meta: result.meta,
+	});
+});
+
 export const ServiceRequestController = {
 	createServiceRequest,
 	getMyServiceRequests,
 	getServiceRequestById,
 	getAllServiceRequests,
 	getMunicipalityServiceRequests,
+	getServiceRequestsByCivicIssue,
 };

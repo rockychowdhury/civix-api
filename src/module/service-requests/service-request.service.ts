@@ -393,9 +393,67 @@ const getAllServiceRequests = async (filters: any = {}, options: any = {}) => {
 	};
 };
 
+const getServiceRequestsByCivicIssue = async (
+	civicIssueId: string,
+	userId: string,
+	filters: any = {},
+	options: any = {},
+) => {
+	const civicIssue = await prisma.civicIssue.findUnique({
+		where: { id: civicIssueId },
+	});
+
+	if (!civicIssue) {
+		throw new AppError(httpStatus.NOT_FOUND, "Civic issue not found");
+	}
+
+	const userRoles = await prisma.userRole.findMany({
+		where: { userId },
+		include: { role: true },
+	});
+
+	const roleCodes = userRoles.map((ur) => ur.role.code);
+
+	const isGlobalAdmin = roleCodes.some((code) =>
+		["SUPER_ADMIN", "PLATFORM_ADMIN"].includes(code),
+	);
+
+	if (!isGlobalAdmin) {
+		if (
+			roleCodes.some((code) =>
+				["CITY_ADMIN", "DISPATCHER", "DEPARTMENT_MANAGER"].includes(code),
+			)
+		) {
+			const staffProfile = await prisma.staffProfile.findUnique({
+				where: { userId },
+			});
+
+			if (
+				!staffProfile ||
+				staffProfile.municipalityId !== civicIssue.municipalityId
+			) {
+				throw new AppError(
+					httpStatus.FORBIDDEN,
+					"You do not have permission to view service requests for this municipality",
+				);
+			}
+		} else {
+			// Blocks CITIZEN, TECHNICIAN, etc.
+			throw new AppError(
+				httpStatus.FORBIDDEN,
+				"You do not have permission to view these service requests",
+			);
+		}
+	}
+
+	filters.civicIssueId = civicIssueId;
+	return getAllServiceRequests(filters, options);
+};
+
 export const ServiceRequestService = {
 	createServiceRequest,
 	getMyServiceRequests,
 	getServiceRequestById,
 	getAllServiceRequests,
+	getServiceRequestsByCivicIssue,
 };
