@@ -74,8 +74,23 @@ const getAttachmentById = catchAsync(async (req: Request, res: Response) => {
 	});
 });
 
+const deleteAttachment = catchAsync(async (req: Request, res: Response) => {
+	const userId = (req as any).user.userId;
+	const id = req.params.id as string;
+	
+	await AttachmentService.deleteAttachment(userId, id);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "Attachment deleted successfully",
+		data: null,
+	});
+});
+
 export const AttachmentController = {
 	uploadForServiceRequest,
 	uploadForWorkUpdate,
 	getAttachmentById,
+	deleteAttachment,
 };

@@ -6,13 +6,10 @@ import {
 	AttachmentPurpose,
 	AttachmentFileType,
 } from "../../../generated/prisma/enums";
+import { checkDepartmentAccess, checkMunicipalityAccess } from "../../utils/abac.utils";
+import { deleteFromCloudinary } from "../../lib/cloudinary";
 
-const getFileType = (mimetype: string): AttachmentFileType => {
-	if (mimetype.startsWith("image/")) return AttachmentFileType.IMAGE;
-	if (mimetype.startsWith("video/")) return AttachmentFileType.VIDEO;
-	if (mimetype.startsWith("application/")) return AttachmentFileType.DOCUMENT;
-	return AttachmentFileType.OTHER;
-};
+// getFileType removed since all attachments are guaranteed to be images by middleware
 
 const uploadForServiceRequest = async (
 	userId: string,
@@ -27,10 +24,15 @@ const uploadForServiceRequest = async (
 	}
 
 	if (sr.citizenId !== userId) {
-		throw new AppError(
-			httpStatus.FORBIDDEN,
-			"Not authorized to upload for this service request",
-		);
+		// If not the reporting citizen, check if they are municipality staff
+		try {
+			await checkMunicipalityAccess(userId, sr.municipalityId);
+		} catch (error) {
+			throw new AppError(
+				httpStatus.FORBIDDEN,
+				"Not authorized to upload for this service request",
+			);
+		}
 	}
 
 	const uploadedAttachments = [];
@@ -44,7 +46,7 @@ const uploadForServiceRequest = async (
 			data: {
 				url: cloudResult.url,
 				publicId: cloudResult.public_id,
-				fileType: getFileType(file.mimetype),
+				fileType: AttachmentFileType.IMAGE,
 				fileName: file.originalname,
 				fileSize: cloudResult.size,
 				purpose: AttachmentPurpose.REPORT_EVIDENCE,
@@ -72,13 +74,8 @@ const uploadForWorkUpdate = async (
 		throw new AppError(httpStatus.NOT_FOUND, "Work update not found");
 	}
 
-	// Basic check: Ensure user is the assignee of the work order
-	if (wu.workOrder.currentAssigneeId !== userId) {
-		throw new AppError(
-			httpStatus.FORBIDDEN,
-			"Not authorized to upload for this work update",
-		);
-	}
+	// ABAC check: user must be staff in the department handling the work order
+	await checkDepartmentAccess(userId, wu.workOrder.departmentId);
 
 	const uploadedAttachments = [];
 
@@ -91,7 +88,7 @@ const uploadForWorkUpdate = async (
 			data: {
 				url: cloudResult.url,
 				publicId: cloudResult.public_id,
-				fileType: getFileType(file.mimetype),
+				fileType: AttachmentFileType.IMAGE,
 				fileName: file.originalname,
 				fileSize: cloudResult.size,
 				purpose: AttachmentPurpose.DURING_WORK,
@@ -117,8 +114,47 @@ const getAttachmentById = async (id: string) => {
 	return attachment;
 };
 
+const deleteAttachment = async (userId: string, id: string) => {
+	const user = await prisma.user.findUnique({
+		where: { id: userId },
+		include: { userRoles: { include: { role: true } } },
+	});
+
+	if (!user) throw new AppError(httpStatus.UNAUTHORIZED, "User not found");
+
+	const isGlobalAdmin = user.userRoles.some((ur) =>
+		["SUPER_ADMIN", "PLATFORM_ADMIN"].includes(ur.role.code),
+	);
+
+	const attachment = await prisma.attachment.findUnique({
+		where: { id },
+	});
+
+	if (!attachment) {
+		throw new AppError(httpStatus.NOT_FOUND, "Attachment not found");
+	}
+
+	if (attachment.uploadedById !== userId && !isGlobalAdmin) {
+		throw new AppError(
+			httpStatus.FORBIDDEN,
+			"Only the original uploader or a global admin can delete this attachment",
+		);
+	}
+
+	// Delete from Cloudinary
+	if (attachment.publicId) {
+		await deleteFromCloudinary(attachment.publicId);
+	}
+
+	// Delete from DB
+	await prisma.attachment.delete({
+		where: { id },
+	});
+};
+
 export const AttachmentService = {
 	uploadForServiceRequest,
 	uploadForWorkUpdate,
 	getAttachmentById,
+	deleteAttachment,
 };
