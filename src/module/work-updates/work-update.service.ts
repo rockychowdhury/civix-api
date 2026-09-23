@@ -4,6 +4,7 @@ import httpStatus from "http-status";
 import type { ICreateWorkUpdatePayload } from "./work-update.interface";
 import { LifecycleStatus } from "../../../generated/prisma/enums";
 import { createCivicIssueHistory } from "../../utils/civicIssueHistory";
+import { checkDepartmentAccess } from "../../utils/abac.utils";
 
 const createWorkUpdate = async (
 	userId: string,
@@ -19,12 +20,8 @@ const createWorkUpdate = async (
 		throw new AppError(httpStatus.NOT_FOUND, "Work order not found");
 	}
 
-	if (workOrder.currentAssigneeId !== userId) {
-		throw new AppError(
-			httpStatus.FORBIDDEN,
-			"Only the assigned technician can post updates",
-		);
-	}
+	// ABAC Check: Must be global admin, city admin for this municipality, or staff member in this department
+	await checkDepartmentAccess(userId, workOrder.departmentId);
 
 	const result = await prisma.$transaction(async (tx) => {
 		const update = await tx.workUpdate.create({
