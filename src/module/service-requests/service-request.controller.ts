@@ -69,6 +69,7 @@ const getAllServiceRequests = catchAsync(
 		]);
 		const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
 
+
 		if (req.query.unTriaged === "true") {
 			filters.civicIssueId = null;
 		}
@@ -88,9 +89,43 @@ const getAllServiceRequests = catchAsync(
 	},
 );
 
+const getMunicipalityServiceRequests = catchAsync(
+	async (req: Request, res: Response) => {
+		const filters: Record<string, any> = pick(req.query, [
+			"status",
+			"requestType",
+			"searchTerm",
+		]);
+		const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
+		const municipalityId = req.params.municipalityId;
+
+		if (req.query.unTriaged === "true") {
+			filters.civicIssueId = null;
+		}
+		
+		// Force the filter to the requested municipality
+		filters.municipalityId = municipalityId;
+
+		// Reusing the same service method but with forced filters
+		const result = await ServiceRequestService.getAllServiceRequests(
+			filters,
+			options,
+		);
+
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Municipality service requests retrieved successfully",
+			data: result.data,
+			meta: result.meta,
+		});
+	},
+);
+
 export const ServiceRequestController = {
 	createServiceRequest,
 	getMyServiceRequests,
 	getServiceRequestById,
 	getAllServiceRequests,
+	getMunicipalityServiceRequests,
 };

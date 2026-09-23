@@ -7,7 +7,6 @@ import { Action, Resource } from "../../../generated/prisma/enums";
 
 const router = Router();
 
-// Citizen Routes
 router.post(
 	"/",
 	requirePermission(Action.CREATE, Resource.SERVICE_REQUEST),
@@ -21,14 +20,18 @@ router.get(
 	ServiceRequestController.getMyServiceRequests,
 );
 
-// Admin/Dispatcher Routes
 router.get(
 	"/",
-	requirePermission(Action.READ, Resource.SERVICE_REQUEST),
+	requirePermission(Action.READ_ALL, Resource.SERVICE_REQUEST),
 	ServiceRequestController.getAllServiceRequests,
 );
 
-// Shared (handled inside logic or if permission matches)
+router.get(
+	"/municipality/:municipalityId",
+	requirePermission(Action.MANAGE, Resource.SERVICE_REQUEST),
+	ServiceRequestController.getMunicipalityServiceRequests,
+);
+
 router.get(
 	"/:id",
 	requirePermission(Action.READ, Resource.SERVICE_REQUEST),

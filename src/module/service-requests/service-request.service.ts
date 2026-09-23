@@ -315,7 +315,7 @@ const getMyServiceRequests = async (
 
 const getServiceRequestById = async (id: string, userId?: string) => {
 	const request = await prisma.serviceRequest.findUnique({
-		where: { id },
+		where: { id, },
 		include: {
 			citizen: {
 				select: {
@@ -335,10 +335,26 @@ const getServiceRequestById = async (id: string, userId?: string) => {
 		throw new AppError(httpStatus.NOT_FOUND, "Service request not found");
 	}
 
-	// Security: If not anonymous, or if this user is a staff/admin, it's fine.
-	// But if it IS anonymous, we should hide the citizen info unless the requester is staff.
-	// We'll leave advanced RBAC logic for the controller/middleware,
-	// but here we can strip out citizen info if it's anonymous and requested by a non-staff user.
+	if (!userId) {
+		throw new AppError(httpStatus.UNAUTHORIZED, "Authentication required");
+	}
+
+	if (request.citizenId !== userId) {
+		const userRoles = await prisma.userRole.findMany({
+			where: { userId },
+			include: { role: true },
+		});
+		
+		const roleCodes = userRoles.map((ur) => ur.role.code);
+		
+		const hasAccess = roleCodes.some((code) => 
+			["SUPER_ADMIN", "PLATFORM_ADMIN", "CITY_ADMIN", "DEPARTMENT_MANAGER", "DISPATCHER"].includes(code)
+		);
+		
+		if (!hasAccess) {
+			throw new AppError(httpStatus.FORBIDDEN, "You do not have permission to view this service request");
+		}
+	}
 
 	return request;
 };

@@ -21,26 +21,3 @@ export interface ICreateServiceRequestPayload {
 	};
 }
 
-/* requested payload 
-payload = {
-request: {
-  title: string;
-  description: string;
-  categoryId: string; 
-},
-location: {
-  latitude: Float;
-  longitude: Float;
-  address: String;
-  landmark: String;
-  postalCode: String;
-  wardId: String;
-  zoneId: String;
-  municipalityId: String;
-}
-  attachments: {
-    file: file;
-  }[];
-}
-
-*/
