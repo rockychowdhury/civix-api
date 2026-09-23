@@ -7,23 +7,7 @@ import { Action, Resource } from "../../../generated/prisma/enums";
 
 const router = Router();
 
-// Triage SR -> Civic Issue
-router.post(
-	"/triage",
-	requirePermission(Action.CREATE, Resource.CIVIC_ISSUE),
-	validateRequest(CivicIssueValidation.triageSchema),
-	CivicIssueController.triageServiceRequest,
-);
 
-// Merge SR -> existing Civic Issue
-router.post(
-	"/:id/merge",
-	requirePermission(Action.MERGE, Resource.CIVIC_ISSUE),
-	validateRequest(CivicIssueValidation.mergeSchema),
-	CivicIssueController.mergeServiceRequest,
-);
-
-// Manually update status
 router.patch(
 	"/:id/status",
 	requirePermission(Action.UPDATE, Resource.CIVIC_ISSUE),
@@ -31,21 +15,35 @@ router.patch(
 	CivicIssueController.updateStatus,
 );
 
-// List Issues (Dashboards)
 router.get(
 	"/",
-	requirePermission(Action.READ, Resource.CIVIC_ISSUE),
+	requirePermission(Action.READ_ALL, Resource.CIVIC_ISSUE),
 	CivicIssueController.getCivicIssues,
 );
 
-// View Issue Details
+router.get(
+	"/public/:issueNumber",
+	CivicIssueController.getPublicCivicIssueByNumber,
+);
+
+router.get(
+	"/municipality/:municipalityId",
+	requirePermission(Action.READ, Resource.CIVIC_ISSUE),
+	CivicIssueController.getIssuesByMunicipality,
+);
+
+router.get(
+	"/department/:departmentId",
+	requirePermission(Action.READ, Resource.CIVIC_ISSUE),
+	CivicIssueController.getIssuesByDepartment,
+);
+
 router.get(
 	"/:id",
 	requirePermission(Action.READ, Resource.CIVIC_ISSUE),
 	CivicIssueController.getCivicIssueById,
 );
 
-// Reopen a resolved/closed Civic Issue
 router.post(
 	"/:id/reopen",
 	requirePermission(Action.REOPEN, Resource.CIVIC_ISSUE),

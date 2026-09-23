@@ -1,5 +1,6 @@
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../utils/AppError";
+import { checkMunicipalityAccess, checkDepartmentAccess, checkCivicIssueInteractionAccess } from "../../utils/abac.utils";
 import httpStatus from "http-status";
 import type {
 	ITriagePayload,
@@ -28,6 +29,8 @@ const triageServiceRequest = async (
 	if (!request) {
 		throw new AppError(httpStatus.NOT_FOUND, "Service request not found");
 	}
+
+	await checkMunicipalityAccess(userId, request.municipalityId);
 
 	if (request.civicIssueId) {
 		throw new AppError(
@@ -141,6 +144,8 @@ const mergeServiceRequest = async (
 		throw new AppError(httpStatus.NOT_FOUND, "Civic issue not found");
 	}
 
+	await checkMunicipalityAccess(userId, civicIssue.municipalityId);
+
 	const request = await prisma.serviceRequest.findUnique({
 		where: { id: payload.serviceRequestId },
 	});
@@ -219,6 +224,8 @@ const updateStatus = async (
 	if (!civicIssue) {
 		throw new AppError(httpStatus.NOT_FOUND, "Civic issue not found");
 	}
+
+	await checkMunicipalityAccess(userId, civicIssue.municipalityId);
 
 	const result = await prisma.$transaction(async (tx) => {
 		const updateData: any = { status: payload.status };
@@ -300,6 +307,30 @@ const getCivicIssues = async (filters: any = {}, options: any = {}) => {
 	};
 };
 
+const getIssuesByMunicipality = async (
+	userId: string,
+	municipalityId: string,
+	filters: any = {},
+	options: any = {},
+) => {
+	await checkMunicipalityAccess(userId, municipalityId);
+
+	filters.municipalityId = municipalityId;
+	return getCivicIssues(filters, options);
+};
+
+const getIssuesByDepartment = async (
+	userId: string,
+	departmentId: string,
+	filters: any = {},
+	options: any = {},
+) => {
+	await checkDepartmentAccess(userId, departmentId);
+
+	filters.departmentId = departmentId;
+	return getCivicIssues(filters, options);
+};
+
 const getCivicIssueById = async (id: string) => {
 	const issue = await prisma.civicIssue.findUnique({
 		where: { id },
@@ -344,6 +375,8 @@ const reopenCivicIssue = async (
 	if (!civicIssue) {
 		throw new AppError(httpStatus.NOT_FOUND, "Civic issue not found");
 	}
+
+	await checkCivicIssueInteractionAccess(userId, civicIssueId);
 
 	if (
 		civicIssue.status !== LifecycleStatus.RESOLVED &&
@@ -431,11 +464,66 @@ const reopenCivicIssue = async (
 	return result;
 };
 
+const getPublicCivicIssueByNumber = async (issueNumber: string) => {
+	const civicIssue = await prisma.civicIssue.findUnique({
+		where: { issueNumber },
+		select: {
+			id: true,
+			issueNumber: true,
+			title: true,
+			description: true,
+			status: true,
+			reportedCount: true,
+			firstReportedAt: true,
+			lastReportedAt: true,
+			createdAt: true,
+			updatedAt: true,
+			location: {
+				select: {
+					address: true,
+					latitude: true,
+					longitude: true,
+				},
+			},
+			category: {
+				select: {
+					name: true,
+					description: true,
+				},
+			},
+			municipality: {
+				select: {
+					name: true,
+				},
+			},
+			statusHistory: {
+				select: {
+					id: true,
+					previousStatus: true,
+					newStatus: true,
+					notes: true,
+					createdAt: true,
+				},
+				orderBy: { createdAt: "desc" },
+			},
+		},
+	});
+
+	if (!civicIssue) {
+		throw new AppError(httpStatus.NOT_FOUND, "Civic issue not found");
+	}
+
+	return civicIssue;
+};
+
 export const CivicIssueService = {
 	triageServiceRequest,
 	mergeServiceRequest,
 	updateStatus,
 	getCivicIssues,
+	getIssuesByMunicipality,
+	getIssuesByDepartment,
 	getCivicIssueById,
+	getPublicCivicIssueByNumber,
 	reopenCivicIssue,
 };
