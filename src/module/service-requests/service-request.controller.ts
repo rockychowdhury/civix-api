@@ -97,17 +97,17 @@ const getMunicipalityServiceRequests = catchAsync(
 			"searchTerm",
 		]);
 		const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
-		const municipalityId = req.params.municipalityId;
+		const municipalityId = req.params.municipalityId as string;
 
 		if (req.query.unTriaged === "true") {
 			filters.civicIssueId = null;
 		}
 		
-		// Force the filter to the requested municipality
-		filters.municipalityId = municipalityId;
-
-		// Reusing the same service method but with forced filters
-		const result = await ServiceRequestService.getAllServiceRequests(
+		const userId = (req as any).user.userId;
+		
+		const result = await ServiceRequestService.getMunicipalityServiceRequests(
+			userId,
+			municipalityId,
 			filters,
 			options,
 		);

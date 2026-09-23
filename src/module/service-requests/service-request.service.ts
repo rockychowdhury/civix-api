@@ -1,5 +1,6 @@
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../utils/AppError";
+import { checkMunicipalityAccess } from "../../utils/abac.utils";
 import httpStatus from "http-status";
 import type { ICreateServiceRequestPayload } from "./service-request.interface";
 
@@ -339,21 +340,8 @@ const getServiceRequestById = async (id: string, userId?: string) => {
 		throw new AppError(httpStatus.UNAUTHORIZED, "Authentication required");
 	}
 
-	if (request.citizenId !== userId) {
-		const userRoles = await prisma.userRole.findMany({
-			where: { userId },
-			include: { role: true },
-		});
-		
-		const roleCodes = userRoles.map((ur) => ur.role.code);
-		
-		const hasAccess = roleCodes.some((code) => 
-			["SUPER_ADMIN", "PLATFORM_ADMIN", "CITY_ADMIN", "DEPARTMENT_MANAGER", "DISPATCHER"].includes(code)
-		);
-		
-		if (!hasAccess) {
-			throw new AppError(httpStatus.FORBIDDEN, "You do not have permission to view this service request");
-		}
+	if (request.citizenId !== userId && request.location?.municipalityId) {
+		await checkMunicipalityAccess(userId, request.location.municipalityId);
 	}
 
 	return request;
@@ -407,46 +395,20 @@ const getServiceRequestsByCivicIssue = async (
 		throw new AppError(httpStatus.NOT_FOUND, "Civic issue not found");
 	}
 
-	const userRoles = await prisma.userRole.findMany({
-		where: { userId },
-		include: { role: true },
-	});
-
-	const roleCodes = userRoles.map((ur) => ur.role.code);
-
-	const isGlobalAdmin = roleCodes.some((code) =>
-		["SUPER_ADMIN", "PLATFORM_ADMIN"].includes(code),
-	);
-
-	if (!isGlobalAdmin) {
-		if (
-			roleCodes.some((code) =>
-				["CITY_ADMIN", "DISPATCHER", "DEPARTMENT_MANAGER"].includes(code),
-			)
-		) {
-			const staffProfile = await prisma.staffProfile.findUnique({
-				where: { userId },
-			});
-
-			if (
-				!staffProfile ||
-				staffProfile.municipalityId !== civicIssue.municipalityId
-			) {
-				throw new AppError(
-					httpStatus.FORBIDDEN,
-					"You do not have permission to view service requests for this municipality",
-				);
-			}
-		} else {
-			// Blocks CITIZEN, TECHNICIAN, etc.
-			throw new AppError(
-				httpStatus.FORBIDDEN,
-				"You do not have permission to view these service requests",
-			);
-		}
-	}
+	await checkMunicipalityAccess(userId, civicIssue.municipalityId);
 
 	filters.civicIssueId = civicIssueId;
+	return getAllServiceRequests(filters, options);
+};
+
+const getMunicipalityServiceRequests = async (
+	userId: string,
+	municipalityId: string,
+	filters: any = {},
+	options: any = {},
+) => {
+	await checkMunicipalityAccess(userId, municipalityId);
+	filters.municipalityId = municipalityId;
 	return getAllServiceRequests(filters, options);
 };
 
@@ -456,4 +418,5 @@ export const ServiceRequestService = {
 	getServiceRequestById,
 	getAllServiceRequests,
 	getServiceRequestsByCivicIssue,
+	getMunicipalityServiceRequests,
 };
