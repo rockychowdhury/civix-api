@@ -17,6 +17,8 @@ import { apiRateLimiter, authRateLimiter } from "./middleware/rateLimiter";
 
 const app: Application = express();
 
+app.set("trust proxy", 1);
+
 // Security Middleware
 app.use(helmet());
 app.use("/api/v1/auth", authRateLimiter);
@@ -30,10 +32,10 @@ app.use(
 );
 
 // Enable URL-encoded form data parsing
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 // Middleware to parse JSON bodies
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
 app.use(cookieParser());
 
 import { RoleRoutes } from "./module/role/role.route";

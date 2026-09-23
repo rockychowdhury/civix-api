@@ -74,6 +74,7 @@ export const requirePermission = (action: Action, resource: Resource) => {
 								OR: [
 									{ action, resource },
 									{ action: Action.MANAGE, resource: Resource.ALL },
+									{ action: Action.MANAGE, resource },
 								],
 							},
 						},

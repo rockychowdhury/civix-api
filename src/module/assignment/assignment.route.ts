@@ -29,6 +29,13 @@ router.get(
 	AssignmentController.getAllAssignments,
 );
 
+// Dispatcher views assignments by department
+router.get(
+	"/department/:departmentId",
+	requirePermission(Action.READ, Resource.ASSIGNMENT),
+	AssignmentController.getDepartmentAssignments,
+);
+
 // View specific assignment
 router.get(
 	"/:id",

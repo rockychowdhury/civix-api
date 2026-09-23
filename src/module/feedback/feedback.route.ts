@@ -7,7 +7,6 @@ import { Action, Resource } from "../../../generated/prisma/enums";
 
 const router = Router();
 
-// Citizen submits feedback
 router.post(
 	"/",
 	requirePermission(Action.CREATE, Resource.FEEDBACK),
@@ -15,11 +14,28 @@ router.post(
 	FeedbackController.submitFeedback,
 );
 
-// Admins view feedback
 router.get(
 	"/",
-	requirePermission(Action.READ, Resource.FEEDBACK),
+	requirePermission(Action.READ_ALL, Resource.FEEDBACK),
 	FeedbackController.getFeedback,
+);
+
+router.get(
+	"/municipality/:municipalityId",
+	requirePermission(Action.READ, Resource.FEEDBACK),
+	FeedbackController.getMunicipalityFeedback,
+);
+
+router.get(
+	"/department/:departmentId",
+	requirePermission(Action.READ, Resource.FEEDBACK),
+	FeedbackController.getDepartmentFeedback,
+);
+
+router.get(
+	"/:id",
+	requirePermission(Action.READ, Resource.FEEDBACK),
+	FeedbackController.getFeedbackById,
 );
 
 export const FeedbackRoutes = router;

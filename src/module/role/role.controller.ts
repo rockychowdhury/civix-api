@@ -86,6 +86,42 @@ const replaceRolePermissions = catchAsync(
 	},
 );
 
+const getUserRoles = catchAsync(async (req: Request, res: Response) => {
+	const { userId } = req.params as { userId: string };
+	const result = await RoleService.getUserRoles(userId);
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "User roles retrieved successfully",
+		data: result,
+	});
+});
+
+const assignRole = catchAsync(async (req: Request, res: Response) => {
+	const requesterId = (req as any).user.userId;
+	const { userId } = req.params as { userId: string };
+	const { roleId } = req.body;
+	const result = await RoleService.assignRole(requesterId, userId, roleId);
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "Role assigned successfully",
+		data: result,
+	});
+});
+
+const removeRole = catchAsync(async (req: Request, res: Response) => {
+	const requesterId = (req as any).user.userId;
+	const { userId, roleId } = req.params as { userId: string; roleId: string };
+	const result = await RoleService.removeRole(requesterId, userId, roleId);
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "Role removed successfully",
+		data: result,
+	});
+});
+
 export const RoleController = {
 	getRoles,
 	createRole,
@@ -94,4 +130,7 @@ export const RoleController = {
 	deleteRole,
 	getRolePermissions,
 	replaceRolePermissions,
+	getUserRoles,
+	assignRole,
+	removeRole,
 };

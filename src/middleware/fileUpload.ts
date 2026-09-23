@@ -15,7 +15,6 @@ const fileFilter = (
 		"image/jpeg",
 		"image/png",
 		"image/webp",
-		"application/pdf",
 	];
 
 	if (allowedMimeTypes.includes(file.mimetype)) {
@@ -24,7 +23,7 @@ const fileFilter = (
 		cb(
 			new AppError(
 				httpStatus.BAD_REQUEST,
-				"Unsupported file format. Please upload JPEG, PNG, WEBP, or PDF.",
+				"Unsupported file format. Please upload JPEG, PNG, or WEBP images only.",
 			),
 		);
 	}

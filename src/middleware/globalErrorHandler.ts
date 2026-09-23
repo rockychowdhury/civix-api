@@ -11,10 +11,6 @@ export const globalErrorHandler = async (
 	res: Response,
 	_next: NextFunction,
 ) => {
-	if (config.node_env === "development") {
-		console.log("Error from Global Error Handler", err);
-	}
-
 	let statusCode: number = httpStatus.INTERNAL_SERVER_ERROR;
 	let errorMessage = err.message || "Internal Server Error";
 	let errorName = err.name || "Internal Server Error";
@@ -79,4 +75,14 @@ export const globalErrorHandler = async (
 		error: config.node_env === "development" ? err : undefined,
 		stack: config.node_env === "development" ? err.stack : undefined,
 	});
+
+	if (config.node_env === "development") {
+		if (statusCode >= 500) {
+			// Log full stack trace for actual server bugs (5xx)
+			console.error(`[🔥 BUG] ${statusCode} - ${errorName}:`, err);
+		} else {
+			// Log clean message for operational/client errors (4xx) without noisy stack traces
+			console.warn(`[⚠️ WARN] ${statusCode} - ${errorName}: ${errorMessage}`);
+		}
+	}
 };

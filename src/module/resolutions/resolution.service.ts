@@ -13,6 +13,7 @@ import {
 } from "../../../generated/prisma/enums";
 import { sendIssueResolvedEmail } from "../../utils/email.service";
 import { createCivicIssueHistory } from "../../utils/civicIssueHistory";
+import { checkDepartmentAccess } from "../../utils/abac.utils";
 
 const submitResolution = async (
 	userId: string,
@@ -27,12 +28,8 @@ const submitResolution = async (
 		throw new AppError(httpStatus.NOT_FOUND, "Work order not found");
 	}
 
-	if (workOrder.currentAssigneeId !== userId) {
-		throw new AppError(
-			httpStatus.FORBIDDEN,
-			"Only the assigned technician can submit a resolution",
-		);
-	}
+	// ABAC Check: Must have department access
+	await checkDepartmentAccess(userId, workOrder.departmentId);
 
 	const existingResolution = await prisma.resolution.findUnique({
 		where: { workOrderId },
@@ -66,10 +63,6 @@ const submitResolution = async (
 			resolution = await tx.resolution.create({
 				data: resolutionData,
 			});
-		}
-
-		if (payload.attachmentIds && payload.attachmentIds.length > 0) {
-			// Update attachments logic if needed
 		}
 
 		// Update WorkOrder status to PENDING_VERIFICATION
@@ -135,6 +128,11 @@ const verifyResolution = async (
 	if (!resolution) {
 		throw new AppError(httpStatus.NOT_FOUND, "Resolution not found");
 	}
+
+	// ABAC Check: Must have department access to verify
+	await checkDepartmentAccess(userId, resolution.workOrder.departmentId);
+
+	const emailPromises: Promise<void>[] = [];
 
 	const result = await prisma.$transaction(async (tx) => {
 		const isVerified = payload.status === "VERIFIED";
@@ -207,11 +205,13 @@ const verifyResolution = async (
 
 				// Send Email Notification
 				if (reporter.citizen.user.email) {
-					await sendIssueResolvedEmail(
-						reporter.citizen.user.email,
-						reporter.citizen.firstName,
-						updatedIssue.title,
-						reporter.serviceRequest.trackingNumber,
+					emailPromises.push(
+						sendIssueResolvedEmail(
+							reporter.citizen.user.email,
+							reporter.citizen.firstName,
+							updatedIssue.title,
+							reporter.serviceRequest.trackingNumber,
+						)
 					);
 				}
 			}
@@ -270,10 +270,83 @@ const verifyResolution = async (
 		return updatedResolution;
 	});
 
+	// Fire emails asynchronously in the background so the response isn't blocked
+	if (emailPromises.length > 0) {
+		Promise.allSettled(emailPromises).catch(console.error);
+	}
+
 	return result;
+};
+
+const getResolutionById = async (userId: string, id: string) => {
+	const resolution = await prisma.resolution.findUnique({
+		where: { id },
+		include: {
+			workOrder: true,
+			attachments: true,
+			submittedByUser: {
+				include: { user: { select: { displayName: true,  email: true } } }
+			}
+		},
+	});
+
+	if (!resolution) {
+		throw new AppError(httpStatus.NOT_FOUND, "Resolution not found");
+	}
+
+	await checkDepartmentAccess(userId, resolution.workOrder.departmentId);
+
+	return resolution;
+};
+
+const getResolutionByWorkOrderId = async (userId: string, workOrderId: string) => {
+	const workOrder = await prisma.workOrder.findUnique({
+		where: { id: workOrderId },
+	});
+
+	if (!workOrder) {
+		throw new AppError(httpStatus.NOT_FOUND, "Work order not found");
+	}
+
+	await checkDepartmentAccess(userId, workOrder.departmentId);
+
+	const resolution = await prisma.resolution.findUnique({
+		where: { workOrderId },
+		include: {
+			attachments: true,
+			submittedByUser: {
+				include: { user: { select: { displayName : true, email: true } } }
+			}
+		},
+	});
+
+	if (!resolution) {
+		throw new AppError(httpStatus.NOT_FOUND, "Resolution not found for this work order");
+	}
+
+	return resolution;
+};
+
+const getAllResolutions = async (query: Record<string, unknown>) => {
+	// Simple unpaginated/unfiltered fetch for now, can be extended based on query
+	const resolutions = await prisma.resolution.findMany({
+		include: {
+			workOrder: true,
+			attachments: true,
+			submittedByUser: {
+				include: { user: { select: { displayName: true, email: true } } }
+			}
+		},
+		orderBy: { createdAt: "desc" },
+	});
+
+	return resolutions;
 };
 
 export const ResolutionService = {
 	submitResolution,
 	verifyResolution,
+	getResolutionById,
+	getResolutionByWorkOrderId,
+	getAllResolutions,
 };

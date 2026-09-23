@@ -36,7 +36,49 @@ const verifyResolution = catchAsync(async (req: Request, res: Response) => {
 	});
 });
 
+const getResolutionById = catchAsync(async (req: Request, res: Response) => {
+	const userId = (req as any).user.userId;
+	const id = req.params.id as string;
+
+	const result = await ResolutionService.getResolutionById(userId, id);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "Resolution retrieved successfully",
+		data: result,
+	});
+});
+
+const getResolutionsByWorkOrderId = catchAsync(async (req: Request, res: Response) => {
+	const userId = (req as any).user.userId;
+	const workOrderId = req.params.workOrderId as string;
+
+	const result = await ResolutionService.getResolutionByWorkOrderId(userId, workOrderId);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "Resolution retrieved successfully",
+		data: result,
+	});
+});
+
+const getAllResolutions = catchAsync(async (req: Request, res: Response) => {
+	const result = await ResolutionService.getAllResolutions(req.query);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "All resolutions retrieved successfully",
+		data: result,
+	});
+});
+
 export const ResolutionController = {
 	submitResolution,
 	verifyResolution,
+	getResolutionById,
+	getResolutionsByWorkOrderId,
+	getAllResolutions,
 };

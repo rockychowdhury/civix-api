@@ -8,6 +8,7 @@ import type {
 } from "./role.interface";
 import { buildPrismaQuery } from "../../utils/QueryBuilder";
 import { roleSearchableFields } from "./role.constant";
+import { checkRoleManagementPrivilege } from "../../utils/role.utils";
 
 const getRoles = async (filters: any = {}, options: any = {}) => {
 	const { where, orderBy, skip, take, page, limit } = buildPrismaQuery(
@@ -79,6 +80,7 @@ const deleteRole = async (roleId: string) => {
 	return await prisma.role.delete({ where: { id: roleId } });
 };
 
+
 const getRolePermissions = async (roleId: string) => {
 	const role = await prisma.role.findUnique({ where: { id: roleId } });
 	if (!role) throw new AppError(httpStatus.NOT_FOUND, "Role not found");
@@ -124,6 +126,60 @@ const replaceRolePermissions = async (
 	return await getRolePermissions(roleId);
 };
 
+const getUserRoles = async (userId: string) => {
+	const user = await prisma.user.findUnique({ where: { id: userId } });
+	if (!user) throw new AppError(httpStatus.NOT_FOUND, "User not found");
+
+	const userRoles = await prisma.userRole.findMany({
+		where: { userId },
+		include: { role: true },
+	});
+
+	return userRoles;
+};
+
+const assignRole = async (requesterId: string, userId: string, roleId: string) => {
+	await checkRoleManagementPrivilege(requesterId, userId, roleId);
+
+	const user = await prisma.user.findUnique({ where: { id: userId } });
+	if (!user) throw new AppError(httpStatus.NOT_FOUND, "User not found");
+
+	const role = await prisma.role.findUnique({ where: { id: roleId } });
+	if (!role) throw new AppError(httpStatus.NOT_FOUND, "Role not found");
+
+	const existingUserRole = await prisma.userRole.findFirst({
+		where: { userId, roleId },
+	});
+
+	if (existingUserRole) {
+		throw new AppError(httpStatus.CONFLICT, "User already has this role");
+	}
+
+	await prisma.userRole.create({
+		data: { userId, roleId },
+	});
+
+	return getUserRoles(userId);
+};
+
+const removeRole = async (requesterId: string, userId: string, roleId: string) => {
+	await checkRoleManagementPrivilege(requesterId, userId, roleId);
+
+	const userRole = await prisma.userRole.findFirst({
+		where: { userId, roleId },
+	});
+
+	if (!userRole) {
+		throw new AppError(httpStatus.NOT_FOUND, "User does not have this role");
+	}
+
+	await prisma.userRole.delete({
+		where: { userId_roleId: { userId, roleId } },
+	});
+
+	return getUserRoles(userId);
+};
+
 export const RoleService = {
 	getRoles,
 	createRole,
@@ -132,4 +188,7 @@ export const RoleService = {
 	deleteRole,
 	getRolePermissions,
 	replaceRolePermissions,
+	getUserRoles,
+	assignRole,
+	removeRole,
 };

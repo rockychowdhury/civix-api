@@ -20,8 +20,14 @@ export const validateRequest = (schema: ZodObject<any>) => {
 
 		// Reassign validated data back to request object to get the sanitized values
 		if (result.data.body) req.body = result.data.body;
-		if (result.data.query) req.query = result.data.query as any;
-		if (result.data.params) req.params = result.data.params as any;
+		if (result.data.query) {
+			for (const key in req.query) delete req.query[key];
+			Object.assign(req.query, result.data.query);
+		}
+		if (result.data.params) {
+			for (const key in req.params) delete req.params[key];
+			Object.assign(req.params, result.data.params);
+		}
 		if (result.data.cookies) req.cookies = result.data.cookies;
 
 		next();

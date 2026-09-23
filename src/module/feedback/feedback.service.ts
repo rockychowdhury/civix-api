@@ -7,6 +7,7 @@ import {
 	Resource,
 	LifecycleStatus,
 } from "../../../generated/prisma/enums";
+import { checkMunicipalityAccess, checkDepartmentAccess } from "../../utils/abac.utils";
 import { buildPrismaQuery } from "../../utils/QueryBuilder";
 import { feedbackSearchableFields } from "./feedback.constant";
 
@@ -84,8 +85,128 @@ const submitFeedback = async (
 	return result;
 };
 
-const getFeedback = async (filters: any = {}, options: any = {}) => {
-	// Need to parse numeric rating correctly for Prisma exact match
+const getFeedback = async (
+	userId: string,
+	municipalityId: string,
+	filters: any = {},
+	options: any = {},
+) => {
+	await checkMunicipalityAccess(userId, municipalityId);
+
+	if (filters.rating) filters.rating = Number(filters.rating);
+
+	const { where, orderBy, skip, take, page, limit } = buildPrismaQuery(
+		filters,
+		options,
+		feedbackSearchableFields,
+	);
+
+	const scopedWhere = {
+		...where,
+		serviceRequest: {
+			...(where.serviceRequest || {}),
+			civicIssue: {
+				...(where.serviceRequest?.civicIssue || {}),
+				municipalityId,
+			},
+		},
+	};
+
+	const [data, total] = await Promise.all([
+		prisma.feedback.findMany({
+			where: scopedWhere,
+			orderBy: Object.keys(orderBy).length ? orderBy : { createdAt: "desc" },
+			skip,
+			take,
+			include: {
+				citizen: { select: { firstName: true, lastName: true } },
+				serviceRequest: { select: { trackingNumber: true, description: true } },
+			},
+		}),
+		prisma.feedback.count({ where: scopedWhere }),
+	]);
+
+	return {
+		data,
+		meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+	};
+};
+
+const getDepartmentFeedback = async (
+	userId: string,
+	departmentId: string,
+	filters: any = {},
+	options: any = {},
+) => {
+	await checkDepartmentAccess(userId, departmentId);
+
+	if (filters.rating) filters.rating = Number(filters.rating);
+
+	const { where, orderBy, skip, take, page, limit } = buildPrismaQuery(
+		filters,
+		options,
+		feedbackSearchableFields,
+	);
+
+	const scopedWhere = {
+		...where,
+		serviceRequest: {
+			...(where.serviceRequest || {}),
+			civicIssue: {
+				...(where.serviceRequest?.civicIssue || {}),
+				departmentId,
+			},
+		},
+	};
+
+	const [data, total] = await Promise.all([
+		prisma.feedback.findMany({
+			where: scopedWhere,
+			orderBy: Object.keys(orderBy).length ? orderBy : { createdAt: "desc" },
+			skip,
+			take,
+			include: {
+				citizen: { select: { firstName: true, lastName: true } },
+				serviceRequest: { select: { trackingNumber: true, description: true } },
+			},
+		}),
+		prisma.feedback.count({ where: scopedWhere }),
+	]);
+
+	return {
+		data,
+		meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+	};
+};
+
+const getFeedbackById = async (userId: string, feedbackId: string) => {
+	const feedback = await prisma.feedback.findUnique({
+		where: { id: feedbackId },
+		include: {
+			citizen: { select: { firstName: true, lastName: true } },
+			serviceRequest: { 
+				include: { civicIssue: true }
+			},
+		},
+	});
+
+	if (!feedback) {
+		throw new AppError(httpStatus.NOT_FOUND, "Feedback not found");
+	}
+
+	// We check municipality access first (which lets City Admins pass). 
+	// Or we check department access if it's bound to a department. 
+	// Both are valid. We'll check municipality to be safe.
+	if (!feedback.serviceRequest.civicIssue) {
+		throw new AppError(httpStatus.NOT_FOUND, "Associated civic issue not found");
+	}
+
+	await checkMunicipalityAccess(userId, feedback.serviceRequest.civicIssue.municipalityId);
+
+	return feedback;
+};
+
+const getAllFeedback = async (filters: any = {}, options: any = {}) => {
 	if (filters.rating) filters.rating = Number(filters.rating);
 
 	const { where, orderBy, skip, take, page, limit } = buildPrismaQuery(
@@ -102,7 +223,7 @@ const getFeedback = async (filters: any = {}, options: any = {}) => {
 			take,
 			include: {
 				citizen: { select: { firstName: true, lastName: true } },
-				serviceRequest: { select: { trackingNumber: true, title: true } },
+				serviceRequest: { select: { trackingNumber: true, description: true } },
 			},
 		}),
 		prisma.feedback.count({ where }),
@@ -116,5 +237,8 @@ const getFeedback = async (filters: any = {}, options: any = {}) => {
 
 export const FeedbackService = {
 	submitFeedback,
+	getAllFeedback,
 	getFeedback,
+	getDepartmentFeedback,
+	getFeedbackById,
 };

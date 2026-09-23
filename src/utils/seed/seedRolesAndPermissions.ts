@@ -74,7 +74,11 @@ const ROLE_PERMISSIONS: Record<string, PermissionGrant[]> = {
 		{ action: Action.MANAGE, resource: Resource.STAFF },
 		{ action: Action.READ, resource: Resource.AUDIT_LOG },
 		{ action: Action.READ, resource: Resource.CIVIC_ISSUE },
-		{ action: Action.READ, resource: Resource.SERVICE_REQUEST },
+		{ action: Action.READ_ALL, resource: Resource.CIVIC_ISSUE },
+		{ action: Action.READ_ALL, resource: Resource.SERVICE_REQUEST },
+		{ action: Action.READ_ALL, resource: Resource.FEEDBACK },
+		{ action: Action.READ, resource: Resource.PROFILE },
+		{ action: Action.UPDATE, resource: Resource.PROFILE },
 	],
 
 	CITY_ADMIN: [
@@ -84,11 +88,25 @@ const ROLE_PERMISSIONS: Record<string, PermissionGrant[]> = {
 		{ action: Action.MANAGE, resource: Resource.WARD },
 		{ action: Action.MANAGE, resource: Resource.SLA_POLICY },
 		{ action: Action.MANAGE, resource: Resource.STAFF },
-		{ action: Action.MANAGE, resource: Resource.CIVIC_ISSUE },
-		{ action: Action.MANAGE, resource: Resource.SERVICE_REQUEST },
+		{ action: Action.CREATE, resource: Resource.CIVIC_ISSUE },
+		{ action: Action.READ, resource: Resource.CIVIC_ISSUE },
+		{ action: Action.UPDATE, resource: Resource.CIVIC_ISSUE },
+		{ action: Action.DELETE, resource: Resource.CIVIC_ISSUE },
+		{ action: Action.CLOSE, resource: Resource.CIVIC_ISSUE },
+		{ action: Action.REOPEN, resource: Resource.CIVIC_ISSUE },
+		{ action: Action.MERGE, resource: Resource.CIVIC_ISSUE },
+		{ action: Action.CREATE, resource: Resource.SERVICE_REQUEST },
+		{ action: Action.READ, resource: Resource.SERVICE_REQUEST },
+		{ action: Action.UPDATE, resource: Resource.SERVICE_REQUEST },
+		{ action: Action.DELETE, resource: Resource.SERVICE_REQUEST },
 		{ action: Action.MANAGE, resource: Resource.ESCALATION },
 		{ action: Action.READ, resource: Resource.AUDIT_LOG },
 		{ action: Action.READ, resource: Resource.NOTIFICATION },
+		{ action: Action.CREATE, resource: Resource.ATTACHMENT },
+		{ action: Action.READ, resource: Resource.ATTACHMENT },
+		{ action: Action.DELETE, resource: Resource.ATTACHMENT },
+		{ action: Action.READ, resource: Resource.PROFILE },
+		{ action: Action.UPDATE, resource: Resource.PROFILE },
 	],
 
 	DEPARTMENT_MANAGER: [
@@ -108,6 +126,11 @@ const ROLE_PERMISSIONS: Record<string, PermissionGrant[]> = {
 		{ action: Action.MANAGE, resource: Resource.STAFF },
 		{ action: Action.READ, resource: Resource.AUDIT_LOG },
 		{ action: Action.READ, resource: Resource.NOTIFICATION },
+		{ action: Action.CREATE, resource: Resource.ATTACHMENT },
+		{ action: Action.READ, resource: Resource.ATTACHMENT },
+		{ action: Action.DELETE, resource: Resource.ATTACHMENT },
+		{ action: Action.READ, resource: Resource.PROFILE },
+		{ action: Action.UPDATE, resource: Resource.PROFILE },
 	],
 
 	DISPATCHER: [
@@ -128,7 +151,11 @@ const ROLE_PERMISSIONS: Record<string, PermissionGrant[]> = {
 		{ action: Action.ESCALATE, resource: Resource.ESCALATION },
 		{ action: Action.READ, resource: Resource.NOTIFICATION },
 		{ action: Action.READ, resource: Resource.LOCATION },
+		{ action: Action.CREATE, resource: Resource.ATTACHMENT },
 		{ action: Action.READ, resource: Resource.ATTACHMENT },
+		{ action: Action.DELETE, resource: Resource.ATTACHMENT },
+		{ action: Action.READ, resource: Resource.PROFILE },
+		{ action: Action.UPDATE, resource: Resource.PROFILE },
 	],
 
 	TECHNICIAN: [
@@ -140,8 +167,11 @@ const ROLE_PERMISSIONS: Record<string, PermissionGrant[]> = {
 		{ action: Action.READ, resource: Resource.RESOLUTION },
 		{ action: Action.CREATE, resource: Resource.ATTACHMENT },
 		{ action: Action.READ, resource: Resource.ATTACHMENT },
+		{ action: Action.DELETE, resource: Resource.ATTACHMENT },
 		{ action: Action.READ, resource: Resource.NOTIFICATION },
 		{ action: Action.READ, resource: Resource.CIVIC_ISSUE },
+		{ action: Action.READ, resource: Resource.PROFILE },
+		{ action: Action.UPDATE, resource: Resource.PROFILE },
 	],
 
 	CITIZEN: [
@@ -149,13 +179,13 @@ const ROLE_PERMISSIONS: Record<string, PermissionGrant[]> = {
 		{ action: Action.READ, resource: Resource.SERVICE_REQUEST },
 		{ action: Action.CREATE, resource: Resource.ATTACHMENT },
 		{ action: Action.READ, resource: Resource.ATTACHMENT },
+		{ action: Action.DELETE, resource: Resource.ATTACHMENT },
 		{ action: Action.CREATE, resource: Resource.FEEDBACK },
 		{ action: Action.READ, resource: Resource.FEEDBACK },
 		{ action: Action.READ, resource: Resource.CIVIC_ISSUE },
 		{ action: Action.READ, resource: Resource.NOTIFICATION },
 		{ action: Action.READ, resource: Resource.PROFILE },
 		{ action: Action.UPDATE, resource: Resource.PROFILE },
-		{ action: Action.REOPEN, resource: Resource.CIVIC_ISSUE },
 	],
 };
 
@@ -209,6 +239,7 @@ export const seedRolesAndPermissions = async () => {
 
 	// 4. Assign permissions to roles
 	console.log("  → Assigning permissions to roles...");
+	await prisma.rolePermission.deleteMany();
 	let assignmentCount = 0;
 
 	for (const [roleCode, grants] of Object.entries(ROLE_PERMISSIONS)) {

@@ -102,6 +102,48 @@ const uploadForWorkUpdate = async (
 	return uploadedAttachments;
 };
 
+const uploadForResolution = async (
+	userId: string,
+	resolutionId: string,
+	files: Express.Multer.File[],
+) => {
+	const res = await prisma.resolution.findUnique({
+		where: { id: resolutionId },
+		include: { workOrder: true },
+	});
+
+	if (!res) {
+		throw new AppError(httpStatus.NOT_FOUND, "Resolution not found");
+	}
+
+	// ABAC check: user must be staff in the department handling the work order
+	await checkDepartmentAccess(userId, res.workOrder.departmentId);
+
+	const uploadedAttachments = [];
+
+	for (const file of files) {
+		const cloudResult = await uploadToCloudinary(
+			file.buffer,
+			"civix/resolutions",
+		);
+		const attachment = await prisma.attachment.create({
+			data: {
+				url: cloudResult.url,
+				publicId: cloudResult.public_id,
+				fileType: AttachmentFileType.IMAGE,
+				fileName: file.originalname,
+				fileSize: cloudResult.size,
+				purpose: AttachmentPurpose.VERIFICATION,
+				uploadedById: userId,
+				resolutionId: resolutionId,
+			},
+		});
+		uploadedAttachments.push(attachment);
+	}
+
+	return uploadedAttachments;
+};
+
 const getAttachmentById = async (id: string) => {
 	const attachment = await prisma.attachment.findUnique({
 		where: { id },
@@ -155,6 +197,7 @@ const deleteAttachment = async (userId: string, id: string) => {
 export const AttachmentService = {
 	uploadForServiceRequest,
 	uploadForWorkUpdate,
+	uploadForResolution,
 	getAttachmentById,
 	deleteAttachment,
 };

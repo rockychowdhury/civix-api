@@ -15,6 +15,7 @@ import {
 } from "../../../generated/prisma/enums";
 import { buildPrismaQuery } from "../../utils/QueryBuilder";
 import { createCivicIssueHistory } from "../../utils/civicIssueHistory";
+import { checkDepartmentAccess } from "../../utils/abac.utils";
 import { assignmentSearchableFields } from "./assignment.constant";
 
 const createAssignment = async (
@@ -28,6 +29,8 @@ const createAssignment = async (
 	if (!workOrder) {
 		throw new AppError(httpStatus.NOT_FOUND, "Work order not found");
 	}
+
+	await checkDepartmentAccess(userId, workOrder.departmentId);
 
 	let targetUserId: string | null = null;
 	let assignedTeamId: string | null = null;
@@ -235,8 +238,17 @@ const updateAssignmentStatus = async (
 		throw new AppError(httpStatus.NOT_FOUND, "Assignment not found");
 	}
 
-	// Security: Only the assigned tech or team lead can accept/reject
-	if (assignment.assignedToId !== userId) {
+	// Fetch user roles to allow SUPER_ADMIN and PLATFORM_ADMIN to bypass
+	const user = await prisma.user.findUnique({
+		where: { id: userId },
+		include: { userRoles: { include: { role: true } } },
+	});
+	const isSuperOrPlatformAdmin = user?.userRoles.some(
+		(ur) => ur.role.code === "SUPER_ADMIN" || ur.role.code === "PLATFORM_ADMIN"
+	);
+
+	// Security: Only the assigned tech, team lead, or admin can accept/reject
+	if (assignment.assignedToId !== userId && !isSuperOrPlatformAdmin) {
 		throw new AppError(
 			httpStatus.FORBIDDEN,
 			"You can only update your own assignments or team assignments where you are the lead",
@@ -381,7 +393,57 @@ const getAllAssignments = async (filters: any = {}, options: any = {}) => {
 	};
 };
 
-const getAssignmentById = async (id: string) => {
+const getDepartmentAssignments = async (
+	userId: string,
+	departmentId: string,
+	filters: any = {},
+	options: any = {},
+) => {
+	await checkDepartmentAccess(userId, departmentId);
+
+	const { where, orderBy, skip, take, page, limit } = buildPrismaQuery(
+		filters,
+		options,
+		assignmentSearchableFields,
+	);
+
+	// Scope to the specific department via the WorkOrder relation
+	const departmentWhere = {
+		...where,
+		workOrder: {
+			...(where.workOrder || {}),
+			departmentId,
+		},
+	};
+
+	const [data, total] = await Promise.all([
+		prisma.assignment.findMany({
+			where: departmentWhere,
+			orderBy: Object.keys(orderBy).length ? orderBy : { createdAt: "desc" },
+			skip,
+			take,
+			include: {
+				workOrder: {
+					select: { title: true, priority: true, status: true },
+				},
+				team: {
+					select: { name: true },
+				},
+				assignedTo: {
+					select: { firstName: true, lastName: true },
+				},
+			},
+		}),
+		prisma.assignment.count({ where: departmentWhere }),
+	]);
+
+	return {
+		data,
+		meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+	};
+};
+
+const getAssignmentById = async (userId: string, id: string) => {
 	const assignment = await prisma.assignment.findUnique({
 		where: { id },
 		include: {
@@ -405,6 +467,9 @@ const getAssignmentById = async (id: string) => {
 	if (!assignment) {
 		throw new AppError(httpStatus.NOT_FOUND, "Assignment not found");
 	}
+
+	await checkDepartmentAccess(userId, assignment.workOrder.civicIssue.departmentId as string);
+
 	return assignment;
 };
 
@@ -421,6 +486,8 @@ const reassignAssignment = async (
 	if (!assignment) {
 		throw new AppError(httpStatus.NOT_FOUND, "Assignment not found");
 	}
+
+	await checkDepartmentAccess(userId, assignment.workOrder.departmentId);
 
 	if (assignment.status === AssignmentStatus.UNASSIGNED) {
 		throw new AppError(
@@ -571,6 +638,9 @@ const unassignAssignment = async (userId: string, assignmentId: string) => {
 
 	if (!assignment)
 		throw new AppError(httpStatus.NOT_FOUND, "Assignment not found");
+
+	await checkDepartmentAccess(userId, assignment.workOrder.departmentId);
+
 	if (assignment.status === AssignmentStatus.UNASSIGNED)
 		throw new AppError(httpStatus.BAD_REQUEST, "Already unassigned");
 
@@ -646,6 +716,7 @@ export const AssignmentService = {
 	getMyAssignments,
 	updateAssignmentStatus,
 	getAllAssignments,
+	getDepartmentAssignments,
 	getAssignmentById,
 	reassignAssignment,
 	unassignAssignment,

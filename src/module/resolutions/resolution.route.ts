@@ -23,4 +23,23 @@ router.post(
 	ResolutionController.verifyResolution,
 );
 
+// Global route for system roles
+router.get(
+	"/",
+	requirePermission(Action.READ_ALL, Resource.RESOLUTION),
+	ResolutionController.getAllResolutions,
+);
+
+// router.get(
+// 	"/",
+// 	requirePermission(Action.READ, Resource.RESOLUTION),
+// 	ResolutionController.getResolutionsByWorkOrderId,
+// );
+
+router.get(
+	"/:id",
+	requirePermission(Action.READ, Resource.RESOLUTION),
+	ResolutionController.getResolutionById,
+);
+
 export const ResolutionRoutes = router;

@@ -30,6 +30,7 @@ enum ServiceCoverageStatus {
 enum Action {
   CREATE
   READ
+  READ_ALL
   UPDATE
   DELETE
   MANAGE
@@ -157,9 +158,6 @@ enum WorkUpdateType {
 
 enum AttachmentFileType {
   IMAGE
-  VIDEO
-  DOCUMENT
-  OTHER
 }
 
 enum AttachmentPurpose {

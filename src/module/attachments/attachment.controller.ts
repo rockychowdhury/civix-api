@@ -62,6 +62,34 @@ const uploadForWorkUpdate = catchAsync(async (req: Request, res: Response) => {
 	});
 });
 
+const uploadForResolution = catchAsync(async (req: Request, res: Response) => {
+	const userId = (req as any).user.userId;
+	const files = req.files as Express.Multer.File[];
+	const resolutionId = req.params.id as string;
+
+	if (!files || files.length === 0) {
+		return sendResponse(res, {
+			statusCode: httpStatus.BAD_REQUEST,
+			success: false,
+			message: "Files are required",
+			data: null,
+		});
+	}
+
+	const result = await AttachmentService.uploadForResolution(
+		userId,
+		resolutionId,
+		files,
+	);
+
+	sendResponse(res, {
+		statusCode: httpStatus.CREATED,
+		success: true,
+		message: "Attachments uploaded successfully",
+		data: result,
+	});
+});
+
 const getAttachmentById = catchAsync(async (req: Request, res: Response) => {
 	const id = req.params.id as string;
 	const result = await AttachmentService.getAttachmentById(id);
@@ -91,6 +119,7 @@ const deleteAttachment = catchAsync(async (req: Request, res: Response) => {
 export const AttachmentController = {
 	uploadForServiceRequest,
 	uploadForWorkUpdate,
+	uploadForResolution,
 	getAttachmentById,
 	deleteAttachment,
 };

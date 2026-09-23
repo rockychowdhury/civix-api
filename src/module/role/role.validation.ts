@@ -29,8 +29,15 @@ const replaceRolePermissionsSchema = z.object({
 	}),
 });
 
+const assignRoleValidationSchema = z.object({
+	body: z.object({
+		roleId: z.string({ message: "Role ID must be a string" }),
+	}),
+});
+
 export const RoleValidation = {
 	createRoleSchema,
 	updateRoleSchema,
 	replaceRolePermissionsSchema,
+	assignRoleValidationSchema,
 };

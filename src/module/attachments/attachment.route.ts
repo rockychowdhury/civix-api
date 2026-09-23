@@ -20,6 +20,13 @@ router.post(
 	AttachmentController.uploadForWorkUpdate,
 );
 
+router.post(
+	"/resolution/:id",
+	requirePermission(Action.CREATE, Resource.RESOLUTION),
+	upload.array("files", 3),
+	AttachmentController.uploadForResolution,
+);
+
 router.get(
 	"/:id",
 	requirePermission(Action.READ, Resource.ATTACHMENT),

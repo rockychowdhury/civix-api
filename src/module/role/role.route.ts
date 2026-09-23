@@ -52,4 +52,23 @@ router.put(
 	RoleController.replaceRolePermissions,
 );
 
+router.get(
+	"/users/:userId",
+	requirePermission(Action.READ, Resource.USER),
+	RoleController.getUserRoles,
+);
+
+router.post(
+	"/users/:userId",
+	requirePermission(Action.UPDATE, Resource.USER),
+	validateRequest(RoleValidation.assignRoleValidationSchema),
+	RoleController.assignRole,
+);
+
+router.delete(
+	"/:roleId/users/:userId",
+	requirePermission(Action.UPDATE, Resource.USER),
+	RoleController.removeRole,
+);
+
 export const RoleRoutes = router;
