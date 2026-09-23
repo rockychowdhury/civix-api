@@ -7,10 +7,10 @@ export interface ICreateWorkOrderPayload {
 
 export interface IUpdateWorkOrderStatusPayload {
 	status:
-		| "ASSIGNED"
-		| "IN_PROGRESS"
-		| "PENDING_VERIFICATION"
-		| "RESOLVED"
-		| "CLOSED"
-		| "CANCELLED";
+	| "ASSIGNED"
+	| "IN_PROGRESS"
+	| "PENDING_VERIFICATION"
+	| "RESOLVED"
+	| "CLOSED"
+	| "CANCELLED";
 }

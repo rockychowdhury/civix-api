@@ -38,9 +38,66 @@ const getWorkOrders = catchAsync(async (req: Request, res: Response) => {
 	});
 });
 
+const getWorkOrdersByMunicipality = catchAsync(async (req: Request, res: Response) => {
+	const userId = (req as any).user.userId;
+	const municipalityId = req.params.municipalityId as string;
+	const filters = pick(req.query, [
+		"status",
+		"civicIssueId",
+		"currentAssigneeId",
+		"priority",
+		"searchTerm",
+	]);
+	const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
+
+	const result = await WorkOrderService.getWorkOrdersByMunicipality(
+		userId,
+		municipalityId,
+		filters,
+		options
+	);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "Municipality work orders retrieved successfully",
+		data: result.data,
+		meta: result.meta,
+	});
+});
+
+const getWorkOrdersByDepartment = catchAsync(async (req: Request, res: Response) => {
+	const userId = (req as any).user.userId;
+	const departmentId = req.params.departmentId as string;
+	const filters = pick(req.query, [
+		"status",
+		"civicIssueId",
+		"currentAssigneeId",
+		"priority",
+		"searchTerm",
+	]);
+	const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
+
+	const result = await WorkOrderService.getWorkOrdersByDepartment(
+		userId,
+		departmentId,
+		filters,
+		options
+	);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "Department work orders retrieved successfully",
+		data: result.data,
+		meta: result.meta,
+	});
+});
+
 const getWorkOrderById = catchAsync(async (req: Request, res: Response) => {
+	const userId = (req as any).user.userId;
 	const id = req.params.id as string;
-	const result = await WorkOrderService.getWorkOrderById(id);
+	const result = await WorkOrderService.getWorkOrderById(userId, id);
 
 	sendResponse(res, {
 		statusCode: httpStatus.OK,
@@ -72,6 +129,8 @@ const updateWorkOrderStatus = catchAsync(
 export const WorkOrderController = {
 	createWorkOrder,
 	getWorkOrders,
+	getWorkOrdersByMunicipality,
+	getWorkOrdersByDepartment,
 	getWorkOrderById,
 	updateWorkOrderStatus,
 };

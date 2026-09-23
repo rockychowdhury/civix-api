@@ -22,8 +22,20 @@ router.post(
 
 router.get(
 	"/",
-	requirePermission(Action.READ, Resource.WORK_ORDER),
+	requirePermission(Action.READ_ALL, Resource.WORK_ORDER),
 	WorkOrderController.getWorkOrders,
+);
+
+router.get(
+	"/municipality/:municipalityId",
+	requirePermission(Action.READ, Resource.WORK_ORDER),
+	WorkOrderController.getWorkOrdersByMunicipality,
+);
+
+router.get(
+	"/department/:departmentId",
+	requirePermission(Action.READ, Resource.WORK_ORDER),
+	WorkOrderController.getWorkOrdersByDepartment,
 );
 
 router.get(

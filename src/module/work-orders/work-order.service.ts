@@ -16,6 +16,10 @@ import {
 	generateWorkOrderTitle,
 	generateWorkOrderDescription,
 } from "./work-order.utils";
+import {
+	checkDepartmentAccess,
+	checkMunicipalityAccess,
+} from "../../utils/abac.utils";
 
 const createWorkOrder = async (
 	userId: string,
@@ -53,6 +57,8 @@ const createWorkOrder = async (
 			"Civic issue must be assigned to a department to create a work order",
 		);
 	}
+
+	await checkDepartmentAccess(userId, departmentId);
 
 	const result = await prisma.$transaction(async (tx) => {
 		const workOrder = await tx.workOrder.create({
@@ -112,7 +118,94 @@ const getWorkOrders = async (filters: any = {}, options: any = {}) => {
 	};
 };
 
-const getWorkOrderById = async (id: string) => {
+const getWorkOrdersByMunicipality = async (
+	userId: string,
+	municipalityId: string,
+	filters: any = {},
+	options: any = {},
+) => {
+	await checkMunicipalityAccess(userId, municipalityId);
+
+	const { where, orderBy, skip, take, page, limit } = buildPrismaQuery(
+		filters,
+		options,
+		workOrderSearchableFields,
+	);
+
+	// Scope to the specific municipality
+	const municipalityWhere = {
+		...where,
+		civicIssue: {
+			...(where.civicIssue || {}),
+			municipalityId,
+		},
+	};
+
+	const [data, total] = await Promise.all([
+		prisma.workOrder.findMany({
+			where: municipalityWhere,
+			orderBy: Object.keys(orderBy).length
+				? orderBy
+				: { priority: "desc", createdAt: "desc" },
+			skip,
+			take,
+			include: {
+				civicIssue: { select: { issueNumber: true, location: true } },
+				currentAssignee: { select: { firstName: true, lastName: true } },
+			},
+		}),
+		prisma.workOrder.count({ where: municipalityWhere }),
+	]);
+
+	return {
+		data,
+		meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+	};
+};
+
+const getWorkOrdersByDepartment = async (
+	userId: string,
+	departmentId: string,
+	filters: any = {},
+	options: any = {},
+) => {
+	await checkDepartmentAccess(userId, departmentId);
+
+	const { where, orderBy, skip, take, page, limit } = buildPrismaQuery(
+		filters,
+		options,
+		workOrderSearchableFields,
+	);
+
+	// Scope to the specific department
+	const departmentWhere = {
+		...where,
+		departmentId,
+	};
+
+	const [data, total] = await Promise.all([
+		prisma.workOrder.findMany({
+			where: departmentWhere,
+			orderBy: Object.keys(orderBy).length
+				? orderBy
+				: { priority: "desc", createdAt: "desc" },
+			skip,
+			take,
+			include: {
+				civicIssue: { select: { issueNumber: true, location: true } },
+				currentAssignee: { select: { firstName: true, lastName: true } },
+			},
+		}),
+		prisma.workOrder.count({ where: departmentWhere }),
+	]);
+
+	return {
+		data,
+		meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+	};
+};
+
+const getWorkOrderById = async (userId: string, id: string) => {
 	const workOrder = await prisma.workOrder.findUnique({
 		where: { id },
 		include: {
@@ -131,6 +224,8 @@ const getWorkOrderById = async (id: string) => {
 		throw new AppError(httpStatus.NOT_FOUND, "Work order not found");
 	}
 
+	await checkDepartmentAccess(userId, workOrder.departmentId);
+
 	return workOrder;
 };
 
@@ -146,6 +241,8 @@ const updateWorkOrderStatus = async (
 	if (!workOrder) {
 		throw new AppError(httpStatus.NOT_FOUND, "Work order not found");
 	}
+
+	await checkDepartmentAccess(userId, workOrder.departmentId);
 
 	const result = await prisma.$transaction(async (tx) => {
 		const updatedWorkOrder = await tx.workOrder.update({
@@ -177,6 +274,8 @@ const updateWorkOrderStatus = async (
 export const WorkOrderService = {
 	createWorkOrder,
 	getWorkOrders,
+	getWorkOrdersByMunicipality,
+	getWorkOrdersByDepartment,
 	getWorkOrderById,
 	updateWorkOrderStatus,
 };
