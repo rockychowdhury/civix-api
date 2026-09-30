@@ -15,10 +15,14 @@ export const globalErrorHandler = async (
 	let errorMessage = err.message || "Internal Server Error";
 	let errorName = err.name || "Internal Server Error";
 	let errorSources: Array<{ path: string | number; message: string }> = [];
+	// Trusted errors (AppError, Zod, Prisma client errors) are safe to expose to
+	// clients. Only unexpected/unknown failures get masked outside development.
+	let isOperationalError = false;
 
 	if (err instanceof ZodError) {
 		statusCode = httpStatus.BAD_REQUEST;
 		errorName = "ZodValidationError";
+		isOperationalError = true;
 		errorMessage = "Validation Error";
 		errorSources = err.issues.map((issue) => ({
 			path: issue.path.join("."),
@@ -30,8 +34,10 @@ export const globalErrorHandler = async (
 			.join(" | ");
 	} else if (err instanceof Prisma.PrismaClientValidationError) {
 		statusCode = httpStatus.BAD_REQUEST;
+		isOperationalError = true;
 		errorMessage = "You have provided incorrect field type or missing fields";
 	} else if (err instanceof Prisma.PrismaClientKnownRequestError) {
+		isOperationalError = true;
 		if (err.code === "P2002") {
 			statusCode = httpStatus.BAD_REQUEST;
 			errorMessage = "Duplicate Key Error";
@@ -44,6 +50,7 @@ export const globalErrorHandler = async (
 				"An operation failed because it depends on one or more records that were required but not found.";
 		}
 	} else if (err instanceof Prisma.PrismaClientInitializationError) {
+		isOperationalError = true;
 		if (err.errorCode === "P1000") {
 			statusCode = httpStatus.UNAUTHORIZED;
 			errorMessage =
@@ -58,22 +65,25 @@ export const globalErrorHandler = async (
 	} else if (err instanceof AppError) {
 		errorMessage = err.message;
 		statusCode = err.statusCode;
+		isOperationalError = true;
 	} else if (err instanceof Error) {
 		errorMessage = err.message;
 	}
 
+	const isDevelopment = config.node_env === "development";
+	// A client-safe message is always returned for operational errors. Unknown
+	// errors are only detailed in development to avoid leaking internals.
+	const exposeMessage = isDevelopment || isOperationalError;
+	const exposeDetails = isDevelopment;
+
 	res.status(statusCode).json({
 		success: false,
 		statusCode: statusCode || httpStatus.INTERNAL_SERVER_ERROR,
-		name:
-			config.node_env === "development" ? errorName : "Internal Server Error",
-		message:
-			config.node_env === "development"
-				? errorMessage
-				: "Internal Server Error",
+		name: exposeDetails ? errorName : isOperationalError ? errorName : "Internal Server Error",
+		message: exposeMessage ? errorMessage : "Internal Server Error",
 		errorSources: errorSources.length > 0 ? errorSources : undefined,
-		error: config.node_env === "development" ? err : undefined,
-		stack: config.node_env === "development" ? err.stack : undefined,
+		error: exposeDetails ? err : undefined,
+		stack: exposeDetails ? err.stack : undefined,
 	});
 
 	if (config.node_env === "development") {
