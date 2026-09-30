@@ -136,6 +136,24 @@ const googleLogin = catchAsync(async (req: Request, res: Response) => {
 	});
 });
 
+const logout = catchAsync(async (_req: Request, res: Response) => {
+	const cookieOptions = {
+		httpOnly: true,
+		secure: config.node_env !== "development",
+		sameSite: config.node_env === "development" ? ("lax" as const) : ("none" as const),
+	};
+
+	res.clearCookie("accessToken", cookieOptions);
+	res.clearCookie("refreshToken", cookieOptions);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "User logged out successfully",
+		data: null,
+	});
+});
+
 const forgotPassword = catchAsync(async (req: Request, res: Response) => {
 	const payload = req.body;
 
@@ -144,7 +162,7 @@ const forgotPassword = catchAsync(async (req: Request, res: Response) => {
 	sendResponse(res, {
 		statusCode: httpStatus.OK,
 		success: true,
-		message: "Password reset link/OTP sent successfully",
+		message: "Password reset OTP sent successfully",
 		data: result,
 	});
 });
@@ -169,6 +187,7 @@ export const AuthController = {
 	getMe,
 	refreshToken,
 	googleLogin,
+	logout,
 	forgotPassword,
 	resetPassword,
 };

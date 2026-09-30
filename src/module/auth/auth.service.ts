@@ -496,15 +496,12 @@ const googleLogin = async (payload: IGoogleAuth) => {
 
 const forgotPassword = async (payload: IForgotPassword) => {
 	const { email } = payload;
-
 	const isUserExist = await prisma.user.findUnique({
 		where: { email },
 	});
-
 	if (!isUserExist) {
 		throw new AppError(httpStatus.NOT_FOUND, "User Does Not Exist!");
 	}
-
 	if (
 		isUserExist.status === UserStatus.BANNED ||
 		isUserExist.status === UserStatus.SUSPENDED
