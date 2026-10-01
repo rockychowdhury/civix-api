@@ -7,22 +7,14 @@ import { ZoneValidation } from "./zone.validation";
 
 const router = Router();
 
-router.get(
-	"/",
-	requirePermission(Action.READ, Resource.ZONE),
-	ZoneController.getZones,
-);
+router.get("/", ZoneController.getZones);
 router.post(
 	"/",
 	requirePermission(Action.CREATE, Resource.ZONE),
 	validateRequest(ZoneValidation.createZoneSchema),
 	ZoneController.createZone,
 );
-router.get(
-	"/:zoneId",
-	requirePermission(Action.READ, Resource.ZONE),
-	ZoneController.getZoneById,
-);
+router.get("/:zoneId", ZoneController.getZoneById);
 router.patch(
 	"/:zoneId",
 	requirePermission(Action.UPDATE, Resource.ZONE),
@@ -35,10 +27,6 @@ router.delete(
 	ZoneController.deleteZone,
 );
 
-router.get(
-	"/:zoneId/wards",
-	requirePermission(Action.READ, Resource.ZONE),
-	ZoneController.getZoneWards,
-);
+router.get("/:zoneId/wards", ZoneController.getZoneWards);
 
 export const ZoneRoutes = router;

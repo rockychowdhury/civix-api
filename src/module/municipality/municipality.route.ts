@@ -7,11 +7,7 @@ import { MunicipalityValidation } from "./municipality.validation";
 
 const router = Router();
 
-router.get(
-	"/",
-	requirePermission(Action.READ, Resource.MUNICIPALITY),
-	MunicipalityController.getMunicipalities,
-);
+router.get("/", MunicipalityController.getMunicipalities);
 router.post(
 	"/",
 	requirePermission(Action.CREATE, Resource.MUNICIPALITY),
@@ -20,7 +16,6 @@ router.post(
 );
 router.get(
 	"/:municipalityId",
-	requirePermission(Action.READ, Resource.MUNICIPALITY),
 	MunicipalityController.getMunicipalityById,
 );
 router.patch(

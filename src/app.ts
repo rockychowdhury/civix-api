@@ -39,6 +39,7 @@ app.use(express.json({ limit: "50mb" }));
 app.use(cookieParser());
 
 import { RoleRoutes } from "./module/role/role.route";
+import { CategoryRoutes } from "./module/category/category.route";
 import { PermissionRoutes } from "./module/permission/permission.route";
 import { MunicipalityRoutes } from "./module/municipality/municipality.route";
 import { ZoneRoutes } from "./module/zone/zone.route";
@@ -62,6 +63,7 @@ app.use("/api/v1/roles", RoleRoutes);
 app.use("/api/v1/permissions", PermissionRoutes);
 
 app.use("/api/v1/municipalities", MunicipalityRoutes);
+app.use("/api/v1/categories", CategoryRoutes);
 app.use("/api/v1/zones", ZoneRoutes);
 app.use("/api/v1/wards", WardRoutes);
 app.use("/api/v1/locations", LocationRoutes);

@@ -7,22 +7,14 @@ import { WardValidation } from "./ward.validation";
 
 const router = Router();
 
-router.get(
-	"/",
-	requirePermission(Action.READ, Resource.WARD),
-	WardController.getWards,
-);
+router.get("/", WardController.getWards);
 router.post(
 	"/",
 	requirePermission(Action.CREATE, Resource.WARD),
 	validateRequest(WardValidation.createWardSchema),
 	WardController.createWard,
 );
-router.get(
-	"/:wardId",
-	requirePermission(Action.READ, Resource.WARD),
-	WardController.getWardById,
-);
+router.get("/:wardId", WardController.getWardById);
 router.patch(
 	"/:wardId",
 	requirePermission(Action.UPDATE, Resource.WARD),
@@ -37,7 +29,6 @@ router.delete(
 
 router.get(
 	"/:wardId/departments",
-	requirePermission(Action.READ, Resource.WARD),
 	WardController.getWardDepartments,
 );
 
