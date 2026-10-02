@@ -13,7 +13,7 @@ import { notFound } from "./middleware/notFound";
 import { AuthRoutes } from "./module/auth/auth.route";
 import { UserRoutes } from "./module/user/user.route";
 import helmet from "helmet";
-import { apiRateLimiter, authRateLimiter } from "./middleware/rateLimiter";
+import { apiRateLimiter } from "./middleware/rateLimiter";
 
 const app: Application = express();
 
@@ -21,7 +21,6 @@ app.set("trust proxy", 1);
 
 // Security Middleware
 app.use(helmet());
-app.use("/api/v1/auth", authRateLimiter);
 app.use("/api/v1", apiRateLimiter);
 
 app.use(

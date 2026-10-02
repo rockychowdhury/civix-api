@@ -3,23 +3,27 @@ import { AuthController } from "./auth.controller";
 import { AuthValidation } from "./auth.validation";
 import { validateRequest } from "../../middleware/validateRequest";
 import { requirePermission } from "../../middleware/checkAuth";
+import { authRateLimiter } from "../../middleware/rateLimiter";
 
 const router = Router();
 
 router.post(
 	"/register-citizen",
+	authRateLimiter,
 	validateRequest(AuthValidation.registerCitizenValidationSchema),
 	AuthController.registerCitizen,
 );
 
 router.post(
 	"/login",
+	authRateLimiter,
 	validateRequest(AuthValidation.loginValidationSchema),
 	AuthController.login,
 );
 
 router.post(
 	"/verify-email",
+	authRateLimiter,
 	validateRequest(AuthValidation.verifyEmailValidationSchema),
 	AuthController.verifyEmail,
 );
@@ -51,12 +55,14 @@ router.post(
 
 router.post(
 	"/forgot-password",
+	authRateLimiter,
 	validateRequest(AuthValidation.forgotPasswordValidationSchema),
 	AuthController.forgotPassword,
 );
 
 router.post(
 	"/reset-password",
+	authRateLimiter,
 	validateRequest(AuthValidation.resetPasswordValidationSchema),
 	AuthController.resetPassword,
 );
