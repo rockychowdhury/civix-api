@@ -1,5 +1,5 @@
 import { prisma } from "../../lib/prisma";
-import { IssuePriority } from "../../../generated/prisma/enums";
+import { IssuePriority } from "../../common/enums/issue-priority.enum";
 
 // ─── Default SLA Policies ────────────────────────────────────
 // Response SLA = how fast a department must acknowledge/assign.
@@ -204,7 +204,7 @@ export const seedSlaPolicies = async (municipalityId: string) => {
 			where: {
 				municipalityId,
 				categoryId,
-				priority: policy.priority,
+				priorityId: policy.priority,
 				effectiveTo: null, // still active
 			},
 		});
@@ -214,7 +214,7 @@ export const seedSlaPolicies = async (municipalityId: string) => {
 				data: {
 					municipalityId,
 					categoryId,
-					priority: policy.priority,
+					priorityId: policy.priority,
 					responseMinutes: policy.responseMinutes,
 					resolutionMinutes: policy.resolutionMinutes,
 				},

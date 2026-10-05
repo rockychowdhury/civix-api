@@ -1,8 +1,8 @@
 model SlaPolicy {
-  id             String        @id @default(uuid())
+  id             String @id @default(uuid())
   municipalityId String
   categoryId     String
-  priority       IssuePriority
+  priorityId     String
 
   responseMinutes   Int
   resolutionMinutes Int
@@ -15,6 +15,7 @@ model SlaPolicy {
 
   municipality Municipality    @relation(fields: [municipalityId], references: [id], onDelete: Cascade)
   category     ServiceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  priority     PriorityLevel   @relation(fields: [priorityId], references: [id])
 
-  @@index([municipalityId, categoryId, priority])
+  @@index([municipalityId, categoryId, priorityId])
 }

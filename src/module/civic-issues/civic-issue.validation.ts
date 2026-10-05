@@ -43,9 +43,60 @@ const reopenSchema = z.object({
 	}),
 });
 
+const numericFromQuery = z
+	.union([z.number(), z.string()])
+	.transform((value) => Number(value))
+	.refine((value) => Number.isFinite(value), { message: "Must be a number" });
+
+const getCivicIssuesQuerySchema = z.object({
+	query: z.object({
+		status: z.enum([
+			"SUBMITTED",
+			"TRIAGED",
+			"ASSIGNED",
+			"ACCEPTED",
+			"IN_PROGRESS",
+			"PENDING_VERIFICATION",
+			"RESOLVED",
+			"CLOSED",
+			"REOPENED",
+			"REJECTED",
+			"DUPLICATE",
+			"INSUFFICIENT_INFORMATION",
+			"CANCELLED",
+		]).optional(),
+		priority: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]).optional(),
+		departmentId: z.string().uuid().optional(),
+		wardId: z.string().uuid().optional(),
+		municipalityId: z.string().uuid().optional(),
+		searchTerm: z.string().trim().min(1).optional(),
+		page: numericFromQuery
+			.transform((value) => Math.max(1, Math.trunc(value)))
+			.optional(),
+		limit: numericFromQuery
+			.transform((value) => Math.min(200, Math.max(1, Math.trunc(value))))
+			.optional(),
+		sortBy: z
+			.enum([
+				"createdAt",
+				"updatedAt",
+				"firstReportedAt",
+				"lastReportedAt",
+				"resolvedAt",
+				"closedAt",
+				"priority",
+				"status",
+				"reportedCount",
+			])
+			.optional(),
+		sortOrder: z.enum(["asc", "desc"]).optional(),
+	}),
+});
+
 export const CivicIssueValidation = {
 	triageSchema,
 	mergeSchema,
 	updateStatusSchema,
 	reopenSchema,
+	getCivicIssuesQuerySchema,
 };

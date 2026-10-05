@@ -6,10 +6,12 @@ enum UserStatus {
   SUSPENDED
   BANNED
 }
+
 enum AuthProvider {
   CREDENTIAL
   GOOGLE
 }
+
 enum CitizenTrustLevel {
   NEW
   REGULAR
@@ -105,14 +107,6 @@ enum LifecycleStatus {
   DUPLICATE
   INSUFFICIENT_INFORMATION
   CANCELLED
-}
-
-enum IssuePriority {
-  LOW
-  MEDIUM
-  HIGH
-  URGENT
-  EMERGENCY
 }
 
 // ─── Team & Assignment Type ──────────────────────────────────

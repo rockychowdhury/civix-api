@@ -1,7 +1,5 @@
-import type {
-	IssuePriority,
-	LifecycleStatus,
-} from "../../../generated/prisma/enums";
+import type { LifecycleStatus } from "../../../generated/prisma/enums";
+import type { IssuePriority } from "../../common/enums/issue-priority.enum";
 
 export interface ITriagePayload {
 	serviceRequestId: string;

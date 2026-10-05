@@ -18,6 +18,7 @@ router.patch(
 router.get(
 	"/",
 	requirePermission(Action.READ_ALL, Resource.CIVIC_ISSUE),
+	validateRequest(CivicIssueValidation.getCivicIssuesQuerySchema),
 	CivicIssueController.getCivicIssues,
 );
 
@@ -29,12 +30,14 @@ router.get(
 router.get(
 	"/municipality/:municipalityId",
 	requirePermission(Action.READ, Resource.CIVIC_ISSUE),
+	validateRequest(CivicIssueValidation.getCivicIssuesQuerySchema),
 	CivicIssueController.getIssuesByMunicipality,
 );
 
 router.get(
 	"/department/:departmentId",
 	requirePermission(Action.READ, Resource.CIVIC_ISSUE),
+	validateRequest(CivicIssueValidation.getCivicIssuesQuerySchema),
 	CivicIssueController.getIssuesByDepartment,
 );
 

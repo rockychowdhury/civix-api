@@ -68,7 +68,6 @@ const createWorkOrder = async (
 				title,
 				description,
 				scheduledAt: payload.scheduledAt,
-				priority: civicIssue.priority, // Inherit priority
 			},
 		});
 
@@ -101,12 +100,15 @@ const getWorkOrders = async (filters: any = {}, options: any = {}) => {
 			where,
 			orderBy: Object.keys(orderBy).length
 				? orderBy
-				: { priority: "desc", createdAt: "desc" },
+				: { civicIssue: { priority: { weight: "desc" } }, createdAt: "desc" },
 			skip,
 			take,
 			include: {
-				civicIssue: { select: { issueNumber: true, location: true } },
-				currentAssignee: { select: { firstName: true, lastName: true } },
+				civicIssue: { include: { location: true, priority: true } },
+				currentAssignee: { select: { firstName: true, lastName: true, user: { select: { email: true, phone: true } } } },
+				priority: true,
+				department: true,
+				assignments: { include: { assignedTo: { select: { firstName: true, lastName: true, user: { select: { email: true } } } } } },
 			},
 		}),
 		prisma.workOrder.count({ where }),
@@ -146,12 +148,15 @@ const getWorkOrdersByMunicipality = async (
 			where: municipalityWhere,
 			orderBy: Object.keys(orderBy).length
 				? orderBy
-				: { priority: "desc", createdAt: "desc" },
+				: { civicIssue: { priority: { weight: "desc" } }, createdAt: "desc" },
 			skip,
 			take,
 			include: {
-				civicIssue: { select: { issueNumber: true, location: true } },
-				currentAssignee: { select: { firstName: true, lastName: true } },
+				civicIssue: { include: { location: true, priority: true } },
+				currentAssignee: { select: { firstName: true, lastName: true, user: { select: { email: true, phone: true } } } },
+				priority: true,
+				department: true,
+				assignments: { include: { assignedTo: { select: { firstName: true, lastName: true, user: { select: { email: true } } } } } },
 			},
 		}),
 		prisma.workOrder.count({ where: municipalityWhere }),
@@ -188,12 +193,15 @@ const getWorkOrdersByDepartment = async (
 			where: departmentWhere,
 			orderBy: Object.keys(orderBy).length
 				? orderBy
-				: { priority: "desc", createdAt: "desc" },
+				: { civicIssue: { priority: { weight: "desc" } }, createdAt: "desc" },
 			skip,
 			take,
 			include: {
-				civicIssue: { select: { issueNumber: true, location: true } },
-				currentAssignee: { select: { firstName: true, lastName: true } },
+				civicIssue: { include: { location: true, priority: true } },
+				currentAssignee: { select: { firstName: true, lastName: true, user: { select: { email: true, phone: true } } } },
+				priority: true,
+				department: true,
+				assignments: { include: { assignedTo: { select: { firstName: true, lastName: true, user: { select: { email: true } } } } } },
 			},
 		}),
 		prisma.workOrder.count({ where: departmentWhere }),
@@ -209,9 +217,11 @@ const getWorkOrderById = async (userId: string, id: string) => {
 	const workOrder = await prisma.workOrder.findUnique({
 		where: { id },
 		include: {
-			civicIssue: true,
+			civicIssue: { include: { priority: true, location: true } },
 			currentAssignee: true,
-			assignments: true,
+			priority: true,
+			department: true,
+			assignments: { include: { assignedTo: true } },
 			updates: {
 				orderBy: { createdAt: "desc" },
 				include: { attachments: true },

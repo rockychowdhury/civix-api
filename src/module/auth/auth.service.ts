@@ -287,7 +287,15 @@ const getMe = async (userId: string) => {
 		where: { id: userId },
 		include: {
 			citizenProfile: true,
-			staffProfile: true,
+			staffProfile: {
+				include: {
+					departmentMembers: {
+						include: {
+							department: true,
+						},
+					},
+				},
+			},
 			userRoles: { include: { role: true } },
 		},
 	});

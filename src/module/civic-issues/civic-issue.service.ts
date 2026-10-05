@@ -44,7 +44,7 @@ const triageServiceRequest = async (
 		where: {
 			municipalityId: request.municipalityId,
 			categoryId: payload.categoryId,
-			priority: payload.priority,
+			priorityId: payload.priority,
 			effectiveTo: null,
 		},
 	});
@@ -78,7 +78,7 @@ const triageServiceRequest = async (
 				title: "Service Request " + request.trackingNumber,
 				description: request.description,
 				status: LifecycleStatus.TRIAGED,
-				priority: payload.priority,
+				priorityId: payload.priority,
 				reportedCount: 1,
 			},
 		});
@@ -288,7 +288,7 @@ const getCivicIssues = async (filters: any = {}, options: any = {}) => {
 			where,
 			orderBy: Object.keys(orderBy).length
 				? orderBy
-				: { priority: "desc", createdAt: "asc" },
+				: { priority: { weight: "desc" }, createdAt: "asc" },
 			skip,
 			take,
 			include: {
@@ -296,6 +296,8 @@ const getCivicIssues = async (filters: any = {}, options: any = {}) => {
 				department: { select: { name: true } },
 				ward: { select: { name: true, number: true } },
 				location: true,
+				workOrders: true,
+				priority: true,
 			},
 		}),
 		prisma.civicIssue.count({ where }),
@@ -347,6 +349,7 @@ const getCivicIssueById = async (id: string) => {
 				orderBy: { createdAt: "desc" },
 			},
 			workOrders: true,
+			priority: true,
 		},
 	});
 
@@ -496,6 +499,7 @@ const getPublicCivicIssueByNumber = async (issueNumber: string) => {
 					name: true,
 				},
 			},
+			priority: true,
 			statusHistory: {
 				select: {
 					id: true,

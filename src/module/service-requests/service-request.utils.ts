@@ -1,5 +1,5 @@
 import { prisma } from "../../lib/prisma";
-import { IssuePriority } from "../../../generated/prisma/enums";
+import { IssuePriority } from "../../common/enums/issue-priority.enum";
 
 /**
  * Generate issue title from category name and location.

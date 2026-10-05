@@ -99,6 +99,7 @@ const createServiceRequest = async (
 					],
 				},
 			},
+			include: { priority: true }
 		});
 
 		let finalStatus: LifecycleStatus = LifecycleStatus.SUBMITTED;
@@ -120,14 +121,14 @@ const createServiceRequest = async (
 			let resolutionDeadlineAt = duplicateIssue.resolutionDeadlineAt;
 
 			if (
-				newPriority !== duplicateIssue.priority &&
+				newPriority !== duplicateIssue.priority.code &&
 				duplicateIssue.status === LifecycleStatus.IN_PROGRESS
 			) {
 				const slaPolicy = await tx.slaPolicy.findFirst({
 					where: {
 						municipalityId: payload.location.municipalityId,
 						categoryId: category.id,
-						priority: newPriority,
+						priorityId: newPriority,
 					},
 				});
 				if (slaPolicy) {
@@ -147,7 +148,7 @@ const createServiceRequest = async (
 				data: {
 					reportedCount,
 					lastReportedAt: new Date(),
-					priority: newPriority,
+					priorityId: newPriority,
 					responseDeadlineAt,
 					resolutionDeadlineAt,
 				},
@@ -168,7 +169,7 @@ const createServiceRequest = async (
 				where: {
 					municipalityId: payload.location.municipalityId,
 					categoryId: category.id,
-					priority: initialPriority,
+					priorityId: initialPriority,
 				},
 			});
 
@@ -219,7 +220,7 @@ const createServiceRequest = async (
 						new Date(),
 					),
 					status: LifecycleStatus.IN_PROGRESS,
-					priority: initialPriority,
+					priorityId: initialPriority,
 					reportedCount: 1,
 					wardId: payload.location.wardId,
 					responseDeadlineAt,

@@ -9,7 +9,7 @@ model CivicIssue {
   title          String
   description    String
   status         LifecycleStatus @default(IN_PROGRESS)
-  priority       IssuePriority   @default(MEDIUM)
+  priorityId     String
   reportedCount  Int             @default(1)
 
   firstReportedAt      DateTime  @default(now())
@@ -22,12 +22,12 @@ model CivicIssue {
   updatedAt            DateTime  @updatedAt
   deletedAt            DateTime?
 
-  municipality Municipality     @relation(fields: [municipalityId], references: [id], onDelete: Cascade)
-  category     ServiceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  location     Location?        @relation(fields: [locationId], references: [id], onDelete: SetNull)
-  department   Department?      @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-  ward         Ward?            @relation(fields: [wardId], references: [id], onDelete: SetNull)
-
+  municipality    Municipality             @relation(fields: [municipalityId], references: [id], onDelete: Cascade)
+  category        ServiceCategory?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  location        Location?                @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  department      Department?              @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  ward            Ward?                    @relation(fields: [wardId], references: [id], onDelete: SetNull)
+  priority        PriorityLevel            @relation(fields: [priorityId], references: [id])
   serviceRequests ServiceRequest[]
   reporters       IssueReporter[]
   statusHistory   CivicIssueHistory[]
@@ -36,7 +36,7 @@ model CivicIssue {
   verifications   ResolutionVerification[]
 
   @@index([municipalityId, status])
-  @@index([municipalityId, priority, status])
+  @@index([municipalityId, priorityId, status])
   @@index([status, responseDeadlineAt])
   @@index([status, resolutionDeadlineAt])
   @@index([categoryId, status])
