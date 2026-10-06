@@ -2,11 +2,11 @@ import bcrypt from "bcryptjs";
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../utils/AppError";
 import httpStatus from "http-status";
-import type { ICreateStaffPayload, IStaffFilter } from "./staff.interface";
+import type { ICreateStaffPayload, IStaffFilter, IUpdateStaffPayload } from "./staff.interface";
 import config from "../../config";
 import { buildPrismaQuery } from "../../utils/QueryBuilder";
 import { staffSearchableFields } from "./staff.constant";
-import { DepartmentRole } from "../../../generated/prisma/enums";
+import { DepartmentRole, UserStatus } from "../../../generated/prisma/enums";
 
 // Utility for generating random passwords if none provided
 const generatePassword = () => Math.random().toString(36).slice(-8);
@@ -203,7 +203,7 @@ const _createDepartmentStaff = async (
 				phone: payload.phone,
 				passwordHash,
 				displayName: `${payload.firstName} ${payload.lastName}`,
-				status: "ACTIVE",
+				status: UserStatus.INACTIVE,
 				isEmailVerified: true,
 				userRoles: { create: { roleId: role.id } },
 				staffProfile: {
@@ -215,7 +215,7 @@ const _createDepartmentStaff = async (
 						municipalityId: department.municipalityId,
 						departmentMembers: {
 							create: {
-								departmentId: payload.departmentId!,
+								departmentId: payload.departmentId,
 								role: deptRole,
 							},
 						},
@@ -346,6 +346,186 @@ const getAllStaff = async (
 	};
 };
 
+const getStaffById = async (staffId: string, reqUserId: string) => {
+	const requester = await prisma.staffProfile.findUnique({
+		where: { userId: reqUserId },
+		include: {
+			departmentMembers: true,
+			user: { include: { userRoles: { include: { role: true } } } },
+		},
+	});
+
+	if (!requester) {
+		throw new AppError(httpStatus.FORBIDDEN, "Requester profile not found");
+	}
+
+	const targetStaff = await prisma.staffProfile.findUnique({
+		where: { id: staffId },
+		include: {
+			user: {
+				select: {
+					email: true,
+					status: true,
+					userRoles: { include: { role: { select: { code: true } } } },
+				},
+			},
+			departmentMembers: {
+				include: { department: true },
+			},
+		},
+	});
+
+	if (!targetStaff) {
+		throw new AppError(httpStatus.NOT_FOUND, "Staff not found");
+	}
+
+	const requesterRoleCodes = requester.user.userRoles.map((ur) => ur.role.code);
+	const isGlobal =
+		requesterRoleCodes.includes("SUPER_ADMIN") ||
+		requesterRoleCodes.includes("PLATFORM_ADMIN");
+
+	if (!isGlobal) {
+		if (requesterRoleCodes.includes("CITY_ADMIN")) {
+			if (targetStaff.municipalityId !== requester.municipalityId) {
+				throw new AppError(
+					httpStatus.FORBIDDEN,
+					"You cannot access staff from other municipalities",
+				);
+			}
+		} else {
+			const reqDeptIds = requester.departmentMembers.map(
+				(dm) => dm.departmentId,
+			);
+			const targetDeptIds = targetStaff.departmentMembers.map(
+				(dm) => dm.departmentId,
+			);
+
+			const hasCommonDept = reqDeptIds.some((id) => targetDeptIds.includes(id));
+			if (!hasCommonDept) {
+				throw new AppError(
+					httpStatus.FORBIDDEN,
+					"You cannot access staff from other departments",
+				);
+			}
+		}
+	}
+
+	return targetStaff;
+};
+
+const updateStaffStatus = async (
+	staffId: string,
+	status: UserStatus,
+	reqUserId: string,
+) => {
+	const targetStaff = await getStaffById(staffId, reqUserId);
+
+	const requester = await prisma.staffProfile.findUnique({
+		where: { userId: reqUserId },
+		include: {
+			departmentMembers: true,
+			user: { include: { userRoles: { include: { role: true } } } },
+		},
+	});
+	const requesterRoleCodes = requester!.user.userRoles.map((ur) => ur.role.code);
+	const isGlobal =
+		requesterRoleCodes.includes("SUPER_ADMIN") ||
+		requesterRoleCodes.includes("PLATFORM_ADMIN");
+	const isCityAdmin = requesterRoleCodes.includes("CITY_ADMIN");
+
+	if (!isGlobal && !isCityAdmin) {
+		const reqManagerDepts = requester!.departmentMembers
+			.filter(
+				(dm) =>
+					dm.role === DepartmentRole.MANAGER || dm.role === DepartmentRole.HEAD,
+			)
+			.map((dm) => dm.departmentId);
+		const targetDeptIds = targetStaff.departmentMembers.map(
+			(dm) => dm.departmentId,
+		);
+		const isManagerOfTarget = reqManagerDepts.some((id) =>
+			targetDeptIds.includes(id),
+		);
+		if (!isManagerOfTarget) {
+			throw new AppError(
+				httpStatus.FORBIDDEN,
+				"You are not authorized to update this staff's status",
+			);
+		}
+	}
+
+	const updatedUser = await prisma.user.update({
+		where: { id: targetStaff.userId },
+		data: { status },
+	});
+
+	return updatedUser;
+};
+
+const updateStaff = async (
+	staffId: string,
+	payload: IUpdateStaffPayload,
+	reqUserId: string,
+) => {
+	const targetStaff = await getStaffById(staffId, reqUserId);
+	const requester = await prisma.staffProfile.findUnique({
+		where: { userId: reqUserId },
+		include: {
+			departmentMembers: true,
+			user: { include: { userRoles: { include: { role: true } } } },
+		},
+	});
+	const requesterRoleCodes = requester!.user.userRoles.map((ur) => ur.role.code);
+	const isGlobal =
+		requesterRoleCodes.includes("SUPER_ADMIN") ||
+		requesterRoleCodes.includes("PLATFORM_ADMIN");
+	const isCityAdmin = requesterRoleCodes.includes("CITY_ADMIN");
+
+	const isSelf = targetStaff.userId === reqUserId;
+
+	if (!isGlobal && !isCityAdmin && !isSelf) {
+		const reqManagerDepts = requester!.departmentMembers
+			.filter(
+				(dm) =>
+					dm.role === DepartmentRole.MANAGER || dm.role === DepartmentRole.HEAD,
+			)
+			.map((dm) => dm.departmentId);
+		const targetDeptIds = targetStaff.departmentMembers.map(
+			(dm) => dm.departmentId,
+		);
+		const isManagerOfTarget = reqManagerDepts.some((id) =>
+			targetDeptIds.includes(id),
+		);
+		if (!isManagerOfTarget) {
+			throw new AppError(
+				httpStatus.FORBIDDEN,
+				"You are not authorized to update this staff",
+			);
+		}
+	}
+
+	const updatedStaff = await prisma.staffProfile.update({
+		where: { id: staffId },
+		data: payload,
+	});
+
+	if (payload.phone || payload.firstName || payload.lastName) {
+		const updateData: any = {};
+		if (payload.phone) updateData.phone = payload.phone;
+		if (payload.firstName || payload.lastName) {
+			updateData.displayName = `${payload.firstName || targetStaff.firstName} ${
+				payload.lastName || targetStaff.lastName
+			}`;
+		}
+		await prisma.user.update({
+			where: { id: targetStaff.userId },
+			data: updateData,
+		});
+	}
+
+	return updatedStaff;
+};
+
 export const StaffService = {
 	createPlatformAdmin,
 	createCityAdmin,
@@ -353,4 +533,7 @@ export const StaffService = {
 	createDispatcher,
 	createTechnician,
 	getAllStaff,
+	getStaffById,
+	updateStaffStatus,
+	updateStaff,
 };

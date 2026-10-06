@@ -13,12 +13,10 @@ model WorkOrder {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
-  priorityId  String?
 
   civicIssue      CivicIssue    @relation(fields: [civicIssueId], references: [id], onDelete: Cascade)
   department      Department    @relation(fields: [departmentId], references: [id])
   currentAssignee StaffProfile? @relation(fields: [currentAssigneeId], references: [userId], onDelete: SetNull)
-  priority        PriorityLevel? @relation(fields: [priorityId], references: [id])
 
   assignments Assignment[]
   updates     WorkUpdate[]

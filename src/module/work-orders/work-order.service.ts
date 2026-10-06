@@ -106,7 +106,6 @@ const getWorkOrders = async (filters: any = {}, options: any = {}) => {
 			include: {
 				civicIssue: { include: { location: true, priority: true } },
 				currentAssignee: { select: { firstName: true, lastName: true, user: { select: { email: true, phone: true } } } },
-				priority: true,
 				department: true,
 				assignments: { include: { assignedTo: { select: { firstName: true, lastName: true, user: { select: { email: true } } } } } },
 			},
@@ -154,7 +153,6 @@ const getWorkOrdersByMunicipality = async (
 			include: {
 				civicIssue: { include: { location: true, priority: true } },
 				currentAssignee: { select: { firstName: true, lastName: true, user: { select: { email: true, phone: true } } } },
-				priority: true,
 				department: true,
 				assignments: { include: { assignedTo: { select: { firstName: true, lastName: true, user: { select: { email: true } } } } } },
 			},
@@ -199,7 +197,6 @@ const getWorkOrdersByDepartment = async (
 			include: {
 				civicIssue: { include: { location: true, priority: true } },
 				currentAssignee: { select: { firstName: true, lastName: true, user: { select: { email: true, phone: true } } } },
-				priority: true,
 				department: true,
 				assignments: { include: { assignedTo: { select: { firstName: true, lastName: true, user: { select: { email: true } } } } } },
 			},
@@ -219,7 +216,6 @@ const getWorkOrderById = async (userId: string, id: string) => {
 		include: {
 			civicIssue: { include: { priority: true, location: true } },
 			currentAssignee: true,
-			priority: true,
 			department: true,
 			assignments: { include: { assignedTo: true } },
 			updates: {

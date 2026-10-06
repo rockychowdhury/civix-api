@@ -58,4 +58,28 @@ router.post(
 	StaffController.createTechnician,
 );
 
+// 8. Get Staff by ID
+router.get(
+	"/:id",
+	requireAuth,
+	validateRequest(StaffValidation.getStaffByIdSchema),
+	StaffController.getStaffById,
+);
+
+// 9. Update Staff Profile
+router.patch(
+	"/:id",
+	requireAuth,
+	validateRequest(StaffValidation.updateStaffSchema),
+	StaffController.updateStaff,
+);
+
+// 10. Manage Active Status
+router.patch(
+	"/:id/status",
+	requireAuth,
+	validateRequest(StaffValidation.updateStaffStatusSchema),
+	StaffController.updateStaffStatus,
+);
+
 export const StaffRoutes = router;

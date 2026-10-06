@@ -6,7 +6,7 @@ export interface ICreateStaffPayload {
 	phone?: string;
 	designation?: string;
 	municipalityId?: string;
-	departmentId?: string;
+	departmentId: string;
 }
 
 export interface IStaffFilter {
@@ -14,4 +14,11 @@ export interface IStaffFilter {
 	municipalityId?: string;
 	departmentId?: string;
 	role?: string;
+}
+
+export interface IUpdateStaffPayload {
+	firstName?: string;
+	lastName?: string;
+	phone?: string;
+	designation?: string;
 }

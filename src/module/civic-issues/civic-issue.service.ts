@@ -44,7 +44,7 @@ const triageServiceRequest = async (
 		where: {
 			municipalityId: request.municipalityId,
 			categoryId: payload.categoryId,
-			priorityId: payload.priority,
+			priority: { code: payload.priority },
 			effectiveTo: null,
 		},
 	});
@@ -78,9 +78,9 @@ const triageServiceRequest = async (
 				title: "Service Request " + request.trackingNumber,
 				description: request.description,
 				status: LifecycleStatus.TRIAGED,
-				priorityId: payload.priority,
+				priority: { connect: { code: payload.priority } },
 				reportedCount: 1,
-			},
+			} as any,
 		});
 
 		// Update ServiceRequest
@@ -296,7 +296,7 @@ const getCivicIssues = async (filters: any = {}, options: any = {}) => {
 				department: { select: { name: true } },
 				ward: { select: { name: true, number: true } },
 				location: true,
-				workOrders: true,
+				workOrders: { orderBy: { createdAt: "desc" }, take: 1 },
 				priority: true,
 			},
 		}),
@@ -348,7 +348,7 @@ const getCivicIssueById = async (id: string) => {
 				include: { changedBy: { select: { email: true, displayName: true } } },
 				orderBy: { createdAt: "desc" },
 			},
-			workOrders: true,
+			workOrders: { orderBy: { createdAt: "desc" }, take: 1 },
 			priority: true,
 		},
 	});

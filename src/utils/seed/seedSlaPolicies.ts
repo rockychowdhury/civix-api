@@ -204,7 +204,7 @@ export const seedSlaPolicies = async (municipalityId: string) => {
 			where: {
 				municipalityId,
 				categoryId,
-				priorityId: policy.priority,
+				priority: { code: policy.priority },
 				effectiveTo: null, // still active
 			},
 		});
@@ -214,10 +214,10 @@ export const seedSlaPolicies = async (municipalityId: string) => {
 				data: {
 					municipalityId,
 					categoryId,
-					priorityId: policy.priority,
+					priority: { connect: { code: policy.priority } },
 					responseMinutes: policy.responseMinutes,
 					resolutionMinutes: policy.resolutionMinutes,
-				},
+				} as any,
 			});
 			created++;
 		}

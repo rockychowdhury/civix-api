@@ -12,5 +12,4 @@ model PriorityLevel {
 
   civicIssues CivicIssue[]
   slaPolicies SlaPolicy[]
-  workOrders  WorkOrder[]
 }

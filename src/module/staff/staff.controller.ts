@@ -102,6 +102,46 @@ const getTechnicians = catchAsync(async (req: Request, res: Response) => {
 	});
 });
 
+const getStaffById = catchAsync(async (req: Request, res: Response) => {
+	const userId = (req as any).user.userId;
+	const { id } = req.params;
+	const result = await StaffService.getStaffById(id, userId);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "Staff retrieved successfully",
+		data: result,
+	});
+});
+
+const updateStaffStatus = catchAsync(async (req: Request, res: Response) => {
+	const userId = (req as any).user.userId;
+	const { id } = req.params;
+	const { status } = req.body;
+	const result = await StaffService.updateStaffStatus(id, status, userId);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "Staff status updated successfully",
+		data: result,
+	});
+});
+
+const updateStaff = catchAsync(async (req: Request, res: Response) => {
+	const userId = (req as any).user.userId;
+	const { id } = req.params;
+	const result = await StaffService.updateStaff(id, req.body, userId);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "Staff updated successfully",
+		data: result,
+	});
+});
+
 export const StaffController = {
 	createPlatformAdmin,
 	createCityAdmin,
@@ -110,4 +150,7 @@ export const StaffController = {
 	createTechnician,
 	getAllStaff,
 	getTechnicians,
+	getStaffById,
+	updateStaffStatus,
+	updateStaff,
 };

@@ -29,8 +29,32 @@ const createDepartmentStaffSchema = z.object({
 	}),
 });
 
+const updateStaffStatusSchema = z.object({
+	params: z.object({ id: z.string().uuid("Invalid staff ID") }),
+	body: z.object({
+		status: z.enum(["ACTIVE", "INACTIVE", "SUSPENDED", "BANNED"]),
+	}),
+});
+
+const updateStaffSchema = z.object({
+	params: z.object({ id: z.string().uuid("Invalid staff ID") }),
+	body: z.object({
+		firstName: z.string().min(2).optional(),
+		lastName: z.string().min(2).optional(),
+		phone: z.string().optional(),
+		designation: z.string().optional(),
+	}),
+});
+
+const getStaffByIdSchema = z.object({
+	params: z.object({ id: z.string().uuid("Invalid staff ID") }),
+});
+
 export const StaffValidation = {
 	createPlatformAdminSchema,
 	createCityAdminSchema,
 	createDepartmentStaffSchema,
+	updateStaffStatusSchema,
+	updateStaffSchema,
+	getStaffByIdSchema,
 };

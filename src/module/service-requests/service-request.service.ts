@@ -128,7 +128,7 @@ const createServiceRequest = async (
 					where: {
 						municipalityId: payload.location.municipalityId,
 						categoryId: category.id,
-						priorityId: newPriority,
+						priority: { code: newPriority },
 					},
 				});
 				if (slaPolicy) {
@@ -148,10 +148,10 @@ const createServiceRequest = async (
 				data: {
 					reportedCount,
 					lastReportedAt: new Date(),
-					priorityId: newPriority,
+					priority: { connect: { code: newPriority } },
 					responseDeadlineAt,
 					resolutionDeadlineAt,
-				},
+				} as any,
 			});
 
 			finalStatus = duplicateIssue.status;
@@ -169,7 +169,7 @@ const createServiceRequest = async (
 				where: {
 					municipalityId: payload.location.municipalityId,
 					categoryId: category.id,
-					priorityId: initialPriority,
+					priority: { code: initialPriority },
 				},
 			});
 
@@ -220,12 +220,12 @@ const createServiceRequest = async (
 						new Date(),
 					),
 					status: LifecycleStatus.IN_PROGRESS,
-					priorityId: initialPriority,
+					priority: { connect: { code: initialPriority } },
 					reportedCount: 1,
 					wardId: payload.location.wardId,
 					responseDeadlineAt,
 					resolutionDeadlineAt,
-				},
+				} as any,
 			});
 
 			finalStatus = newIssue.status;
