@@ -121,34 +121,36 @@ const unassignAssignment = catchAsync(async (req: Request, res: Response) => {
 	});
 });
 
-const getDepartmentAssignments = catchAsync(async (req: Request, res: Response) => {
-	const userId = (req as any).user.userId;
-	const departmentId = req.params.departmentId as string;
+const getDepartmentAssignments = catchAsync(
+	async (req: Request, res: Response) => {
+		const userId = (req as any).user.userId;
+		const departmentId = req.params.departmentId as string;
 
-	const filters = pick(req.query, [
-		"status",
-		"workOrderId",
-		"assignedToId",
-		"teamId",
-		"searchTerm",
-	]);
-	const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
+		const filters = pick(req.query, [
+			"status",
+			"workOrderId",
+			"assignedToId",
+			"teamId",
+			"searchTerm",
+		]);
+		const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
 
-	const result = await AssignmentService.getDepartmentAssignments(
-		userId,
-		departmentId,
-		filters,
-		options,
-	);
+		const result = await AssignmentService.getDepartmentAssignments(
+			userId,
+			departmentId,
+			filters,
+			options,
+		);
 
-	sendResponse(res, {
-		statusCode: httpStatus.OK,
-		success: true,
-		message: "Department assignments retrieved successfully",
-		data: result.data,
-		meta: result.meta,
-	});
-});
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Department assignments retrieved successfully",
+			data: result.data,
+			meta: result.meta,
+		});
+	},
+);
 
 export const AssignmentController = {
 	createAssignment,

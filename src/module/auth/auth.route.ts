@@ -48,10 +48,7 @@ router.post(
 	AuthController.googleLogin,
 );
 
-router.post(
-	"/logout",
-	AuthController.logout,
-);
+router.post("/logout", AuthController.logout);
 
 router.post(
 	"/forgot-password",

@@ -20,4 +20,3 @@ export interface ICreateServiceRequestPayload {
 		municipalityId: string;
 	};
 }
-

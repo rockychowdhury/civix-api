@@ -33,6 +33,12 @@ router.get(
 );
 
 router.get(
+	"/resolution/:resolutionId",
+	requirePermission(Action.READ, Resource.FEEDBACK),
+	FeedbackController.getFeedbackByResolutionId,
+);
+
+router.get(
 	"/:id",
 	requirePermission(Action.READ, Resource.FEEDBACK),
 	FeedbackController.getFeedbackById,

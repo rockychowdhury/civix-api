@@ -10,7 +10,9 @@ export const redisClient = createClient({
 		connectTimeout: 10000, // 10 seconds
 		reconnectStrategy: (retries) => {
 			if (retries > 20) {
-				console.error("Too many attempts to reconnect. Redis connection was terminated");
+				console.error(
+					"Too many attempts to reconnect. Redis connection was terminated",
+				);
 				return new Error("Too many retries.");
 			} else {
 				const delay = Math.min(retries * 500, 5000);

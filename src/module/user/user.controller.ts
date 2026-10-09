@@ -75,7 +75,9 @@ const updateUserStatus = catchAsync(async (req: Request, res: Response) => {
 	const { userId } = req.params as { userId: string };
 	const { status } = req.body;
 
-	const result = await UserService.updateUserStatus(requesterId, userId, { status });
+	const result = await UserService.updateUserStatus(requesterId, userId, {
+		status,
+	});
 
 	sendResponse(res, {
 		statusCode: httpStatus.OK,
@@ -113,7 +115,6 @@ const restoreUser = catchAsync(async (req: Request, res: Response) => {
 	});
 });
 
-
 export const UserController = {
 	getMe,
 	updateMe,
@@ -123,5 +124,4 @@ export const UserController = {
 	updateUserStatus,
 	deleteUser,
 	restoreUser,
-
 };

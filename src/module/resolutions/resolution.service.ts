@@ -10,6 +10,7 @@ import {
 	Resource,
 	LifecycleStatus,
 	NotificationType,
+	WorkUpdateType,
 } from "../../../generated/prisma/enums";
 import { sendIssueResolvedEmail } from "../../utils/email.service";
 import { createCivicIssueHistory } from "../../utils/civicIssueHistory";
@@ -74,6 +75,16 @@ const submitResolution = async (
 			},
 		});
 
+		// Create a COMPLETED work update entry
+		await tx.workUpdate.create({
+			data: {
+				workOrderId,
+				technicianId: userId,
+				updateType: WorkUpdateType.COMPLETED,
+				note: payload.summary || "Work completed and resolution submitted.",
+			},
+		});
+
 		// Update CivicIssue status
 		await tx.civicIssue.update({
 			where: { id: workOrder.civicIssueId },
@@ -95,6 +106,24 @@ const submitResolution = async (
 			notes: `Resolution submitted for verification`,
 			tx,
 		});
+
+		// Notify reporters that resolution is submitted and feedback is requested
+		const reporters = await tx.issueReporter.findMany({
+			where: { civicIssueId: workOrder.civicIssueId },
+		});
+
+		for (const reporter of reporters) {
+			await tx.notification.create({
+				data: {
+					userId: reporter.citizenId,
+					type: NotificationType.FEEDBACK_REQUESTED,
+					title: "Resolution Submitted - Feedback Requested",
+					message: `A resolution has been submitted for your reported issue. Please review and provide your feedback!`,
+					resourceType: Resource.SERVICE_REQUEST,
+					resourceId: reporter.serviceRequestId,
+				},
+			});
+		}
 
 		// Create Audit Log
 		await tx.auditLog.create({
@@ -211,9 +240,82 @@ const verifyResolution = async (
 							reporter.citizen.firstName,
 							updatedIssue.title,
 							reporter.serviceRequest.trackingNumber,
-						)
+						),
 					);
 				}
+			}
+		} else if (payload.status === "REOPENED") {
+			// If REOPENED, reset work order back to TRIAGED so dispatchers can re-assign
+			await tx.workOrder.update({
+				where: { id: resolution.workOrderId },
+				data: {
+					status: LifecycleStatus.TRIAGED,
+					completedAt: null,
+					currentAssigneeId: null,
+				},
+			});
+
+			const updatedIssue = await tx.civicIssue.update({
+				where: { id: resolution.workOrder.civicIssueId },
+				data: {
+					status: LifecycleStatus.REOPENED,
+					resolvedAt: null,
+					closedAt: null,
+				},
+			});
+
+			await tx.serviceRequest.updateMany({
+				where: { civicIssueId: resolution.workOrder.civicIssueId },
+				data: { status: LifecycleStatus.REOPENED },
+			});
+
+			await createCivicIssueHistory({
+				civicIssueId: resolution.workOrder.civicIssueId,
+				changedById: userId,
+				previousStatus: LifecycleStatus.PENDING_VERIFICATION,
+				newStatus: LifecycleStatus.REOPENED,
+				notes: `Resolution rejected and issue reopened: ${payload.notes || "Feedback was unsatisfactory / resolution invalid"}`,
+				tx,
+			});
+
+			// Release technician workload if assigned
+			if (resolution.workOrder.currentAssigneeId) {
+				await tx.staffProfile.update({
+					where: { userId: resolution.workOrder.currentAssigneeId },
+					data: { currentWorkload: { decrement: 1 } },
+				});
+			}
+
+			// Notify Reporters (Citizens)
+			const reporters = await tx.issueReporter.findMany({
+				where: { civicIssueId: updatedIssue.id },
+			});
+
+			for (const reporter of reporters) {
+				await tx.notification.create({
+					data: {
+						userId: reporter.citizenId,
+						type: NotificationType.STATUS_CHANGED,
+						title: "Issue Reopened",
+						message: `Your reported issue "${updatedIssue.title}" has been reopened for further work following resolution review.`,
+						resourceType: Resource.CIVIC_ISSUE,
+						resourceId: updatedIssue.id,
+					},
+				});
+			}
+
+			// Notify Technician about rejection/reopening
+			if (resolution.submittedByUserId) {
+				await tx.notification.create({
+					data: {
+						userId: resolution.submittedByUserId,
+						type: NotificationType.SYSTEM,
+						title: "Resolution Rejected - Issue Reopened",
+						message: `Resolution for Work Order: ${resolution.workOrder.title} was rejected and reopened. Reason: ${payload.notes || "Unsatisfactory resolution"}`,
+						resourceType: Resource.WORK_ORDER,
+						resourceId: resolution.workOrderId,
+					},
+				});
 			}
 		} else {
 			// If REJECTED, bounce work order back to IN_PROGRESS
@@ -256,6 +358,21 @@ const verifyResolution = async (
 			}
 		}
 
+		// Record ResolutionVerification history entry
+		await tx.resolutionVerification.create({
+			data: {
+				civicIssueId: resolution.workOrder.civicIssueId,
+				resolutionId: resolution.id,
+				verifiedById: userId,
+				status: isVerified ? "VERIFIED" : "REJECTED",
+				notes:
+					payload.notes ||
+					(payload.status === "REOPENED"
+						? "Issue reopened by dispatcher"
+						: null),
+			},
+		});
+
 		// Audit
 		await tx.auditLog.create({
 			data: {
@@ -263,7 +380,7 @@ const verifyResolution = async (
 				action: Action.VERIFY,
 				resource: Resource.RESOLUTION,
 				resourceId: resolutionId,
-				newValue: { status: payload.status },
+				newValue: { status: payload.status, notes: payload.notes },
 			},
 		});
 
@@ -285,8 +402,37 @@ const getResolutionById = async (userId: string, id: string) => {
 			workOrder: true,
 			attachments: true,
 			submittedByUser: {
-				include: { user: { select: { displayName: true,  email: true } } }
-			}
+				include: { user: { select: { displayName: true, email: true } } },
+			},
+			feedbacks: {
+				include: {
+					citizen: {
+						select: {
+							firstName: true,
+							lastName: true,
+							avatarUrl: true,
+							user: { select: { email: true } },
+						},
+					},
+					serviceRequest: {
+						select: {
+							id: true,
+							trackingNumber: true,
+						},
+					},
+				},
+				orderBy: { createdAt: "desc" },
+			},
+			verifications: {
+				include: {
+					verifiedBy: {
+						include: {
+							user: { select: { displayName: true, email: true } },
+						},
+					},
+				},
+				orderBy: { createdAt: "desc" },
+			},
 		},
 	});
 
@@ -299,7 +445,54 @@ const getResolutionById = async (userId: string, id: string) => {
 	return resolution;
 };
 
-const getResolutionByWorkOrderId = async (userId: string, workOrderId: string) => {
+const getResolutionFeedback = async (userId: string, id: string) => {
+	const resolution = await prisma.resolution.findUnique({
+		where: { id },
+		include: { workOrder: true },
+	});
+
+	if (!resolution) {
+		throw new AppError(httpStatus.NOT_FOUND, "Resolution not found");
+	}
+
+	await checkDepartmentAccess(userId, resolution.workOrder.departmentId);
+
+	return prisma.feedback.findMany({
+		where: {
+			OR: [
+				{ resolutionId: id },
+				{
+					serviceRequest: {
+						civicIssueId: resolution.workOrder.civicIssueId,
+					},
+				},
+			],
+		},
+		include: {
+			citizen: {
+				select: {
+					firstName: true,
+					lastName: true,
+					avatarUrl: true,
+					user: { select: { email: true } },
+				},
+			},
+			serviceRequest: {
+				select: {
+					id: true,
+					trackingNumber: true,
+					status: true,
+				},
+			},
+		},
+		orderBy: { createdAt: "desc" },
+	});
+};
+
+const getResolutionByWorkOrderId = async (
+	userId: string,
+	workOrderId: string,
+) => {
 	const workOrder = await prisma.workOrder.findUnique({
 		where: { id: workOrderId },
 	});
@@ -315,27 +508,53 @@ const getResolutionByWorkOrderId = async (userId: string, workOrderId: string) =
 		include: {
 			attachments: true,
 			submittedByUser: {
-				include: { user: { select: { displayName : true, email: true } } }
-			}
+				include: { user: { select: { displayName: true, email: true } } },
+			},
+			feedbacks: {
+				include: {
+					citizen: {
+						select: {
+							firstName: true,
+							lastName: true,
+							avatarUrl: true,
+							user: { select: { email: true } },
+						},
+					},
+				},
+			},
+			verifications: {
+				include: {
+					verifiedBy: {
+						include: {
+							user: { select: { displayName: true, email: true } },
+						},
+					},
+				},
+				orderBy: { createdAt: "desc" },
+			},
 		},
 	});
 
 	if (!resolution) {
-		throw new AppError(httpStatus.NOT_FOUND, "Resolution not found for this work order");
+		throw new AppError(
+			httpStatus.NOT_FOUND,
+			"Resolution not found for this work order",
+		);
 	}
 
 	return resolution;
 };
 
 const getAllResolutions = async (query: Record<string, unknown>) => {
-	// Simple unpaginated/unfiltered fetch for now, can be extended based on query
 	const resolutions = await prisma.resolution.findMany({
 		include: {
 			workOrder: true,
 			attachments: true,
 			submittedByUser: {
-				include: { user: { select: { displayName: true, email: true } } }
-			}
+				include: { user: { select: { displayName: true, email: true } } },
+			},
+			feedbacks: true,
+			verifications: true,
 		},
 		orderBy: { createdAt: "desc" },
 	});
@@ -347,6 +566,7 @@ export const ResolutionService = {
 	submitResolution,
 	verifyResolution,
 	getResolutionById,
+	getResolutionFeedback,
 	getResolutionByWorkOrderId,
 	getAllResolutions,
 };

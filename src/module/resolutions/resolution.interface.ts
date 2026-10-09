@@ -3,6 +3,6 @@ export interface ISubmitResolutionPayload {
 }
 
 export interface IVerifyResolutionPayload {
-	status: "VERIFIED" | "REJECTED";
+	status: "VERIFIED" | "REJECTED" | "REOPENED";
 	notes?: string;
 }

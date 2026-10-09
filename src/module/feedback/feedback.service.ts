@@ -7,7 +7,10 @@ import {
 	Resource,
 	LifecycleStatus,
 } from "../../../generated/prisma/enums";
-import { checkMunicipalityAccess, checkDepartmentAccess } from "../../utils/abac.utils";
+import {
+	checkMunicipalityAccess,
+	checkDepartmentAccess,
+} from "../../utils/abac.utils";
 import { buildPrismaQuery } from "../../utils/QueryBuilder";
 import { feedbackSearchableFields } from "./feedback.constant";
 
@@ -31,13 +34,28 @@ const submitFeedback = async (
 	}
 
 	if (
+		request.status !== LifecycleStatus.PENDING_VERIFICATION &&
 		request.status !== LifecycleStatus.RESOLVED &&
 		request.status !== LifecycleStatus.CLOSED
 	) {
 		throw new AppError(
 			httpStatus.BAD_REQUEST,
-			"Feedback can only be submitted for resolved or closed requests",
+			"Feedback can only be submitted for requests with a submitted resolution, resolved, or closed status",
 		);
+	}
+
+	let resolutionId = payload.resolutionId;
+	if (!resolutionId && request.civicIssueId) {
+		const activeResolution = await prisma.resolution.findFirst({
+			where: {
+				workOrder: { civicIssueId: request.civicIssueId },
+				rejectedAt: null,
+			},
+			orderBy: { createdAt: "desc" },
+		});
+		if (activeResolution) {
+			resolutionId = activeResolution.id;
+		}
 	}
 
 	const existingFeedback = await prisma.feedback.findUnique({
@@ -56,8 +74,13 @@ const submitFeedback = async (
 			data: {
 				serviceRequestId: payload.serviceRequestId,
 				citizenId: userId,
+				resolutionId: resolutionId || null,
 				rating: payload.rating,
 				comment: payload.comment,
+			},
+			include: {
+				serviceRequest: true,
+				resolution: true,
 			},
 		});
 
@@ -184,8 +207,8 @@ const getFeedbackById = async (userId: string, feedbackId: string) => {
 		where: { id: feedbackId },
 		include: {
 			citizen: { select: { firstName: true, lastName: true } },
-			serviceRequest: { 
-				include: { civicIssue: true }
+			serviceRequest: {
+				include: { civicIssue: true },
 			},
 		},
 	});
@@ -194,14 +217,20 @@ const getFeedbackById = async (userId: string, feedbackId: string) => {
 		throw new AppError(httpStatus.NOT_FOUND, "Feedback not found");
 	}
 
-	// We check municipality access first (which lets City Admins pass). 
-	// Or we check department access if it's bound to a department. 
+	// We check municipality access first (which lets City Admins pass).
+	// Or we check department access if it's bound to a department.
 	// Both are valid. We'll check municipality to be safe.
 	if (!feedback.serviceRequest.civicIssue) {
-		throw new AppError(httpStatus.NOT_FOUND, "Associated civic issue not found");
+		throw new AppError(
+			httpStatus.NOT_FOUND,
+			"Associated civic issue not found",
+		);
 	}
 
-	await checkMunicipalityAccess(userId, feedback.serviceRequest.civicIssue.municipalityId);
+	await checkMunicipalityAccess(
+		userId,
+		feedback.serviceRequest.civicIssue.municipalityId,
+	);
 
 	return feedback;
 };
@@ -235,10 +264,60 @@ const getAllFeedback = async (filters: any = {}, options: any = {}) => {
 	};
 };
 
+const getFeedbackByResolutionId = async (
+	userId: string,
+	resolutionId: string,
+) => {
+	const resolution = await prisma.resolution.findUnique({
+		where: { id: resolutionId },
+		include: { workOrder: true },
+	});
+
+	if (!resolution) {
+		throw new AppError(httpStatus.NOT_FOUND, "Resolution not found");
+	}
+
+	await checkDepartmentAccess(userId, resolution.workOrder.departmentId);
+
+	const feedbacks = await prisma.feedback.findMany({
+		where: {
+			OR: [
+				{ resolutionId },
+				{
+					serviceRequest: {
+						civicIssueId: resolution.workOrder.civicIssueId,
+					},
+				},
+			],
+		},
+		include: {
+			citizen: {
+				select: {
+					firstName: true,
+					lastName: true,
+					avatarUrl: true,
+					user: { select: { email: true } },
+				},
+			},
+			serviceRequest: {
+				select: {
+					id: true,
+					trackingNumber: true,
+					status: true,
+				},
+			},
+		},
+		orderBy: { createdAt: "desc" },
+	});
+
+	return feedbacks;
+};
+
 export const FeedbackService = {
 	submitFeedback,
 	getAllFeedback,
 	getFeedback,
 	getDepartmentFeedback,
 	getFeedbackById,
+	getFeedbackByResolutionId,
 };

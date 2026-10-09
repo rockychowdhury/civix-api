@@ -251,7 +251,10 @@ const loginUser = async (payload: ILogin) => {
 	}
 
 	if (password) {
-		const isPasswordMatched = await bcrypt.compare(password, user.passwordHash as string);
+		const isPasswordMatched = await bcrypt.compare(
+			password,
+			user.passwordHash as string,
+		);
 
 		if (!isPasswordMatched) {
 			throw new AppError(httpStatus.UNAUTHORIZED, "Invalid credentials");
@@ -445,7 +448,8 @@ const googleLogin = async (payload: IGoogleAuth) => {
 				citizenProfile: {
 					create: {
 						firstName: googleIdTokenPayload.name.split(" ")[0]!,
-						lastName: googleIdTokenPayload.name.split(" ").slice(1).join(" ") || "",
+						lastName:
+							googleIdTokenPayload.name.split(" ").slice(1).join(" ") || "",
 					},
 				},
 				...(citizenRole && {

@@ -13,5 +13,7 @@ model Resolution {
   workOrder       WorkOrder     @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
   submittedByUser StaffProfile? @relation(fields: [submittedByUserId], references: [userId], onDelete: SetNull)
 
-  attachments Attachment[]
+  attachments   Attachment[]
+  feedbacks     Feedback[]
+  verifications ResolutionVerification[]
 }

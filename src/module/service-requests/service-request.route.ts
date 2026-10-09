@@ -21,6 +21,12 @@ router.get(
 );
 
 router.get(
+	"/pending-feedback",
+	requirePermission(Action.READ, Resource.SERVICE_REQUEST),
+	ServiceRequestController.getPendingFeedbackRequests,
+);
+
+router.get(
 	"/",
 	requirePermission(Action.READ_ALL, Resource.SERVICE_REQUEST),
 	ServiceRequestController.getAllServiceRequests,

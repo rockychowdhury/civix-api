@@ -123,7 +123,9 @@ const updateMe = async (
 		throw new Error("User not found");
 	}
 
-	const isCitizen = existingUser.userRoles.some((ur) => ur.role.code === "CITIZEN");
+	const isCitizen = existingUser.userRoles.some(
+		(ur) => ur.role.code === "CITIZEN",
+	);
 	if (!isCitizen) {
 		throw new AppError(
 			httpStatus.FORBIDDEN,
@@ -134,7 +136,9 @@ const updateMe = async (
 	const user = await prisma.user.update({
 		where: { id: userId },
 		data: {
-			...(payload.displayName !== undefined && { displayName: payload.displayName }),
+			...(payload.displayName !== undefined && {
+				displayName: payload.displayName,
+			}),
 			...(payload.phone !== undefined && { phone: payload.phone }),
 			citizenProfile: {
 				update: {
@@ -198,7 +202,10 @@ const updateUserStatus = async (
 	return userWithoutPassword as IUser;
 };
 
-const deleteUser = async (requesterId: string, userId: string): Promise<IUser> => {
+const deleteUser = async (
+	requesterId: string,
+	userId: string,
+): Promise<IUser> => {
 	await checkRoleManagementPrivilege(requesterId, userId);
 
 	const user = await prisma.user.update({
@@ -216,7 +223,10 @@ const deleteUser = async (requesterId: string, userId: string): Promise<IUser> =
 	return userWithoutPassword as IUser;
 };
 
-const restoreUser = async (requesterId: string, userId: string): Promise<IUser> => {
+const restoreUser = async (
+	requesterId: string,
+	userId: string,
+): Promise<IUser> => {
 	await checkRoleManagementPrivilege(requesterId, userId);
 
 	const user = await prisma.user.update({
@@ -233,7 +243,6 @@ const restoreUser = async (requesterId: string, userId: string): Promise<IUser> 
 
 	return userWithoutPassword as IUser;
 };
-
 
 export const UserService = {
 	getMe,

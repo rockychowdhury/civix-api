@@ -30,7 +30,6 @@ const getUserByIdValidationSchema = z.object({
 	}),
 });
 
-
 const updateUserStatusValidationSchema = z.object({
 	body: z.object({
 		status: z.nativeEnum(UserStatus),
@@ -49,7 +48,6 @@ const restoreUserValidationSchema = z.object({
 	}),
 });
 
-
 export const UserValidation = {
 	getMeValidationSchema,
 	updateMeValidationSchema,
@@ -58,5 +56,4 @@ export const UserValidation = {
 	updateUserStatusValidationSchema,
 	deleteUserValidationSchema,
 	restoreUserValidationSchema,
-
 };

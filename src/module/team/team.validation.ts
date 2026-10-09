@@ -10,6 +10,21 @@ const createTeamSchema = z.object({
 	}),
 });
 
+const updateTeamSchema = z.object({
+	params: z.object({ id: z.string().uuid() }),
+	body: z.object({
+		name: z.string().min(2).optional(),
+		status: z.enum(["ACTIVE", "INACTIVE", "DISBANDED"]).optional(),
+		leaderId: z.string().uuid().optional().nullable(),
+	}),
+});
+
+const deleteTeamSchema = z.object({
+	params: z.object({ id: z.string().uuid() }),
+});
+
 export const TeamValidation = {
 	createTeamSchema,
+	updateTeamSchema,
+	deleteTeamSchema,
 };

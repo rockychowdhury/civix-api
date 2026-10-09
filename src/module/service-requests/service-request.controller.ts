@@ -22,7 +22,12 @@ const createServiceRequest = catchAsync(async (req: Request, res: Response) => {
 
 const getMyServiceRequests = catchAsync(async (req: Request, res: Response) => {
 	const userId = (req as any).user.userId;
-	const filters = pick(req.query, ["status", "requestType", "searchTerm"]);
+	const filters = pick(req.query, [
+		"status",
+		"requestType",
+		"searchTerm",
+		"pendingFeedback",
+	]);
 	const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
 
 	const result = await ServiceRequestService.getMyServiceRequests(
@@ -39,6 +44,29 @@ const getMyServiceRequests = catchAsync(async (req: Request, res: Response) => {
 		meta: result.meta,
 	});
 });
+
+const getPendingFeedbackRequests = catchAsync(
+	async (req: Request, res: Response) => {
+		const userId = (req as any).user.userId;
+		const filters = pick(req.query, ["status", "requestType", "searchTerm"]);
+		const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
+
+		const result =
+			await ServiceRequestService.getPendingFeedbackServiceRequests(
+				userId,
+				filters,
+				options,
+			);
+
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Pending feedback service requests retrieved successfully",
+			data: result.data,
+			meta: result.meta,
+		});
+	},
+);
 
 const getServiceRequestById = catchAsync(
 	async (req: Request, res: Response) => {
@@ -68,7 +96,6 @@ const getAllServiceRequests = catchAsync(
 			"searchTerm",
 		]);
 		const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
-
 
 		if (req.query.unTriaged === "true") {
 			filters.civicIssueId = null;
@@ -102,9 +129,9 @@ const getMunicipalityServiceRequests = catchAsync(
 		if (req.query.unTriaged === "true") {
 			filters.civicIssueId = null;
 		}
-		
+
 		const userId = (req as any).user.userId;
-		
+
 		const result = await ServiceRequestService.getMunicipalityServiceRequests(
 			userId,
 			municipalityId,
@@ -122,31 +149,39 @@ const getMunicipalityServiceRequests = catchAsync(
 	},
 );
 
-const getServiceRequestsByCivicIssue = catchAsync(async (req: Request, res: Response) => {
-	const userId = (req as any).user.userId;
-	const civicIssueId = req.params.civicIssueId as string;
-	const filters = pick(req.query, ["status", "requestType", "searchTerm", "categoryId"]);
-	const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
+const getServiceRequestsByCivicIssue = catchAsync(
+	async (req: Request, res: Response) => {
+		const userId = (req as any).user.userId;
+		const civicIssueId = req.params.civicIssueId as string;
+		const filters = pick(req.query, [
+			"status",
+			"requestType",
+			"searchTerm",
+			"categoryId",
+		]);
+		const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
 
-	const result = await ServiceRequestService.getServiceRequestsByCivicIssue(
-		civicIssueId,
-		userId,
-		filters,
-		options,
-	);
+		const result = await ServiceRequestService.getServiceRequestsByCivicIssue(
+			civicIssueId,
+			userId,
+			filters,
+			options,
+		);
 
-	sendResponse(res, {
-		statusCode: httpStatus.OK,
-		success: true,
-		message: "Service requests for civic issue retrieved successfully",
-		data: result.data,
-		meta: result.meta,
-	});
-});
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Service requests for civic issue retrieved successfully",
+			data: result.data,
+			meta: result.meta,
+		});
+	},
+);
 
 export const ServiceRequestController = {
 	createServiceRequest,
 	getMyServiceRequests,
+	getPendingFeedbackRequests,
 	getServiceRequestById,
 	getAllServiceRequests,
 	getMunicipalityServiceRequests,

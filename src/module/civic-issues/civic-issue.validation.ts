@@ -50,21 +50,23 @@ const numericFromQuery = z
 
 const getCivicIssuesQuerySchema = z.object({
 	query: z.object({
-		status: z.enum([
-			"SUBMITTED",
-			"TRIAGED",
-			"ASSIGNED",
-			"ACCEPTED",
-			"IN_PROGRESS",
-			"PENDING_VERIFICATION",
-			"RESOLVED",
-			"CLOSED",
-			"REOPENED",
-			"REJECTED",
-			"DUPLICATE",
-			"INSUFFICIENT_INFORMATION",
-			"CANCELLED",
-		]).optional(),
+		status: z
+			.enum([
+				"SUBMITTED",
+				"TRIAGED",
+				"ASSIGNED",
+				"ACCEPTED",
+				"IN_PROGRESS",
+				"PENDING_VERIFICATION",
+				"RESOLVED",
+				"CLOSED",
+				"REOPENED",
+				"REJECTED",
+				"DUPLICATE",
+				"INSUFFICIENT_INFORMATION",
+				"CANCELLED",
+			])
+			.optional(),
 		priority: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]).optional(),
 		departmentId: z.string().uuid().optional(),
 		wardId: z.string().uuid().optional(),

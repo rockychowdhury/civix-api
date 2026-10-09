@@ -32,51 +32,55 @@ const getFeedback = catchAsync(async (req: Request, res: Response) => {
 	});
 });
 
-const getMunicipalityFeedback = catchAsync(async (req: Request, res: Response) => {
-	const userId = (req as any).user.userId;
-	const municipalityId = req.params.municipalityId as string;
+const getMunicipalityFeedback = catchAsync(
+	async (req: Request, res: Response) => {
+		const userId = (req as any).user.userId;
+		const municipalityId = req.params.municipalityId as string;
 
-	const filters = pick(req.query, ["rating", "citizenId", "searchTerm"]);
-	const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
+		const filters = pick(req.query, ["rating", "citizenId", "searchTerm"]);
+		const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
 
-	const result = await FeedbackService.getFeedback(
-		userId,
-		municipalityId,
-		filters,
-		options,
-	);
+		const result = await FeedbackService.getFeedback(
+			userId,
+			municipalityId,
+			filters,
+			options,
+		);
 
-	sendResponse(res, {
-		statusCode: httpStatus.OK,
-		success: true,
-		message: "Municipality feedback retrieved successfully",
-		data: result.data,
-		meta: result.meta,
-	});
-});
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Municipality feedback retrieved successfully",
+			data: result.data,
+			meta: result.meta,
+		});
+	},
+);
 
-const getDepartmentFeedback = catchAsync(async (req: Request, res: Response) => {
-	const userId = (req as any).user.userId;
-	const departmentId = req.params.departmentId as string;
+const getDepartmentFeedback = catchAsync(
+	async (req: Request, res: Response) => {
+		const userId = (req as any).user.userId;
+		const departmentId = req.params.departmentId as string;
 
-	const filters = pick(req.query, ["rating", "citizenId", "searchTerm"]);
-	const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
+		const filters = pick(req.query, ["rating", "citizenId", "searchTerm"]);
+		const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
 
-	const result = await FeedbackService.getDepartmentFeedback(
-		userId,
-		departmentId,
-		filters,
-		options,
-	);
+		const result = await FeedbackService.getDepartmentFeedback(
+			userId,
+			departmentId,
+			filters,
+			options,
+		);
 
-	sendResponse(res, {
-		statusCode: httpStatus.OK,
-		success: true,
-		message: "Department feedback retrieved successfully",
-		data: result.data,
-		meta: result.meta,
-	});
-});
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Department feedback retrieved successfully",
+			data: result.data,
+			meta: result.meta,
+		});
+	},
+);
 
 const getFeedbackById = catchAsync(async (req: Request, res: Response) => {
 	const userId = (req as any).user.userId;
@@ -92,10 +96,30 @@ const getFeedbackById = catchAsync(async (req: Request, res: Response) => {
 	});
 });
 
+const getFeedbackByResolutionId = catchAsync(
+	async (req: Request, res: Response) => {
+		const userId = (req as any).user.userId;
+		const resolutionId = req.params.resolutionId as string;
+
+		const result = await FeedbackService.getFeedbackByResolutionId(
+			userId,
+			resolutionId,
+		);
+
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Resolution feedback retrieved successfully",
+			data: result,
+		});
+	},
+);
+
 export const FeedbackController = {
 	submitFeedback,
 	getFeedback,
 	getMunicipalityFeedback,
 	getDepartmentFeedback,
 	getFeedbackById,
+	getFeedbackByResolutionId,
 };

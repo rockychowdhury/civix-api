@@ -7,4 +7,5 @@ export const serviceRequestFilterableFields = [
 	"status",
 	"municipalityId",
 	"civicIssueId",
+	"pendingFeedback",
 ];

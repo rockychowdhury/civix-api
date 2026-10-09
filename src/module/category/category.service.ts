@@ -182,9 +182,58 @@ const getCategoryAncestors = async (id: string) => {
 	return ancestors;
 };
 
+const createCategory = async (payload: any) => {
+	const exists = await prisma.serviceCategory.findUnique({
+		where: { slug: payload.slug },
+	});
+	if (exists) {
+		throw new AppError(httpStatus.CONFLICT, "Category slug already exists");
+	}
+
+	return prisma.serviceCategory.create({
+		data: payload,
+	});
+};
+
+const updateCategory = async (id: string, payload: any) => {
+	const category = await prisma.serviceCategory.findUnique({ where: { id } });
+	if (!category) {
+		throw new AppError(httpStatus.NOT_FOUND, "Category not found");
+	}
+
+	if (payload.slug && payload.slug !== category.slug) {
+		const exists = await prisma.serviceCategory.findUnique({
+			where: { slug: payload.slug },
+		});
+		if (exists) {
+			throw new AppError(httpStatus.CONFLICT, "Category slug already exists");
+		}
+	}
+
+	return prisma.serviceCategory.update({
+		where: { id },
+		data: payload,
+	});
+};
+
+const deleteCategory = async (id: string) => {
+	const category = await prisma.serviceCategory.findUnique({ where: { id } });
+	if (!category) {
+		throw new AppError(httpStatus.NOT_FOUND, "Category not found");
+	}
+
+	return prisma.serviceCategory.update({
+		where: { id },
+		data: { isActive: false, deletedAt: new Date() },
+	});
+};
+
 export const CategoryService = {
 	getCategories,
 	getCategoryById,
 	getCategoryChildren,
 	getCategoryAncestors,
+	createCategory,
+	updateCategory,
+	deleteCategory,
 };

@@ -1,6 +1,10 @@
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../utils/AppError";
-import { checkMunicipalityAccess, checkDepartmentAccess, checkCivicIssueInteractionAccess } from "../../utils/abac.utils";
+import {
+	checkMunicipalityAccess,
+	checkDepartmentAccess,
+	checkCivicIssueInteractionAccess,
+} from "../../utils/abac.utils";
 import httpStatus from "http-status";
 import type {
 	ITriagePayload,
@@ -383,11 +387,12 @@ const reopenCivicIssue = async (
 
 	if (
 		civicIssue.status !== LifecycleStatus.RESOLVED &&
-		civicIssue.status !== LifecycleStatus.CLOSED
+		civicIssue.status !== LifecycleStatus.CLOSED &&
+		civicIssue.status !== LifecycleStatus.PENDING_VERIFICATION
 	) {
 		throw new AppError(
 			httpStatus.BAD_REQUEST,
-			"Only resolved or closed issues can be reopened",
+			"Only pending verification, resolved, or closed issues can be reopened",
 		);
 	}
 
@@ -413,6 +418,25 @@ const reopenCivicIssue = async (
 					currentAssigneeId: null,
 				},
 			});
+
+			// If there was an active unrejected resolution, reject it
+			await tx.resolution.updateMany({
+				where: {
+					workOrderId: latestWorkOrder.id,
+					rejectedAt: null,
+				},
+				data: {
+					rejectedAt: new Date(),
+				},
+			});
+
+			// If previous assignee was assigned, release their workload
+			if (latestWorkOrder.currentAssigneeId) {
+				await tx.staffProfile.update({
+					where: { userId: latestWorkOrder.currentAssigneeId },
+					data: { currentWorkload: { decrement: 1 } },
+				});
+			}
 		}
 
 		// Sync child service requests

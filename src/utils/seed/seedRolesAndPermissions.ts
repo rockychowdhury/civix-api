@@ -107,6 +107,7 @@ const ROLE_PERMISSIONS: Record<string, PermissionGrant[]> = {
 		{ action: Action.DELETE, resource: Resource.ATTACHMENT },
 		{ action: Action.READ, resource: Resource.PROFILE },
 		{ action: Action.UPDATE, resource: Resource.PROFILE },
+		{ action: Action.READ, resource: Resource.FEEDBACK },
 	],
 
 	DEPARTMENT_MANAGER: [
@@ -148,6 +149,7 @@ const ROLE_PERMISSIONS: Record<string, PermissionGrant[]> = {
 		{ action: Action.READ, resource: Resource.ASSIGNMENT },
 		{ action: Action.READ, resource: Resource.RESOLUTION },
 		{ action: Action.VERIFY, resource: Resource.RESOLUTION },
+		{ action: Action.READ, resource: Resource.FEEDBACK },
 		{ action: Action.ESCALATE, resource: Resource.ESCALATION },
 		{ action: Action.READ, resource: Resource.NOTIFICATION },
 		{ action: Action.READ, resource: Resource.LOCATION },

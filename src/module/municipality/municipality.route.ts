@@ -14,10 +14,7 @@ router.post(
 	validateRequest(MunicipalityValidation.createMunicipalitySchema),
 	MunicipalityController.createMunicipality,
 );
-router.get(
-	"/:municipalityId",
-	MunicipalityController.getMunicipalityById,
-);
+router.get("/:municipalityId", MunicipalityController.getMunicipalityById);
 router.patch(
 	"/:municipalityId",
 	requirePermission(Action.UPDATE, Resource.MUNICIPALITY),

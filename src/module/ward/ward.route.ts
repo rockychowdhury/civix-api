@@ -27,9 +27,6 @@ router.delete(
 	WardController.deleteWard,
 );
 
-router.get(
-	"/:wardId/departments",
-	WardController.getWardDepartments,
-);
+router.get("/:wardId/departments", WardController.getWardDepartments);
 
 export const WardRoutes = router;

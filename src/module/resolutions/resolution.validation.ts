@@ -8,7 +8,7 @@ const submitResolutionSchema = z.object({
 
 const verifyResolutionSchema = z.object({
 	body: z.object({
-		status: z.enum(["VERIFIED", "REJECTED"]),
+		status: z.enum(["VERIFIED", "REJECTED", "REOPENED"]),
 		notes: z.string().optional(),
 	}),
 });

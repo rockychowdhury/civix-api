@@ -44,7 +44,43 @@ const getCategoryByIdParamsSchema = z.object({
 	}),
 });
 
+const createCategorySchema = z.object({
+	body: z.object({
+		name: z.string().min(2),
+		slug: z.string().min(2),
+		departmentId: z.string().uuid().optional(),
+		parentId: z.string().uuid().optional(),
+		description: z.string().optional(),
+		workInstructions: z.string().optional(),
+		baseSeverity: z.number().int().min(1).max(10).optional(),
+		sortOrder: z.number().int().optional(),
+		isActive: z.boolean().optional(),
+	}),
+});
+
+const updateCategorySchema = z.object({
+	params: z.object({ categoryId: z.string().uuid() }),
+	body: z.object({
+		name: z.string().min(2).optional(),
+		slug: z.string().min(2).optional(),
+		departmentId: z.string().uuid().optional().nullable(),
+		parentId: z.string().uuid().optional().nullable(),
+		description: z.string().optional().nullable(),
+		workInstructions: z.string().optional().nullable(),
+		baseSeverity: z.number().int().min(1).max(10).optional(),
+		sortOrder: z.number().int().optional(),
+		isActive: z.boolean().optional(),
+	}),
+});
+
+const deleteCategorySchema = z.object({
+	params: z.object({ categoryId: z.string().uuid() }),
+});
+
 export const CategoryValidation = {
 	getCategoriesQuerySchema,
 	getCategoryByIdParamsSchema,
+	createCategorySchema,
+	updateCategorySchema,
+	deleteCategorySchema,
 };

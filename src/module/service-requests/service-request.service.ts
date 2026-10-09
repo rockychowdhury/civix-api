@@ -99,7 +99,7 @@ const createServiceRequest = async (
 					],
 				},
 			},
-			include: { priority: true }
+			include: { priority: true },
 		});
 
 		let finalStatus: LifecycleStatus = LifecycleStatus.SUBMITTED;
@@ -120,6 +120,7 @@ const createServiceRequest = async (
 			let responseDeadlineAt = duplicateIssue.responseDeadlineAt;
 			let resolutionDeadlineAt = duplicateIssue.resolutionDeadlineAt;
 
+			let updatePriorityId: string | undefined = undefined;
 			if (
 				newPriority !== duplicateIssue.priority.code &&
 				duplicateIssue.status === LifecycleStatus.IN_PROGRESS
@@ -141,6 +142,13 @@ const createServiceRequest = async (
 						duplicateIssue.createdAt,
 					);
 				}
+
+				const newPriorityRecord = await tx.priorityLevel.findUnique({
+					where: { code: newPriority },
+				});
+				if (newPriorityRecord) {
+					updatePriorityId = newPriorityRecord.id;
+				}
 			}
 
 			await tx.civicIssue.update({
@@ -148,10 +156,10 @@ const createServiceRequest = async (
 				data: {
 					reportedCount,
 					lastReportedAt: new Date(),
-					priority: { connect: { code: newPriority } },
+					...(updatePriorityId ? { priorityId: updatePriorityId } : {}),
 					responseDeadlineAt,
 					resolutionDeadlineAt,
-				} as any,
+				},
 			});
 
 			finalStatus = duplicateIssue.status;
@@ -162,14 +170,43 @@ const createServiceRequest = async (
 			});
 			(request as any).status = finalStatus;
 			(request as any).civicIssueId = duplicateIssue.id;
+
+			// Register reporter
+			await tx.issueReporter.upsert({
+				where: {
+					civicIssueId_citizenId: {
+						civicIssueId: duplicateIssue.id,
+						citizenId: userId,
+					},
+				},
+				update: {
+					serviceRequestId: request.id,
+				},
+				create: {
+					civicIssueId: duplicateIssue.id,
+					serviceRequestId: request.id,
+					citizenId: userId,
+				},
+			});
 		} else {
 			const pScore = priorityScore(category.baseSeverity, 1, 0);
 			const initialPriority = getIssuePriority(pScore);
+			const priorityRecord = await tx.priorityLevel.findUnique({
+				where: { code: initialPriority },
+			});
+
+			if (!priorityRecord) {
+				throw new AppError(
+					httpStatus.INTERNAL_SERVER_ERROR,
+					`Priority level ${initialPriority} not found`,
+				);
+			}
+
 			const slaPolicy = await tx.slaPolicy.findFirst({
 				where: {
 					municipalityId: payload.location.municipalityId,
 					categoryId: category.id,
-					priority: { code: initialPriority },
+					priorityId: priorityRecord.id,
 				},
 			});
 
@@ -220,12 +257,12 @@ const createServiceRequest = async (
 						new Date(),
 					),
 					status: LifecycleStatus.IN_PROGRESS,
-					priority: { connect: { code: initialPriority } },
+					priorityId: priorityRecord.id,
 					reportedCount: 1,
-					wardId: payload.location.wardId,
+					wardId: payload.location.wardId || null,
 					responseDeadlineAt,
 					resolutionDeadlineAt,
-				} as any,
+				},
 			});
 
 			finalStatus = newIssue.status;
@@ -246,6 +283,24 @@ const createServiceRequest = async (
 			});
 			(request as any).status = finalStatus;
 			(request as any).civicIssueId = newIssue.id;
+
+			// Register reporter
+			await tx.issueReporter.upsert({
+				where: {
+					civicIssueId_citizenId: {
+						civicIssueId: newIssue.id,
+						citizenId: userId,
+					},
+				},
+				update: {
+					serviceRequestId: request.id,
+				},
+				create: {
+					civicIssueId: newIssue.id,
+					serviceRequestId: request.id,
+					citizenId: userId,
+				},
+			});
 		}
 		await createAuditLog({
 			userId,
@@ -279,6 +334,10 @@ const getMyServiceRequests = async (
 	filters: any = {},
 	options: any = {},
 ) => {
+	const isPendingFeedback =
+		filters.pendingFeedback === "true" || filters.pendingFeedback === true;
+	delete filters.pendingFeedback;
+
 	const { where, orderBy, skip, take, page, limit } = buildPrismaQuery(
 		filters,
 		options,
@@ -286,6 +345,22 @@ const getMyServiceRequests = async (
 	);
 
 	where.citizenId = userId;
+
+	if (isPendingFeedback) {
+		where.feedback = { is: null };
+		where.civicIssue = {
+			...(where.civicIssue || {}),
+			workOrders: {
+				some: {
+					resolution: {
+						is: {
+							rejectedAt: null,
+						},
+					},
+				},
+			},
+		};
+	}
 
 	const [data, total] = await Promise.all([
 		prisma.serviceRequest.findMany({
@@ -296,8 +371,40 @@ const getMyServiceRequests = async (
 			include: {
 				location: true,
 				attachments: true,
+				category: true,
+				feedback: true,
 				civicIssue: {
-					select: { status: true, issueNumber: true, priority: true },
+					select: {
+						id: true,
+						status: true,
+						issueNumber: true,
+						priority: true,
+						workOrders: {
+							where: {
+								resolution: {
+									is: {
+										rejectedAt: null,
+									},
+								},
+							},
+							select: {
+								id: true,
+								status: true,
+								resolution: {
+									select: {
+										id: true,
+										summary: true,
+										submittedAt: true,
+										approvedAt: true,
+										rejectedAt: true,
+										attachments: true,
+									},
+								},
+							},
+							orderBy: { createdAt: "desc" },
+							take: 1,
+						},
+					},
 				},
 			},
 		}),
@@ -315,9 +422,21 @@ const getMyServiceRequests = async (
 	};
 };
 
+const getPendingFeedbackServiceRequests = async (
+	userId: string,
+	filters: any = {},
+	options: any = {},
+) => {
+	return getMyServiceRequests(
+		userId,
+		{ ...filters, pendingFeedback: true },
+		options,
+	);
+};
+
 const getServiceRequestById = async (id: string, userId?: string) => {
 	const request = await prisma.serviceRequest.findUnique({
-		where: { id, },
+		where: { id },
 		include: {
 			citizen: {
 				select: {
@@ -416,6 +535,7 @@ const getMunicipalityServiceRequests = async (
 export const ServiceRequestService = {
 	createServiceRequest,
 	getMyServiceRequests,
+	getPendingFeedbackServiceRequests,
 	getServiceRequestById,
 	getAllServiceRequests,
 	getServiceRequestsByCivicIssue,

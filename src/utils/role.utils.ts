@@ -49,7 +49,8 @@ export const checkRoleManagementPrivilege = async (
 		include: { userRoles: { include: { role: true } } },
 	});
 
-	if (!requester) throw new AppError(httpStatus.UNAUTHORIZED, "Requester not found");
+	if (!requester)
+		throw new AppError(httpStatus.UNAUTHORIZED, "Requester not found");
 
 	const requesterRoles = requester.userRoles.map((ur) => ur.role.code);
 	let highestRequesterRole = "CITIZEN";
@@ -69,7 +70,8 @@ export const checkRoleManagementPrivilege = async (
 	// 2. Check Target Role (if assigning or removing a role)
 	if (targetRoleId) {
 		const role = await prisma.role.findUnique({ where: { id: targetRoleId } });
-		if (!role) throw new AppError(httpStatus.NOT_FOUND, "Target role not found");
+		if (!role)
+			throw new AppError(httpStatus.NOT_FOUND, "Target role not found");
 
 		// Special case: Nobody can manage the SUPER_ADMIN role except SUPER_ADMIN
 		if (role.code === "SUPER_ADMIN" && !isRequesterSuperAdmin) {
@@ -94,7 +96,8 @@ export const checkRoleManagementPrivilege = async (
 			include: { userRoles: { include: { role: true } } },
 		});
 
-		if (!targetUser) throw new AppError(httpStatus.NOT_FOUND, "Target user not found");
+		if (!targetUser)
+			throw new AppError(httpStatus.NOT_FOUND, "Target user not found");
 
 		const targetRoles = targetUser.userRoles.map((ur) => ur.role.code);
 		let highestTargetRole = "CITIZEN";
@@ -117,7 +120,10 @@ export const checkRoleManagementPrivilege = async (
 		}
 
 		// General hierarchical check: You can only manage a user whose highest role is lower than yours in the matrix
-		if (highestTargetRole !== "SUPER_ADMIN" && !allowedToManage.includes(highestTargetRole)) {
+		if (
+			highestTargetRole !== "SUPER_ADMIN" &&
+			!allowedToManage.includes(highestTargetRole)
+		) {
 			// Exception: A user can always update their own non-role data if the controller allows it,
 			// but for administrative actions like suspension/deletion/role assignment, they must outrank the target.
 			// We assume this check is only called for administrative actions on OTHERS.

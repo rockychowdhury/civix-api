@@ -35,7 +35,10 @@ export const globalErrorHandler = async (
 	} else if (err instanceof Prisma.PrismaClientValidationError) {
 		statusCode = httpStatus.BAD_REQUEST;
 		isOperationalError = true;
-		errorMessage = "You have provided incorrect field type or missing fields";
+		errorMessage =
+			config.node_env === "development"
+				? err.message
+				: "You have provided incorrect field type or missing fields";
 	} else if (err instanceof Prisma.PrismaClientKnownRequestError) {
 		isOperationalError = true;
 		if (err.code === "P2002") {
@@ -79,7 +82,11 @@ export const globalErrorHandler = async (
 	res.status(statusCode).json({
 		success: false,
 		statusCode: statusCode || httpStatus.INTERNAL_SERVER_ERROR,
-		name: exposeDetails ? errorName : isOperationalError ? errorName : "Internal Server Error",
+		name: exposeDetails
+			? errorName
+			: isOperationalError
+				? errorName
+				: "Internal Server Error",
 		message: exposeMessage ? errorMessage : "Internal Server Error",
 		errorSources: errorSources.length > 0 ? errorSources : undefined,
 		error: exposeDetails ? err : undefined,

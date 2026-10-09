@@ -2,20 +2,17 @@ import bcrypt from "bcryptjs";
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../utils/AppError";
 import httpStatus from "http-status";
-import type { ICreateStaffPayload, IStaffFilter, IUpdateStaffPayload } from "./staff.interface";
+import type {
+	ICreateStaffPayload,
+	IStaffFilter,
+	IUpdateStaffPayload,
+} from "./staff.interface";
 import config from "../../config";
 import { buildPrismaQuery } from "../../utils/QueryBuilder";
 import { staffSearchableFields } from "./staff.constant";
 import { DepartmentRole, UserStatus } from "../../../generated/prisma/enums";
-
-// Utility for generating random passwords if none provided
-const generatePassword = () => Math.random().toString(36).slice(-8);
-
-// Utility for unique Employee IDs
-const generateEmployeeId = (rolePrefix: string) => {
-	const rand = Math.floor(1000 + Math.random() * 9000);
-	return `${rolePrefix}-${Date.now().toString().slice(-4)}${rand}`;
-};
+import { pick } from "../../utils/pick";
+import { generateEmployeeId, generatePassword } from "../../utils/generators";
 
 const createPlatformAdmin = async (payload: ICreateStaffPayload) => {
 	const role = await prisma.role.findUnique({
@@ -287,7 +284,10 @@ const getAllStaff = async (
 		requesterRoleCodes.includes("PLATFORM_ADMIN");
 
 	const { where, orderBy, skip, take, page, limit } = buildPrismaQuery(
-		filters,
+		pick(filters as Record<string, any>, [
+			"searchTerm",
+			"municipalityId",
+		]) as Record<string, any>,
 		options,
 		staffSearchableFields,
 	);
@@ -360,13 +360,13 @@ const getStaffById = async (staffId: string, reqUserId: string) => {
 	}
 
 	const targetStaff = await prisma.staffProfile.findUnique({
-		where: { id: staffId },
+		where: { userId: staffId },
 		include: {
 			user: {
 				select: {
 					email: true,
 					status: true,
-					userRoles: { include: { role: { select: { code: true } } } },
+					userRoles: { select: { role: { select: { code: true } } } },
 				},
 			},
 			departmentMembers: {
@@ -427,7 +427,9 @@ const updateStaffStatus = async (
 			user: { include: { userRoles: { include: { role: true } } } },
 		},
 	});
-	const requesterRoleCodes = requester!.user.userRoles.map((ur) => ur.role.code);
+	const requesterRoleCodes = requester!.user.userRoles.map(
+		(ur) => ur.role.code,
+	);
 	const isGlobal =
 		requesterRoleCodes.includes("SUPER_ADMIN") ||
 		requesterRoleCodes.includes("PLATFORM_ADMIN");
@@ -475,7 +477,9 @@ const updateStaff = async (
 			user: { include: { userRoles: { include: { role: true } } } },
 		},
 	});
-	const requesterRoleCodes = requester!.user.userRoles.map((ur) => ur.role.code);
+	const requesterRoleCodes = requester!.user.userRoles.map(
+		(ur) => ur.role.code,
+	);
 	const isGlobal =
 		requesterRoleCodes.includes("SUPER_ADMIN") ||
 		requesterRoleCodes.includes("PLATFORM_ADMIN");
@@ -505,7 +509,7 @@ const updateStaff = async (
 	}
 
 	const updatedStaff = await prisma.staffProfile.update({
-		where: { id: staffId },
+		where: { userId: staffId },
 		data: payload,
 	});
 

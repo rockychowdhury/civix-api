@@ -32,7 +32,33 @@ const getAllTeams = catchAsync(async (req: Request, res: Response) => {
 	});
 });
 
+const updateTeam = catchAsync(async (req: Request, res: Response) => {
+	const userId = (req as any).user.userId;
+	const { id } = req.params;
+	const result = await TeamService.updateTeam(id as string, req.body, userId);
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "Team updated successfully",
+		data: result,
+	});
+});
+
+const deleteTeam = catchAsync(async (req: Request, res: Response) => {
+	const userId = (req as any).user.userId;
+	const { id } = req.params;
+	const result = await TeamService.deleteTeam(id as string, userId);
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "Team deleted successfully",
+		data: result,
+	});
+});
+
 export const TeamController = {
 	createTeam,
 	getAllTeams,
+	updateTeam,
+	deleteTeam,
 };

@@ -7,7 +7,6 @@ import { Action, Resource } from "../../../generated/prisma/enums";
 
 const router = Router();
 
-
 router.patch(
 	"/:id/status",
 	requirePermission(Action.UPDATE, Resource.CIVIC_ISSUE),

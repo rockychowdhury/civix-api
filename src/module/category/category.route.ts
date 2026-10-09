@@ -34,4 +34,25 @@ router.get(
 	CategoryController.getCategoryById,
 );
 
+router.post(
+	"/",
+	requirePermission(Action.MANAGE, Resource.CATEGORY),
+	validateRequest(CategoryValidation.createCategorySchema),
+	CategoryController.createCategory,
+);
+
+router.patch(
+	"/:categoryId",
+	requirePermission(Action.MANAGE, Resource.CATEGORY),
+	validateRequest(CategoryValidation.updateCategorySchema),
+	CategoryController.updateCategory,
+);
+
+router.delete(
+	"/:categoryId",
+	requirePermission(Action.MANAGE, Resource.CATEGORY),
+	validateRequest(CategoryValidation.deleteCategorySchema),
+	CategoryController.deleteCategory,
+);
+
 export const CategoryRoutes = router;

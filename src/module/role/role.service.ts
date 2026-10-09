@@ -80,7 +80,6 @@ const deleteRole = async (roleId: string) => {
 	return await prisma.role.delete({ where: { id: roleId } });
 };
 
-
 const getRolePermissions = async (roleId: string) => {
 	const role = await prisma.role.findUnique({ where: { id: roleId } });
 	if (!role) throw new AppError(httpStatus.NOT_FOUND, "Role not found");
@@ -138,7 +137,11 @@ const getUserRoles = async (userId: string) => {
 	return userRoles;
 };
 
-const assignRole = async (requesterId: string, userId: string, roleId: string) => {
+const assignRole = async (
+	requesterId: string,
+	userId: string,
+	roleId: string,
+) => {
 	await checkRoleManagementPrivilege(requesterId, userId, roleId);
 
 	const user = await prisma.user.findUnique({ where: { id: userId } });
@@ -162,7 +165,11 @@ const assignRole = async (requesterId: string, userId: string, roleId: string) =
 	return getUserRoles(userId);
 };
 
-const removeRole = async (requesterId: string, userId: string, roleId: string) => {
+const removeRole = async (
+	requesterId: string,
+	userId: string,
+	roleId: string,
+) => {
 	await checkRoleManagementPrivilege(requesterId, userId, roleId);
 
 	const userRole = await prisma.userRole.findFirst({

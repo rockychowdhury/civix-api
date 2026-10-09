@@ -31,7 +31,10 @@ export const checkMunicipalityAccess = async (
 
 	// For all other roles, if they are trying to access municipality-bound data,
 	// they MUST have a staff profile and it must match the target municipality.
-	if (!user.staffProfile || user.staffProfile.municipalityId !== targetMunicipalityId) {
+	if (
+		!user.staffProfile ||
+		user.staffProfile.municipalityId !== targetMunicipalityId
+	) {
 		throw new AppError(
 			httpStatus.FORBIDDEN,
 			"You do not have permission to access resources in this municipality",

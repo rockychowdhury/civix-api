@@ -4,6 +4,7 @@ import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { StaffService } from "./staff.service";
 import { pick } from "../../utils/pick";
+import { SystemRole } from "../../constant/role.constant";
 
 const createPlatformAdmin = catchAsync(async (req: Request, res: Response) => {
 	const result = await StaffService.createPlatformAdmin(req.body);
@@ -88,7 +89,7 @@ const getTechnicians = catchAsync(async (req: Request, res: Response) => {
 		"municipalityId",
 		"departmentId",
 	]);
-	filters.role = "TECHNICIAN"; // Override role
+	filters.role = SystemRole.TECHNICIAN; // Override role
 	const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
 
 	const result = await StaffService.getAllStaff(userId, filters, options);
@@ -105,7 +106,7 @@ const getTechnicians = catchAsync(async (req: Request, res: Response) => {
 const getStaffById = catchAsync(async (req: Request, res: Response) => {
 	const userId = (req as any).user.userId;
 	const { id } = req.params;
-	const result = await StaffService.getStaffById(id, userId);
+	const result = await StaffService.getStaffById(id as string, userId);
 
 	sendResponse(res, {
 		statusCode: httpStatus.OK,
@@ -119,7 +120,11 @@ const updateStaffStatus = catchAsync(async (req: Request, res: Response) => {
 	const userId = (req as any).user.userId;
 	const { id } = req.params;
 	const { status } = req.body;
-	const result = await StaffService.updateStaffStatus(id, status, userId);
+	const result = await StaffService.updateStaffStatus(
+		id as string,
+		status,
+		userId,
+	);
 
 	sendResponse(res, {
 		statusCode: httpStatus.OK,
@@ -132,7 +137,11 @@ const updateStaffStatus = catchAsync(async (req: Request, res: Response) => {
 const updateStaff = catchAsync(async (req: Request, res: Response) => {
 	const userId = (req as any).user.userId;
 	const { id } = req.params;
-	const result = await StaffService.updateStaff(id, req.body, userId);
+	const result = await StaffService.updateStaff(
+		id as string,
+		req.body as any,
+		userId,
+	);
 
 	sendResponse(res, {
 		statusCode: httpStatus.OK,

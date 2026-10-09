@@ -105,9 +105,25 @@ const getWorkOrders = async (filters: any = {}, options: any = {}) => {
 			take,
 			include: {
 				civicIssue: { include: { location: true, priority: true } },
-				currentAssignee: { select: { firstName: true, lastName: true, user: { select: { email: true, phone: true } } } },
+				currentAssignee: {
+					select: {
+						firstName: true,
+						lastName: true,
+						user: { select: { email: true, phone: true } },
+					},
+				},
 				department: true,
-				assignments: { include: { assignedTo: { select: { firstName: true, lastName: true, user: { select: { email: true } } } } } },
+				assignments: {
+					include: {
+						assignedTo: {
+							select: {
+								firstName: true,
+								lastName: true,
+								user: { select: { email: true } },
+							},
+						},
+					},
+				},
 			},
 		}),
 		prisma.workOrder.count({ where }),
@@ -152,9 +168,25 @@ const getWorkOrdersByMunicipality = async (
 			take,
 			include: {
 				civicIssue: { include: { location: true, priority: true } },
-				currentAssignee: { select: { firstName: true, lastName: true, user: { select: { email: true, phone: true } } } },
+				currentAssignee: {
+					select: {
+						firstName: true,
+						lastName: true,
+						user: { select: { email: true, phone: true } },
+					},
+				},
 				department: true,
-				assignments: { include: { assignedTo: { select: { firstName: true, lastName: true, user: { select: { email: true } } } } } },
+				assignments: {
+					include: {
+						assignedTo: {
+							select: {
+								firstName: true,
+								lastName: true,
+								user: { select: { email: true } },
+							},
+						},
+					},
+				},
 			},
 		}),
 		prisma.workOrder.count({ where: municipalityWhere }),
@@ -196,9 +228,27 @@ const getWorkOrdersByDepartment = async (
 			take,
 			include: {
 				civicIssue: { include: { location: true, priority: true } },
-				currentAssignee: { select: { firstName: true, lastName: true, user: { select: { email: true, phone: true } } } },
+				currentAssignee: {
+					select: {
+						employeeId: true,
+						firstName: true,
+						lastName: true,
+						user: { select: { email: true, phone: true } },
+					},
+				},
 				department: true,
-				assignments: { include: { assignedTo: { select: { firstName: true, lastName: true, user: { select: { email: true } } } } } },
+				assignments: {
+					include: {
+						assignedTo: {
+							select: {
+								employeeId: true,
+								firstName: true,
+								lastName: true,
+								user: { select: { email: true } },
+							},
+						},
+					},
+				},
 			},
 		}),
 		prisma.workOrder.count({ where: departmentWhere }),

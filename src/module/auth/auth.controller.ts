@@ -26,13 +26,13 @@ const login = catchAsync(async (req: Request, res: Response) => {
 	res.cookie("accessToken", result.accessToken, {
 		httpOnly: true,
 		secure: config.node_env === "development" ? false : true,
-		sameSite:  config.node_env === "development" ? "lax" : "none",
+		sameSite: config.node_env === "development" ? "lax" : "none",
 		maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
 	});
 	res.cookie("refreshToken", result.refreshToken, {
 		httpOnly: true,
 		secure: config.node_env === "development" ? false : true,
-		sameSite:  config.node_env === "development" ? "lax" : "none",
+		sameSite: config.node_env === "development" ? "lax" : "none",
 		maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
 	});
 
@@ -52,13 +52,13 @@ const verifyEmail = catchAsync(async (req: Request, res: Response) => {
 	res.cookie("accessToken", result.accessToken, {
 		httpOnly: true,
 		secure: config.node_env === "development" ? false : true,
-		sameSite:  config.node_env === "development" ? "lax" : "none",
+		sameSite: config.node_env === "development" ? "lax" : "none",
 		maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
 	});
 	res.cookie("refreshToken", result.refreshToken, {
 		httpOnly: true,
 		secure: config.node_env === "development" ? false : true,
-		sameSite:  config.node_env === "development" ? "lax" : "none",
+		sameSite: config.node_env === "development" ? "lax" : "none",
 		maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
 	});
 
@@ -92,13 +92,13 @@ const refreshToken = catchAsync(async (req: Request, res: Response) => {
 	res.cookie("accessToken", result.accessToken, {
 		httpOnly: true,
 		secure: config.node_env === "development" ? false : true,
-		sameSite:  config.node_env === "development" ? "lax" : "none",
+		sameSite: config.node_env === "development" ? "lax" : "none",
 		maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
 	});
 	res.cookie("refreshToken", result.refreshToken, {
 		httpOnly: true,
 		secure: config.node_env === "development" ? false : true,
-		sameSite:  config.node_env === "development" ? "lax" : "none",
+		sameSite: config.node_env === "development" ? "lax" : "none",
 		maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
 	});
 
@@ -118,13 +118,13 @@ const googleLogin = catchAsync(async (req: Request, res: Response) => {
 	res.cookie("accessToken", result.accessToken, {
 		httpOnly: true,
 		secure: config.node_env === "development" ? false : true,
-		sameSite:  config.node_env === "development" ? "lax" : "none",
+		sameSite: config.node_env === "development" ? "lax" : "none",
 		maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
 	});
 	res.cookie("refreshToken", result.refreshToken, {
 		httpOnly: true,
 		secure: config.node_env === "development" ? false : true,
-		sameSite:  config.node_env === "development" ? "lax" : "none",
+		sameSite: config.node_env === "development" ? "lax" : "none",
 		maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
 	});
 
@@ -140,7 +140,8 @@ const logout = catchAsync(async (_req: Request, res: Response) => {
 	const cookieOptions = {
 		httpOnly: true,
 		secure: config.node_env !== "development",
-		sameSite: config.node_env === "development" ? ("lax" as const) : ("none" as const),
+		sameSite:
+			config.node_env === "development" ? ("lax" as const) : ("none" as const),
 	};
 
 	res.clearCookie("accessToken", cookieOptions);

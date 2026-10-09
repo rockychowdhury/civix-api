@@ -7,11 +7,7 @@ import { requirePermission, requireAuth } from "../../middleware/checkAuth";
 
 const router = Router();
 
-router.get(
-	"/me",
-	requireAuth,
-	UserController.getMe,
-);
+router.get("/me", requireAuth, UserController.getMe);
 
 router.get(
 	"/",

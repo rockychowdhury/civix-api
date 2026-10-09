@@ -55,6 +55,8 @@ import { AnalyticsRoutes } from "./module/analytics/analytics.route";
 import { NotificationRoutes } from "./module/notification/notification.route";
 import { StaffRoutes } from "./module/staff/staff.route";
 import { TeamRoutes } from "./module/team/team.route";
+import { SlaPolicyRoutes } from "./module/sla-policy/sla-policy.route";
+import { DepartmentRoutes } from "./module/department/department.route";
 
 app.use("/api/v1/auth", AuthRoutes);
 app.use("/api/v1/users", UserRoutes);
@@ -77,6 +79,8 @@ app.use("/api/v1/analytics", AnalyticsRoutes);
 app.use("/api/v1/notifications", NotificationRoutes);
 app.use("/api/v1/staff", StaffRoutes);
 app.use("/api/v1/teams", TeamRoutes);
+app.use("/api/v1/sla-policies", SlaPolicyRoutes);
+app.use("/api/v1/departments", DepartmentRoutes);
 
 app.get("/test", async (req: Request, res: Response, next: NextFunction) => {
 	try {

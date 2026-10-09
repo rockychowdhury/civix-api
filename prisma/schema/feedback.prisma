@@ -2,6 +2,7 @@ model Feedback {
   id               String  @id @default(uuid())
   serviceRequestId String  @unique
   citizenId        String
+  resolutionId     String?
   rating           Int
   comment          String?
 
@@ -9,8 +10,10 @@ model Feedback {
 
   serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
   citizen        CitizenProfile @relation(fields: [citizenId], references: [userId], onDelete: Cascade)
+  resolution     Resolution?    @relation(fields: [resolutionId], references: [id], onDelete: SetNull)
 
   resolutionVerification ResolutionVerification?
 
   @@index([citizenId, createdAt])
+  @@index([resolutionId])
 }

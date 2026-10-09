@@ -6,7 +6,10 @@ import {
 	AttachmentPurpose,
 	AttachmentFileType,
 } from "../../../generated/prisma/enums";
-import { checkDepartmentAccess, checkMunicipalityAccess } from "../../utils/abac.utils";
+import {
+	checkDepartmentAccess,
+	checkMunicipalityAccess,
+} from "../../utils/abac.utils";
 import { deleteFromCloudinary } from "../../lib/cloudinary";
 
 // getFileType removed since all attachments are guaranteed to be images by middleware

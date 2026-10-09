@@ -42,4 +42,10 @@ router.get(
 	ResolutionController.getResolutionById,
 );
 
+router.get(
+	"/:id/feedback",
+	requirePermission(Action.READ, Resource.RESOLUTION),
+	ResolutionController.getResolutionFeedback,
+);
+
 export const ResolutionRoutes = router;

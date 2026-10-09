@@ -132,9 +132,7 @@ const createAssignment = async (
 			changedById: userId,
 			previousStatus: workOrder.status as LifecycleStatus,
 			newStatus: lifecycleStatus,
-			notes: assignedTeamId
-				? `Assigned to team`
-				: `Assigned to technician`,
+			notes: assignedTeamId ? `Assigned to team` : `Assigned to technician`,
 			tx,
 		});
 
@@ -244,7 +242,7 @@ const updateAssignmentStatus = async (
 		include: { userRoles: { include: { role: true } } },
 	});
 	const isSuperOrPlatformAdmin = user?.userRoles.some(
-		(ur) => ur.role.code === "SUPER_ADMIN" || ur.role.code === "PLATFORM_ADMIN"
+		(ur) => ur.role.code === "SUPER_ADMIN" || ur.role.code === "PLATFORM_ADMIN",
 	);
 
 	// Security: Only the assigned tech, team lead, or admin can accept/reject
@@ -374,7 +372,7 @@ const getAllAssignments = async (filters: any = {}, options: any = {}) => {
 			take,
 			include: {
 				workOrder: {
-					select: { title: true, priority: true, status: true },
+					select: { title: true, status: true },
 				},
 				team: {
 					select: { name: true },
@@ -424,7 +422,7 @@ const getDepartmentAssignments = async (
 			take,
 			include: {
 				workOrder: {
-					select: { title: true, priority: true, status: true },
+					select: { title: true, status: true },
 				},
 				team: {
 					select: { name: true },
@@ -468,7 +466,10 @@ const getAssignmentById = async (userId: string, id: string) => {
 		throw new AppError(httpStatus.NOT_FOUND, "Assignment not found");
 	}
 
-	await checkDepartmentAccess(userId, assignment.workOrder.civicIssue.departmentId as string);
+	await checkDepartmentAccess(
+		userId,
+		assignment.workOrder.civicIssue.departmentId as string,
+	);
 
 	return assignment;
 };

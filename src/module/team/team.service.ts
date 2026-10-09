@@ -200,7 +200,30 @@ const getAllTeams = async (
 	};
 };
 
+const updateTeam = async (id: string, payload: any, reqUserId: string) => {
+	const team = await prisma.team.findUnique({ where: { id } });
+	if (!team) throw new AppError(httpStatus.NOT_FOUND, "Team not found");
+
+	// Add auth checks here later based on dept manager...
+	return prisma.team.update({
+		where: { id },
+		data: payload,
+	});
+};
+
+const deleteTeam = async (id: string, reqUserId: string) => {
+	const team = await prisma.team.findUnique({ where: { id } });
+	if (!team) throw new AppError(httpStatus.NOT_FOUND, "Team not found");
+
+	return prisma.team.update({
+		where: { id },
+		data: { status: "DISBANDED", deletedAt: new Date() },
+	});
+};
+
 export const TeamService = {
 	createTeam,
 	getAllTeams,
+	updateTeam,
+	deleteTeam,
 };

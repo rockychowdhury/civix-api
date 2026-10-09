@@ -2,6 +2,7 @@ model ResolutionVerification {
   id           String                       @id @default(uuid())
   civicIssueId String
   feedbackId   String?                      @unique
+  resolutionId String?
   verifiedById String?
   status       ResolutionVerificationStatus @default(PENDING)
   notes        String?
@@ -10,6 +11,9 @@ model ResolutionVerification {
   updatedAt DateTime @updatedAt
 
   civicIssue CivicIssue    @relation(fields: [civicIssueId], references: [id], onDelete: Cascade)
+  resolution Resolution?   @relation(fields: [resolutionId], references: [id], onDelete: SetNull)
   feedback   Feedback?     @relation(fields: [feedbackId], references: [id], onDelete: SetNull)
   verifiedBy StaffProfile? @relation(fields: [verifiedById], references: [userId], onDelete: SetNull)
+
+  @@index([resolutionId])
 }

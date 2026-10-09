@@ -59,7 +59,6 @@ export interface IUserUpdatePayload {
 	nidNumber?: string;
 }
 
-
 export interface IUserStatusUpdate {
 	status: UserStatus;
 }

@@ -15,4 +15,18 @@ router.post(
 	TeamController.createTeam,
 );
 
+router.patch(
+	"/:id",
+	requireAuth,
+	validateRequest(TeamValidation.updateTeamSchema),
+	TeamController.updateTeam,
+);
+
+router.delete(
+	"/:id",
+	requireAuth,
+	validateRequest(TeamValidation.deleteTeamSchema),
+	TeamController.deleteTeam,
+);
+
 export const TeamRoutes = router;

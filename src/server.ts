@@ -4,7 +4,6 @@ import { transporter } from "./lib/nodemailer";
 import { prisma } from "./lib/prisma";
 import { redisClient } from "./lib/redis";
 
-
 const PORT = config.port;
 
 const main = async () => {
@@ -17,7 +16,6 @@ const main = async () => {
 
 		await transporter.verify();
 		console.log("Nodemailer Connected Successfully.");
-
 
 		app.listen(PORT, () => {
 			console.log(`Server is running on port ${PORT}`);
