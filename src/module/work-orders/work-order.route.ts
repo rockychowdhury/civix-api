@@ -39,6 +39,12 @@ router.get(
 );
 
 router.get(
+	"/my-work-orders",
+	requirePermission(Action.READ, Resource.WORK_ORDER),
+	WorkOrderController.getMyWorkOrders,
+);
+
+router.get(
 	"/:id",
 	requirePermission(Action.READ, Resource.WORK_ORDER),
 	WorkOrderController.getWorkOrderById,
@@ -49,6 +55,13 @@ router.patch(
 	requirePermission(Action.UPDATE, Resource.WORK_ORDER),
 	validateRequest(WorkOrderValidation.updateWorkOrderStatusSchema),
 	WorkOrderController.updateWorkOrderStatus,
+);
+
+router.patch(
+	"/:id/quick-action",
+	requirePermission(Action.UPDATE, Resource.WORK_ORDER),
+	validateRequest(WorkOrderValidation.quickActionSchema),
+	WorkOrderController.quickActionWorkOrder,
 );
 
 export const WorkOrderRoutes = router;

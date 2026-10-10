@@ -18,6 +18,21 @@ router.get("/", requireAuth, StaffController.getAllStaff);
 // 2. Get Technicians Only
 router.get("/technicians", requireAuth, StaffController.getTechnicians);
 
+// 2a. Technician Dashboard
+router.get(
+	"/me/technician-dashboard",
+	requireAuth,
+	StaffController.getTechnicianDashboard,
+);
+
+// 2b. Toggle Technician Availability
+router.patch(
+	"/me/availability",
+	requireAuth,
+	validateRequest(StaffValidation.updateAvailabilitySchema),
+	StaffController.updateMyAvailability,
+);
+
 // 3. Create Platform Admin
 router.post(
 	"/platform-admin",

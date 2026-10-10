@@ -39,6 +39,34 @@ router.get(
 );
 
 router.get(
+	"/department/:departmentId/queue",
+	requirePermission(Action.READ, Resource.SERVICE_REQUEST),
+	validateRequest(ServiceRequestValidation.getServiceRequestsQuerySchema),
+	ServiceRequestController.getDepartmentServiceRequestQueue,
+);
+
+router.get(
+	"/department/:departmentId/in-progress",
+	requirePermission(Action.READ, Resource.SERVICE_REQUEST),
+	validateRequest(ServiceRequestValidation.getServiceRequestsQuerySchema),
+	ServiceRequestController.getDepartmentInProgressServiceRequests,
+);
+
+router.get(
+	"/department/:departmentId/resolved",
+	requirePermission(Action.READ, Resource.SERVICE_REQUEST),
+	validateRequest(ServiceRequestValidation.getServiceRequestsQuerySchema),
+	ServiceRequestController.getDepartmentResolvedServiceRequests,
+);
+
+router.get(
+	"/department/:departmentId",
+	requirePermission(Action.READ, Resource.SERVICE_REQUEST),
+	validateRequest(ServiceRequestValidation.getServiceRequestsQuerySchema),
+	ServiceRequestController.getDepartmentServiceRequests,
+);
+
+router.get(
 	"/civic-issue/:civicIssueId",
 	requirePermission(Action.READ, Resource.SERVICE_REQUEST),
 	ServiceRequestController.getServiceRequestsByCivicIssue,

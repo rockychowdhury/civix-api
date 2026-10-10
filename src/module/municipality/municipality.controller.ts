@@ -65,10 +65,30 @@ const deleteMunicipality = catchAsync(async (req: Request, res: Response) => {
 	});
 });
 
+const getMunicipalityOverview = catchAsync(async (req: Request, res: Response) => {
+	const { municipalityId } = req.params as { municipalityId: string };
+	const query = pick(req.query, ["timeRange", "startDate", "endDate"]);
+
+	const result = await MunicipalityService.getMunicipalityOverview(
+		req.user!.userId,
+		municipalityId,
+		query,
+	);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "Municipality overview telemetry retrieved successfully",
+		data: result,
+	});
+});
+
 export const MunicipalityController = {
 	getMunicipalities,
 	createMunicipality,
 	getMunicipalityById,
 	updateMunicipality,
 	deleteMunicipality,
+	getMunicipalityOverview,
 };
+

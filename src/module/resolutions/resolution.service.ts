@@ -53,18 +53,14 @@ const submitResolution = async (
 			rejectedAt: null,
 		};
 
-		let resolution;
-
-		if (existingResolution) {
-			resolution = await tx.resolution.update({
-				where: { id: existingResolution.id },
-				data: resolutionData,
-			});
-		} else {
-			resolution = await tx.resolution.create({
-				data: resolutionData,
-			});
-		}
+		const resolution = existingResolution
+			? await tx.resolution.update({
+					where: { id: existingResolution.id },
+					data: resolutionData,
+				})
+			: await tx.resolution.create({
+					data: resolutionData,
+				});
 
 		// Update WorkOrder status to PENDING_VERIFICATION
 		await tx.workOrder.update({
@@ -410,7 +406,6 @@ const getResolutionById = async (userId: string, id: string) => {
 						select: {
 							firstName: true,
 							lastName: true,
-							avatarUrl: true,
 							user: { select: { email: true } },
 						},
 					},
@@ -473,7 +468,6 @@ const getResolutionFeedback = async (userId: string, id: string) => {
 				select: {
 					firstName: true,
 					lastName: true,
-					avatarUrl: true,
 					user: { select: { email: true } },
 				},
 			},
@@ -516,7 +510,6 @@ const getResolutionByWorkOrderId = async (
 						select: {
 							firstName: true,
 							lastName: true,
-							avatarUrl: true,
 							user: { select: { email: true } },
 						},
 					},
@@ -545,7 +538,7 @@ const getResolutionByWorkOrderId = async (
 	return resolution;
 };
 
-const getAllResolutions = async (query: Record<string, unknown>) => {
+const getAllResolutions = async (_query?: Record<string, unknown>) => {
 	const resolutions = await prisma.resolution.findMany({
 		include: {
 			workOrder: true,

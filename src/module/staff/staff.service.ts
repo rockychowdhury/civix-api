@@ -10,7 +10,11 @@ import type {
 import config from "../../config";
 import { buildPrismaQuery } from "../../utils/QueryBuilder";
 import { staffSearchableFields } from "./staff.constant";
-import { DepartmentRole, UserStatus } from "../../../generated/prisma/enums";
+import {
+	DepartmentRole,
+	UserStatus,
+	LifecycleStatus,
+} from "../../../generated/prisma/enums";
 import { pick } from "../../utils/pick";
 import { generateEmployeeId, generatePassword } from "../../utils/generators";
 
@@ -530,6 +534,205 @@ const updateStaff = async (
 	return updatedStaff;
 };
 
+const updateMyAvailability = async (userId: string, isAvailable: boolean) => {
+	const staff = await prisma.staffProfile.findUnique({
+		where: { userId },
+	});
+
+	if (!staff) {
+		throw new AppError(httpStatus.NOT_FOUND, "Staff profile not found");
+	}
+
+	return prisma.staffProfile.update({
+		where: { userId },
+		data: { isAvailable },
+	});
+};
+
+const getTechnicianDashboard = async (userId: string) => {
+	const staff = await prisma.staffProfile.findUnique({
+		where: { userId },
+		include: {
+			user: { select: { email: true, phone: true, displayName: true } },
+			departmentMembers: {
+				where: { leftAt: null },
+				include: {
+					department: { select: { id: true, name: true, code: true } },
+				},
+			},
+			teamMemberships: {
+				include: { team: { select: { id: true, name: true, code: true } } },
+			},
+		},
+	});
+
+	if (!staff) {
+		throw new AppError(httpStatus.NOT_FOUND, "Staff profile not found");
+	}
+
+	const teamIds = staff.teamMemberships.map((tm) => tm.teamId);
+	const now = new Date();
+	const startOfWeek = new Date(now);
+	startOfWeek.setDate(now.getDate() - 7);
+
+	const assignedScope = {
+		OR: [
+			{ currentAssigneeId: userId },
+			{
+				assignments: {
+					some: {
+						status: "ACCEPTED" as const,
+						OR: [
+							{ assignedToId: userId },
+							...(teamIds.length > 0 ? [{ teamId: { in: teamIds } }] : []),
+						],
+					},
+				},
+			},
+		],
+	};
+
+	const pendingAssignmentScope = {
+		status: "PENDING" as const,
+		OR: [
+			{ assignedToId: userId },
+			...(teamIds.length > 0 ? [{ teamId: { in: teamIds } }] : []),
+		],
+	};
+
+	const [
+		pendingAssignmentsCount,
+		activeWorkOrdersCount,
+		pendingVerificationCount,
+		completedThisWeekCount,
+		overdueCount,
+		pendingAssignments,
+		activeWorkOrders,
+		recentUpdates,
+	] = await Promise.all([
+		prisma.assignment.count({ where: pendingAssignmentScope }),
+		prisma.workOrder.count({
+			where: {
+				status: { in: [LifecycleStatus.ACCEPTED, LifecycleStatus.IN_PROGRESS] },
+				...assignedScope,
+			},
+		}),
+		prisma.workOrder.count({
+			where: {
+				status: LifecycleStatus.PENDING_VERIFICATION,
+				...assignedScope,
+			},
+		}),
+		prisma.workOrder.count({
+			where: {
+				status: { in: [LifecycleStatus.RESOLVED, LifecycleStatus.CLOSED] },
+				completedAt: { gte: startOfWeek },
+				...assignedScope,
+			},
+		}),
+		prisma.workOrder.count({
+			where: {
+				status: { in: [LifecycleStatus.ACCEPTED, LifecycleStatus.IN_PROGRESS] },
+				scheduledAt: { lt: now },
+				...assignedScope,
+			},
+		}),
+		prisma.assignment.findMany({
+			where: pendingAssignmentScope,
+			take: 5,
+			orderBy: { createdAt: "desc" },
+			include: {
+				workOrder: {
+					include: {
+						civicIssue: {
+							include: {
+								priority: {
+									select: { name: true, code: true, colorCode: true },
+								},
+								location: { select: { address: true, landmark: true } },
+							},
+						},
+					},
+				},
+				team: { select: { name: true } },
+			},
+		}),
+		prisma.workOrder.findMany({
+			where: {
+				status: { in: [LifecycleStatus.ACCEPTED, LifecycleStatus.IN_PROGRESS] },
+				...assignedScope,
+			},
+			take: 5,
+			orderBy: [
+				{ civicIssue: { priority: { weight: "desc" } } },
+				{ updatedAt: "desc" },
+			],
+			include: {
+				civicIssue: {
+					include: {
+						priority: {
+							select: { name: true, code: true, colorCode: true },
+						},
+						location: { select: { address: true, landmark: true } },
+					},
+				},
+				updates: {
+					orderBy: { createdAt: "desc" },
+					take: 1,
+				},
+			},
+		}),
+		prisma.workUpdate.findMany({
+			where: { technicianId: userId },
+			take: 5,
+			orderBy: { createdAt: "desc" },
+			include: {
+				workOrder: {
+					select: {
+						id: true,
+						title: true,
+						civicIssue: { select: { issueNumber: true } },
+					},
+				},
+			},
+		}),
+	]);
+
+	const utilizationRate =
+		staff.maxWorkload > 0
+			? Math.round((staff.currentWorkload / staff.maxWorkload) * 1000) / 10
+			: 0;
+
+	return {
+		profile: {
+			userId: staff.userId,
+			employeeId: staff.employeeId,
+			name: `${staff.firstName} ${staff.lastName}`.trim(),
+			designation: staff.designation,
+			email: staff.user.email,
+			phone: staff.user.phone,
+			isAvailable: staff.isAvailable,
+			currentWorkload: staff.currentWorkload,
+			maxWorkload: staff.maxWorkload,
+			utilizationRate,
+			department: staff.departmentMembers[0]?.department || null,
+			teams: staff.teamMemberships.map((tm) => tm.team),
+		},
+		kpi: {
+			pendingAssignmentsCount,
+			activeWorkOrdersCount,
+			pendingVerificationCount,
+			completedThisWeekCount,
+			overdueCount,
+		},
+		queues: {
+			pendingAssignments,
+			activeWorkOrders,
+			recentUpdates,
+		},
+	};
+};
+
 export const StaffService = {
 	createPlatformAdmin,
 	createCityAdmin,
@@ -540,4 +743,7 @@ export const StaffService = {
 	getStaffById,
 	updateStaffStatus,
 	updateStaff,
+	updateMyAvailability,
+	getTechnicianDashboard,
 };
+

@@ -8,7 +8,14 @@ const router = express.Router();
 
 router.get("/", requireAuth, DepartmentController.getDepartments);
 
+router.get(
+	"/:id/overview",
+	requireAuth,
+	DepartmentController.getDepartmentOverview,
+);
+
 router.get("/:id", requireAuth, DepartmentController.getDepartmentById);
+
 
 router.post(
 	"/",

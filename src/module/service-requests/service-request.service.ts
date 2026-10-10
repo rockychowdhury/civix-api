@@ -1,6 +1,9 @@
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../utils/AppError";
-import { checkMunicipalityAccess } from "../../utils/abac.utils";
+import {
+	checkMunicipalityAccess,
+	checkDepartmentAccess,
+} from "../../utils/abac.utils";
 import httpStatus from "http-status";
 import type { ICreateServiceRequestPayload } from "./service-request.interface";
 
@@ -532,6 +535,149 @@ const getMunicipalityServiceRequests = async (
 	return getAllServiceRequests(filters, options);
 };
 
+const getDepartmentServiceRequests = async (
+	userId: string,
+	departmentId: string,
+	filters: any = {},
+	options: any = {},
+) => {
+	await checkDepartmentAccess(userId, departmentId);
+
+	const { stage, wardId, categoryId, ...restFilters } = filters;
+
+	const { where, orderBy, skip, take, page, limit } = buildPrismaQuery(
+		restFilters,
+		options,
+		serviceRequestSearchableFields,
+	);
+
+	const departmentScope = {
+		OR: [
+			{ category: { departmentId } },
+			{ civicIssue: { departmentId } },
+		],
+	};
+
+	const additionalConditions: any[] = [departmentScope];
+
+	if (categoryId) {
+		additionalConditions.push({ categoryId });
+	}
+
+	if (wardId) {
+		additionalConditions.push({
+			location: { wardId },
+		});
+	}
+
+	if (stage === "queue") {
+		// New intake requests awaiting triage / resolution
+		additionalConditions.push({
+			status: {
+				in: [LifecycleStatus.SUBMITTED, LifecycleStatus.TRIAGED],
+			},
+		});
+	} else if (stage === "in_progress") {
+		// Requests linked to ongoing issues / field work
+		additionalConditions.push({
+			status: {
+				in: [
+					LifecycleStatus.ASSIGNED,
+					LifecycleStatus.TEAM_ASSIGNED,
+					LifecycleStatus.IN_PROGRESS,
+					LifecycleStatus.PENDING_VERIFICATION,
+				],
+			},
+		});
+	} else if (stage === "resolved") {
+		// Requests marked as resolved or closed
+		additionalConditions.push({
+			status: {
+				in: [LifecycleStatus.RESOLVED, LifecycleStatus.CLOSED],
+			},
+		});
+	}
+
+	if (where.AND) {
+		where.AND = [...where.AND, ...additionalConditions];
+	} else {
+		where.AND = additionalConditions;
+	}
+
+	const [data, total] = await Promise.all([
+		prisma.serviceRequest.findMany({
+			where,
+			orderBy: Object.keys(orderBy).length ? orderBy : { createdAt: "desc" },
+			skip,
+			take,
+			include: {
+				citizen: {
+					select: {
+						userId: true,
+						firstName: true,
+						lastName: true,
+						trustLevel: true,
+						user: { select: { email: true, phone: true } },
+					},
+				},
+				category: {
+					select: {
+						id: true,
+						name: true,
+						slug: true,
+					},
+				},
+				location: true,
+				attachments: true,
+				feedback: true,
+				civicIssue: {
+					select: {
+						id: true,
+						issueNumber: true,
+						title: true,
+						status: true,
+						priority: {
+							select: {
+								id: true,
+								code: true,
+								name: true,
+								colorCode: true,
+							},
+						},
+						workOrders: {
+							orderBy: { createdAt: "desc" },
+							take: 1,
+							select: {
+								id: true,
+								title: true,
+								status: true,
+								currentAssignee: {
+									select: {
+										employeeId: true,
+										firstName: true,
+										lastName: true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		}),
+		prisma.serviceRequest.count({ where }),
+	]);
+
+	return {
+		data,
+		meta: {
+			page,
+			limit,
+			total,
+			totalPages: Math.ceil(total / limit),
+		},
+	};
+};
+
 export const ServiceRequestService = {
 	createServiceRequest,
 	getMyServiceRequests,
@@ -540,4 +686,6 @@ export const ServiceRequestService = {
 	getAllServiceRequests,
 	getServiceRequestsByCivicIssue,
 	getMunicipalityServiceRequests,
+	getDepartmentServiceRequests,
 };
+

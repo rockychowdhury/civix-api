@@ -8,7 +8,7 @@ import type {
 import {
 	Action,
 	Resource,
-	type LifecycleStatus,
+	LifecycleStatus,
 } from "../../../generated/prisma/enums";
 import { buildPrismaQuery } from "../../utils/QueryBuilder";
 import { workOrderSearchableFields } from "./work-order.constant";
@@ -20,6 +20,7 @@ import {
 	checkDepartmentAccess,
 	checkMunicipalityAccess,
 } from "../../utils/abac.utils";
+import { createCivicIssueHistory } from "../../utils/civicIssueHistory";
 
 const createWorkOrder = async (
 	userId: string,
@@ -124,6 +125,9 @@ const getWorkOrders = async (filters: any = {}, options: any = {}) => {
 						},
 					},
 				},
+				resolution: {
+					include: { attachments: true },
+				},
 			},
 		}),
 		prisma.workOrder.count({ where }),
@@ -187,6 +191,9 @@ const getWorkOrdersByMunicipality = async (
 						},
 					},
 				},
+				resolution: {
+					include: { attachments: true },
+				},
 			},
 		}),
 		prisma.workOrder.count({ where: municipalityWhere }),
@@ -248,6 +255,9 @@ const getWorkOrdersByDepartment = async (
 							},
 						},
 					},
+				},
+				resolution: {
+					include: { attachments: true },
 				},
 			},
 		}),
@@ -327,6 +337,219 @@ const updateWorkOrderStatus = async (
 	return result;
 };
 
+const getMyWorkOrders = async (
+	userId: string,
+	filters: any = {},
+	options: any = {},
+) => {
+	const { stage, ...restFilters } = filters;
+
+	const { where, orderBy, skip, take, page, limit } = buildPrismaQuery(
+		restFilters,
+		options,
+		workOrderSearchableFields,
+	);
+
+	// Fetch teams user belongs to
+	const userTeamMemberships = await prisma.teamMember.findMany({
+		where: { staffId: userId },
+		select: { teamId: true },
+	});
+	const userTeamIds = userTeamMemberships.map((tm) => tm.teamId);
+
+	// Scope: assigned directly or via team
+	const assigneeScope = {
+		OR: [
+			{ currentAssigneeId: userId },
+			{
+				assignments: {
+					some: {
+						OR: [
+							{ assignedToId: userId },
+							...(userTeamIds.length > 0
+								? [{ teamId: { in: userTeamIds } }]
+								: []),
+						],
+					},
+				},
+			},
+		],
+	};
+
+	const additionalConditions: any[] = [assigneeScope];
+
+	if (stage === "active") {
+		additionalConditions.push({
+			status: { in: [LifecycleStatus.ACCEPTED, LifecycleStatus.IN_PROGRESS] },
+		});
+	} else if (stage === "pending") {
+		additionalConditions.push({
+			status: { in: [LifecycleStatus.ASSIGNED, LifecycleStatus.TEAM_ASSIGNED] },
+		});
+	} else if (stage === "verification") {
+		additionalConditions.push({
+			status: LifecycleStatus.PENDING_VERIFICATION,
+		});
+	} else if (stage === "completed") {
+		additionalConditions.push({
+			status: { in: [LifecycleStatus.RESOLVED, LifecycleStatus.CLOSED] },
+		});
+	}
+
+	if (where.AND) {
+		where.AND = [...where.AND, ...additionalConditions];
+	} else {
+		where.AND = additionalConditions;
+	}
+
+	const [data, total] = await Promise.all([
+		prisma.workOrder.findMany({
+			where,
+			orderBy: Object.keys(orderBy).length
+				? orderBy
+				: [
+						{ civicIssue: { priority: { weight: "desc" } } },
+						{ createdAt: "desc" },
+					],
+			skip,
+			take,
+			include: {
+				civicIssue: {
+					include: {
+						priority: true,
+						location: true,
+					},
+				},
+				department: {
+					select: { id: true, name: true, code: true },
+				},
+				assignments: {
+					where: {
+						OR: [
+							{ assignedToId: userId },
+							...(userTeamIds.length > 0
+								? [{ teamId: { in: userTeamIds } }]
+								: []),
+						],
+					},
+					include: {
+						team: { select: { name: true } },
+					},
+				},
+				updates: {
+					orderBy: { createdAt: "desc" },
+					take: 3,
+					include: { attachments: true },
+				},
+				resolution: {
+					include: { attachments: true },
+				},
+			},
+		}),
+		prisma.workOrder.count({ where }),
+	]);
+
+	return {
+		data,
+		meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+	};
+};
+
+const quickActionWorkOrder = async (
+	userId: string,
+	id: string,
+	payload: {
+		action: "START" | "PAUSE" | "RESUME";
+		notes?: string;
+		attachmentIds?: string[];
+	},
+) => {
+	const workOrder = await prisma.workOrder.findUnique({
+		where: { id },
+		include: { civicIssue: true },
+	});
+
+	if (!workOrder) {
+		throw new AppError(httpStatus.NOT_FOUND, "Work order not found");
+	}
+
+	// Security: check department access
+	await checkDepartmentAccess(userId, workOrder.departmentId);
+
+	let newStatus: LifecycleStatus = workOrder.status;
+	let updateType: "ON_SITE" | "PAUSED" | "RESUMED" = "ON_SITE";
+	let noteText = payload.notes || "";
+
+	if (payload.action === "START") {
+		newStatus = LifecycleStatus.IN_PROGRESS;
+		updateType = "ON_SITE";
+		noteText = payload.notes || "Technician arrived on-site and began work.";
+	} else if (payload.action === "PAUSE") {
+		updateType = "PAUSED";
+		noteText = payload.notes || "Work paused by technician.";
+	} else if (payload.action === "RESUME") {
+		newStatus = LifecycleStatus.IN_PROGRESS;
+		updateType = "RESUMED";
+		noteText = payload.notes || "Technician resumed work.";
+	}
+
+	const result = await prisma.$transaction(async (tx) => {
+		// Update work order
+		const updatedWorkOrder = await tx.workOrder.update({
+			where: { id },
+			data: {
+				status: newStatus,
+				...(payload.action === "START" &&
+					!workOrder.startedAt && { startedAt: new Date() }),
+			},
+		});
+
+		// Sync civic issue & service requests if status changed
+		if (newStatus !== workOrder.status) {
+			await tx.civicIssue.update({
+				where: { id: workOrder.civicIssueId },
+				data: { status: newStatus },
+			});
+
+			await tx.serviceRequest.updateMany({
+				where: { civicIssueId: workOrder.civicIssueId },
+				data: { status: newStatus },
+			});
+
+			await createCivicIssueHistory({
+				civicIssueId: workOrder.civicIssueId,
+				changedById: userId,
+				previousStatus: workOrder.status as LifecycleStatus,
+				newStatus,
+				notes: `Quick action ${payload.action}: ${noteText}`,
+				tx,
+			});
+		}
+
+		// Log work update
+		const update = await tx.workUpdate.create({
+			data: {
+				workOrderId: id,
+				technicianId: userId,
+				updateType,
+				note: noteText,
+			},
+		});
+
+		// Attach any photos
+		if (payload.attachmentIds && payload.attachmentIds.length > 0) {
+			await tx.attachment.updateMany({
+				where: { id: { in: payload.attachmentIds }, uploadedById: userId },
+				data: { workUpdateId: update.id },
+			});
+		}
+
+		return updatedWorkOrder;
+	});
+
+	return result;
+};
+
 export const WorkOrderService = {
 	createWorkOrder,
 	getWorkOrders,
@@ -334,4 +557,7 @@ export const WorkOrderService = {
 	getWorkOrdersByDepartment,
 	getWorkOrderById,
 	updateWorkOrderStatus,
+	getMyWorkOrders,
+	quickActionWorkOrder,
 };
+

@@ -34,6 +34,34 @@ router.get(
 );
 
 router.get(
+	"/department/:departmentId/queue",
+	requirePermission(Action.READ, Resource.CIVIC_ISSUE),
+	validateRequest(CivicIssueValidation.getCivicIssuesQuerySchema),
+	CivicIssueController.getDepartmentIssueQueue,
+);
+
+router.get(
+	"/department/:departmentId/in-progress",
+	requirePermission(Action.READ, Resource.CIVIC_ISSUE),
+	validateRequest(CivicIssueValidation.getCivicIssuesQuerySchema),
+	CivicIssueController.getDepartmentInProgressIssues,
+);
+
+router.get(
+	"/department/:departmentId/resolved",
+	requirePermission(Action.READ, Resource.CIVIC_ISSUE),
+	validateRequest(CivicIssueValidation.getCivicIssuesQuerySchema),
+	CivicIssueController.getDepartmentResolvedIssues,
+);
+
+router.get(
+	"/department/:departmentId/escalated",
+	requirePermission(Action.READ, Resource.CIVIC_ISSUE),
+	validateRequest(CivicIssueValidation.getCivicIssuesQuerySchema),
+	CivicIssueController.getDepartmentEscalatedIssues,
+);
+
+router.get(
 	"/department/:departmentId",
 	requirePermission(Action.READ, Resource.CIVIC_ISSUE),
 	validateRequest(CivicIssueValidation.getCivicIssuesQuerySchema),

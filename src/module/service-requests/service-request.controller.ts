@@ -178,6 +178,133 @@ const getServiceRequestsByCivicIssue = catchAsync(
 	},
 );
 
+const getDepartmentServiceRequests = catchAsync(
+	async (req: Request, res: Response) => {
+		const userId = (req as any).user.userId;
+		const departmentId = req.params.departmentId as string;
+		const filters = pick(req.query, [
+			"status",
+			"stage",
+			"categoryId",
+			"wardId",
+			"municipalityId",
+			"searchTerm",
+		]);
+		const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
+
+		const result = await ServiceRequestService.getDepartmentServiceRequests(
+			userId,
+			departmentId,
+			filters,
+			options,
+		);
+
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Department service requests retrieved successfully",
+			data: result.data,
+			meta: result.meta,
+		});
+	},
+);
+
+const getDepartmentServiceRequestQueue = catchAsync(
+	async (req: Request, res: Response) => {
+		const userId = (req as any).user.userId;
+		const departmentId = req.params.departmentId as string;
+		const filters = {
+			...pick(req.query, [
+				"categoryId",
+				"wardId",
+				"municipalityId",
+				"searchTerm",
+			]),
+			stage: "queue",
+		};
+		const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
+
+		const result = await ServiceRequestService.getDepartmentServiceRequests(
+			userId,
+			departmentId,
+			filters,
+			options,
+		);
+
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Department service request queue (pending triage) retrieved successfully",
+			data: result.data,
+			meta: result.meta,
+		});
+	},
+);
+
+const getDepartmentInProgressServiceRequests = catchAsync(
+	async (req: Request, res: Response) => {
+		const userId = (req as any).user.userId;
+		const departmentId = req.params.departmentId as string;
+		const filters = {
+			...pick(req.query, [
+				"categoryId",
+				"wardId",
+				"municipalityId",
+				"searchTerm",
+			]),
+			stage: "in_progress",
+		};
+		const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
+
+		const result = await ServiceRequestService.getDepartmentServiceRequests(
+			userId,
+			departmentId,
+			filters,
+			options,
+		);
+
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Department in-progress service requests retrieved successfully",
+			data: result.data,
+			meta: result.meta,
+		});
+	},
+);
+
+const getDepartmentResolvedServiceRequests = catchAsync(
+	async (req: Request, res: Response) => {
+		const userId = (req as any).user.userId;
+		const departmentId = req.params.departmentId as string;
+		const filters = {
+			...pick(req.query, [
+				"categoryId",
+				"wardId",
+				"municipalityId",
+				"searchTerm",
+			]),
+			stage: "resolved",
+		};
+		const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
+
+		const result = await ServiceRequestService.getDepartmentServiceRequests(
+			userId,
+			departmentId,
+			filters,
+			options,
+		);
+
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Department resolved service requests retrieved successfully",
+			data: result.data,
+			meta: result.meta,
+		});
+	},
+);
+
 export const ServiceRequestController = {
 	createServiceRequest,
 	getMyServiceRequests,
@@ -186,4 +313,9 @@ export const ServiceRequestController = {
 	getAllServiceRequests,
 	getMunicipalityServiceRequests,
 	getServiceRequestsByCivicIssue,
+	getDepartmentServiceRequests,
+	getDepartmentServiceRequestQueue,
+	getDepartmentInProgressServiceRequests,
+	getDepartmentResolvedServiceRequests,
 };
+

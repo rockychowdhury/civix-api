@@ -25,11 +25,28 @@ export const buildPrismaQuery = (
 	// Exact Filters
 	if (Object.keys(filterData).length > 0) {
 		andConditions.push({
-			AND: Object.keys(filterData).map((key) => ({
-				[key]: {
-					equals: filterData[key],
-				},
-			})),
+			AND: Object.keys(filterData).map((key) => {
+				const value = filterData[key];
+				if (typeof value === "string" && value.includes(",")) {
+					return {
+						[key]: {
+							in: value.split(",").map((v) => v.trim()),
+						},
+					};
+				}
+				if (Array.isArray(value)) {
+					return {
+						[key]: {
+							in: value,
+						},
+					};
+				}
+				return {
+					[key]: {
+						equals: value,
+					},
+				};
+			}),
 		});
 	}
 

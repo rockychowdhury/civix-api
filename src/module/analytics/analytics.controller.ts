@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import httpStatus from "http-status";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
+import type { ISystemOverviewQuery } from "./analytics.interface";
 import { AnalyticsService } from "./analytics.service";
 
 const getDashboardStats = catchAsync(async (req: Request, res: Response) => {
@@ -48,8 +49,23 @@ const getIssuesByWard = catchAsync(async (req: Request, res: Response) => {
 	});
 });
 
+const getSystemOverview = catchAsync(async (req: Request, res: Response) => {
+	const result = await AnalyticsService.getSystemOverview(
+		req.user?.userId as string,
+		req.query as ISystemOverviewQuery,
+	);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "Super admin system overview retrieved successfully",
+		data: result,
+	});
+});
+
 export const AnalyticsController = {
 	getDashboardStats,
 	getIssuesByDepartment,
 	getIssuesByWard,
+	getSystemOverview,
 };

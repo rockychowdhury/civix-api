@@ -78,6 +78,24 @@ const removeServiceArea = catchAsync(async (req: Request, res: Response) => {
 	});
 });
 
+const getDepartmentOverview = catchAsync(
+	async (req: Request, res: Response) => {
+		const userId = (req as any).user.userId;
+		const departmentId = req.params.id as string;
+		const result = await DepartmentService.getDepartmentOverview(
+			userId,
+			departmentId,
+			req.query as any,
+		);
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Department overview retrieved successfully",
+			data: result,
+		});
+	},
+);
+
 export const DepartmentController = {
 	createDepartment,
 	getDepartments,
@@ -85,4 +103,6 @@ export const DepartmentController = {
 	updateDepartment,
 	addServiceArea,
 	removeServiceArea,
+	getDepartmentOverview,
 };
+

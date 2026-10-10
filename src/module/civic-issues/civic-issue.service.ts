@@ -281,11 +281,59 @@ const updateStatus = async (
 };
 
 const getCivicIssues = async (filters: any = {}, options: any = {}) => {
+	const { stage, hasWorkOrder, isEscalated, ...restFilters } = filters;
+
 	const { where, orderBy, skip, take, page, limit } = buildPrismaQuery(
-		filters,
+		restFilters,
 		options,
 		civicIssueSearchableFields,
 	);
+
+	const additionalConditions: any[] = [];
+
+	if (stage === "queue" || hasWorkOrder === false) {
+		additionalConditions.push({
+			workOrders: { none: {} },
+			status: {
+				notIn: [
+					LifecycleStatus.RESOLVED,
+					LifecycleStatus.CLOSED,
+					LifecycleStatus.CANCELLED,
+				],
+			},
+		});
+	} else if (stage === "in_progress" || hasWorkOrder === true) {
+		additionalConditions.push({
+			workOrders: { some: {} },
+			status: {
+				notIn: [
+					LifecycleStatus.RESOLVED,
+					LifecycleStatus.CLOSED,
+					LifecycleStatus.CANCELLED,
+				],
+			},
+		});
+	} else if (stage === "resolved") {
+		additionalConditions.push({
+			status: { in: [LifecycleStatus.RESOLVED, LifecycleStatus.CLOSED] },
+		});
+	} else if (stage === "escalated" || isEscalated === true) {
+		additionalConditions.push({
+			escalations: {
+				some: {
+					resolvedAt: null,
+				},
+			},
+		});
+	}
+
+	if (additionalConditions.length > 0) {
+		if (where.AND) {
+			where.AND = [...where.AND, ...additionalConditions];
+		} else {
+			where.AND = additionalConditions;
+		}
+	}
 
 	const [data, total] = await Promise.all([
 		prisma.civicIssue.findMany({
@@ -296,12 +344,41 @@ const getCivicIssues = async (filters: any = {}, options: any = {}) => {
 			skip,
 			take,
 			include: {
-				category: { select: { name: true } },
-				department: { select: { name: true } },
-				ward: { select: { name: true, number: true } },
+				category: { select: { id: true, name: true, slug: true } },
+				department: { select: { id: true, name: true, code: true } },
+				ward: { select: { id: true, name: true, number: true } },
 				location: true,
-				workOrders: { orderBy: { createdAt: "desc" }, take: 1 },
 				priority: true,
+				workOrders: {
+					orderBy: { createdAt: "desc" },
+					take: 1,
+					include: {
+						currentAssignee: {
+							select: {
+								userId: true,
+								employeeId: true,
+								firstName: true,
+								lastName: true,
+							},
+						},
+					},
+				},
+				escalations: {
+					where: { resolvedAt: null },
+					select: {
+						id: true,
+						escalationLevel: true,
+						reason: true,
+						escalatedAt: true,
+					},
+				},
+				_count: {
+					select: {
+						serviceRequests: true,
+						workOrders: true,
+						escalations: true,
+					},
+				},
 			},
 		}),
 		prisma.civicIssue.count({ where }),

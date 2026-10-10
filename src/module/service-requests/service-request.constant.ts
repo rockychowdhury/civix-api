@@ -1,7 +1,6 @@
 export const serviceRequestSearchableFields = [
-	"title",
-	"description",
 	"trackingNumber",
+	"description",
 ];
 export const serviceRequestFilterableFields = [
 	"status",

@@ -22,7 +22,16 @@ const updateWorkOrderStatusSchema = z.object({
 	}),
 });
 
+const quickActionSchema = z.object({
+	body: z.object({
+		action: z.enum(["START", "PAUSE", "RESUME"]),
+		notes: z.string().optional(),
+		attachmentIds: z.array(z.string().uuid()).optional(),
+	}),
+});
+
 export const WorkOrderValidation = {
 	createWorkOrderSchema,
 	updateWorkOrderStatusSchema,
+	quickActionSchema,
 };

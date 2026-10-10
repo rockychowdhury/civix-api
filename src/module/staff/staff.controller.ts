@@ -151,6 +151,35 @@ const updateStaff = catchAsync(async (req: Request, res: Response) => {
 	});
 });
 
+const updateMyAvailability = catchAsync(
+	async (req: Request, res: Response) => {
+		const userId = (req as any).user.userId;
+		const { isAvailable } = req.body;
+		const result = await StaffService.updateMyAvailability(userId, isAvailable);
+
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: `Availability updated to ${isAvailable ? "Available" : "Unavailable"}`,
+			data: result,
+		});
+	},
+);
+
+const getTechnicianDashboard = catchAsync(
+	async (req: Request, res: Response) => {
+		const userId = (req as any).user.userId;
+		const result = await StaffService.getTechnicianDashboard(userId);
+
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Technician dashboard retrieved successfully",
+			data: result,
+		});
+	},
+);
+
 export const StaffController = {
 	createPlatformAdmin,
 	createCityAdmin,
@@ -162,4 +191,7 @@ export const StaffController = {
 	getStaffById,
 	updateStaffStatus,
 	updateStaff,
+	updateMyAvailability,
+	getTechnicianDashboard,
 };
+

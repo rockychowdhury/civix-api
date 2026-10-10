@@ -50,6 +50,14 @@ const getStaffByIdSchema = z.object({
 	params: z.object({ id: z.string().uuid("Invalid staff ID") }),
 });
 
+const updateAvailabilitySchema = z.object({
+	body: z.object({
+		isAvailable: z.boolean({
+			message: "isAvailable boolean is required",
+		}),
+	}),
+});
+
 export const StaffValidation = {
 	createPlatformAdminSchema,
 	createCityAdminSchema,
@@ -57,4 +65,5 @@ export const StaffValidation = {
 	updateStaffStatusSchema,
 	updateStaffSchema,
 	getStaffByIdSchema,
+	updateAvailabilitySchema,
 };

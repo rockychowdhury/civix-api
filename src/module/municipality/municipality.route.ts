@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { Action, Resource } from "../../../generated/prisma/enums";
-import { requirePermission } from "../../middleware/checkAuth";
+import { requireAuth, requirePermission } from "../../middleware/checkAuth";
 import { validateRequest } from "../../middleware/validateRequest";
 import { MunicipalityController } from "./municipality.controller";
 import { MunicipalityValidation } from "./municipality.validation";
@@ -13,6 +13,11 @@ router.post(
 	requirePermission(Action.CREATE, Resource.MUNICIPALITY),
 	validateRequest(MunicipalityValidation.createMunicipalitySchema),
 	MunicipalityController.createMunicipality,
+);
+router.get(
+	"/:municipalityId/overview",
+	requireAuth,
+	MunicipalityController.getMunicipalityOverview,
 );
 router.get("/:municipalityId", MunicipalityController.getMunicipalityById);
 router.patch(

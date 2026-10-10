@@ -1,11 +1,28 @@
 import { Router } from "express";
-import { AnalyticsController } from "./analytics.controller";
-import { requirePermission } from "../../middleware/checkAuth";
 import { Action, Resource } from "../../../generated/prisma/enums";
+import { requirePermission } from "../../middleware/checkAuth";
+import { validateRequest } from "../../middleware/validateRequest";
+import { AnalyticsController } from "./analytics.controller";
+import { AnalyticsValidation } from "./analytics.validation";
 
 const router = Router();
 
-// Only CITY_ADMIN or SUPER_ADMIN or Dispatchers should view overall analytics
+// Full system stats overview for Super Admin Dashboard Overview page
+router.get(
+	"/overview",
+	requirePermission(Action.READ, Resource.ALL),
+	validateRequest(AnalyticsValidation.systemOverviewQuerySchema),
+	AnalyticsController.getSystemOverview,
+);
+
+router.get(
+	"/super-admin/overview",
+	requirePermission(Action.READ, Resource.ALL),
+	validateRequest(AnalyticsValidation.systemOverviewQuerySchema),
+	AnalyticsController.getSystemOverview,
+);
+
+// Department & Ward analytics
 router.get(
 	"/dashboard",
 	requirePermission(Action.READ, Resource.ALL),

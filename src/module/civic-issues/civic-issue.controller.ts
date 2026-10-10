@@ -106,6 +106,9 @@ const getIssuesByDepartment = catchAsync(
 		const departmentId = req.params.departmentId as string;
 		const filters = pick(req.query, [
 			"status",
+			"stage",
+			"hasWorkOrder",
+			"isEscalated",
 			"priority",
 			"departmentId",
 			"wardId",
@@ -125,6 +128,134 @@ const getIssuesByDepartment = catchAsync(
 			statusCode: httpStatus.OK,
 			success: true,
 			message: "Department civic issues retrieved successfully",
+			data: result.data,
+			meta: result.meta,
+		});
+	},
+);
+
+const getDepartmentIssueQueue = catchAsync(
+	async (req: Request, res: Response) => {
+		const userId = (req as any).user.userId;
+		const departmentId = req.params.departmentId as string;
+		const filters = {
+			...pick(req.query, [
+				"priority",
+				"wardId",
+				"municipalityId",
+				"searchTerm",
+			]),
+			stage: "queue",
+		};
+		const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
+
+		const result = await CivicIssueService.getIssuesByDepartment(
+			userId,
+			departmentId,
+			filters,
+			options,
+		);
+
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Department issue queue (unassigned work orders) retrieved successfully",
+			data: result.data,
+			meta: result.meta,
+		});
+	},
+);
+
+const getDepartmentInProgressIssues = catchAsync(
+	async (req: Request, res: Response) => {
+		const userId = (req as any).user.userId;
+		const departmentId = req.params.departmentId as string;
+		const filters = {
+			...pick(req.query, [
+				"priority",
+				"wardId",
+				"municipalityId",
+				"searchTerm",
+			]),
+			stage: "in_progress",
+		};
+		const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
+
+		const result = await CivicIssueService.getIssuesByDepartment(
+			userId,
+			departmentId,
+			filters,
+			options,
+		);
+
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Department in-progress issues retrieved successfully",
+			data: result.data,
+			meta: result.meta,
+		});
+	},
+);
+
+const getDepartmentResolvedIssues = catchAsync(
+	async (req: Request, res: Response) => {
+		const userId = (req as any).user.userId;
+		const departmentId = req.params.departmentId as string;
+		const filters = {
+			...pick(req.query, [
+				"priority",
+				"wardId",
+				"municipalityId",
+				"searchTerm",
+			]),
+			stage: "resolved",
+		};
+		const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
+
+		const result = await CivicIssueService.getIssuesByDepartment(
+			userId,
+			departmentId,
+			filters,
+			options,
+		);
+
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Department resolved issues retrieved successfully",
+			data: result.data,
+			meta: result.meta,
+		});
+	},
+);
+
+const getDepartmentEscalatedIssues = catchAsync(
+	async (req: Request, res: Response) => {
+		const userId = (req as any).user.userId;
+		const departmentId = req.params.departmentId as string;
+		const filters = {
+			...pick(req.query, [
+				"priority",
+				"wardId",
+				"municipalityId",
+				"searchTerm",
+			]),
+			stage: "escalated",
+		};
+		const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
+
+		const result = await CivicIssueService.getIssuesByDepartment(
+			userId,
+			departmentId,
+			filters,
+			options,
+		);
+
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Department escalated issues retrieved successfully",
 			data: result.data,
 			meta: result.meta,
 		});
@@ -178,6 +309,10 @@ export const CivicIssueController = {
 	getCivicIssues,
 	getIssuesByMunicipality,
 	getIssuesByDepartment,
+	getDepartmentIssueQueue,
+	getDepartmentInProgressIssues,
+	getDepartmentResolvedIssues,
+	getDepartmentEscalatedIssues,
 	getCivicIssueById,
 	getPublicCivicIssueByNumber,
 	reopenCivicIssue,

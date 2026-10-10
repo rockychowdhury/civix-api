@@ -130,6 +130,50 @@ const updateWorkOrderStatus = catchAsync(
 	},
 );
 
+const getMyWorkOrders = catchAsync(async (req: Request, res: Response) => {
+	const userId = (req as any).user.userId;
+	const filters = pick(req.query, [
+		"status",
+		"stage",
+		"priority",
+		"searchTerm",
+	]);
+	const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
+
+	const result = await WorkOrderService.getMyWorkOrders(
+		userId,
+		filters,
+		options,
+	);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "My work orders retrieved successfully",
+		data: result.data,
+		meta: result.meta,
+	});
+});
+
+const quickActionWorkOrder = catchAsync(
+	async (req: Request, res: Response) => {
+		const userId = (req as any).user.userId;
+		const id = req.params.id as string;
+		const result = await WorkOrderService.quickActionWorkOrder(
+			userId,
+			id,
+			req.body,
+		);
+
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: `Work order action ${req.body.action} executed successfully`,
+			data: result,
+		});
+	},
+);
+
 export const WorkOrderController = {
 	createWorkOrder,
 	getWorkOrders,
@@ -137,4 +181,7 @@ export const WorkOrderController = {
 	getWorkOrdersByDepartment,
 	getWorkOrderById,
 	updateWorkOrderStatus,
+	getMyWorkOrders,
+	quickActionWorkOrder,
 };
+

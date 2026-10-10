@@ -67,6 +67,17 @@ const getCivicIssuesQuerySchema = z.object({
 				"CANCELLED",
 			])
 			.optional(),
+		stage: z
+			.enum(["queue", "in_progress", "resolved", "escalated"])
+			.optional(),
+		hasWorkOrder: z
+			.union([z.boolean(), z.string()])
+			.transform((val) => val === true || val === "true")
+			.optional(),
+		isEscalated: z
+			.union([z.boolean(), z.string()])
+			.transform((val) => val === true || val === "true")
+			.optional(),
 		priority: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]).optional(),
 		departmentId: z.string().uuid().optional(),
 		wardId: z.string().uuid().optional(),

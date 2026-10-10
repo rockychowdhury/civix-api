@@ -295,7 +295,6 @@ const getFeedbackByResolutionId = async (
 				select: {
 					firstName: true,
 					lastName: true,
-					avatarUrl: true,
 					user: { select: { email: true } },
 				},
 			},
