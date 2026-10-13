@@ -1,0 +1,5363 @@
+{
+  "info": {
+    "_postman_id": "c19a8e23-7451-4e89-a51b-civix-api-collection",
+    "name": "Civix API - Actor & Resource Collection",
+    "description": "Comprehensive Postman collection for Civix API. Grouped by Actor / Role (Citizen, Technician, Dispatcher, Department Manager, City Admin, Super Admin) and nested by Resources with sample payloads, query parameters, route variables, and authentication tokens.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "citizenToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "technicianToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "dispatcherToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "managerToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "cityAdminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "superAdminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "municipalityId",
+      "value": "b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e",
+      "type": "string"
+    },
+    {
+      "key": "departmentId",
+      "value": "d2e3f4a5-b6c7-4d8e-9f0a-1b2c3d4e5f6a",
+      "type": "string"
+    },
+    {
+      "key": "categoryId",
+      "value": "c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f",
+      "type": "string"
+    },
+    {
+      "key": "serviceRequestId",
+      "value": "e4f5a6b7-c8d9-4e0f-1a2b-3c4d5e6f7a8b",
+      "type": "string"
+    },
+    {
+      "key": "civicIssueId",
+      "value": "f5a6b7c8-d9e0-4f1a-2b3c-4d5e6f7a8b9c",
+      "type": "string"
+    },
+    {
+      "key": "workOrderId",
+      "value": "a6b7c8d9-e0f1-4a2b-3c4d-5e6f7a8b9c0d",
+      "type": "string"
+    },
+    {
+      "key": "assignmentId",
+      "value": "b7c8d9e0-f1a2-4b3c-4d5e-6f7a8b9c0d1e",
+      "type": "string"
+    },
+    {
+      "key": "resolutionId",
+      "value": "c8d9e0f1-a2b3-4c4d-5e6f-7a8b9c0d1e2f",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "d9e0f1a2-b3c4-4d5e-6f7a-8b9c0d1e2f3a",
+      "type": "string"
+    },
+    {
+      "key": "roleId",
+      "value": "e0f1a2b3-c4d5-4e6f-7a8b-9c0d1e2f3a4b",
+      "type": "string"
+    },
+    {
+      "key": "zoneId",
+      "value": "f1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5c",
+      "type": "string"
+    },
+    {
+      "key": "wardId",
+      "value": "a2b3c4d5-e6f7-4a8b-9c0d-1e2f3a4b5c6d",
+      "type": "string"
+    },
+    {
+      "key": "issueNumber",
+      "value": "ISS-2026-0001",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "00. Authentication & Public Discovery",
+      "description": "Registration, login, password recovery, session tokens, and public directory discovery APIs.",
+      "item": [
+        {
+          "name": "Authentication",
+          "item": [
+            {
+              "name": "Register Citizen",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"firstName\": \"Rahim\",\n  \"lastName\": \"Uddin\",\n  \"email\": \"rahim.citizen@example.com\",\n  \"password\": \"SecurePassword123!\",\n  \"phone\": \"+8801712345678\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/auth/register-citizen",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "register-citizen"
+                  ]
+                },
+                "description": "Registers a new citizen with default CITIZEN role and sends verification email OTP."
+              },
+              "response": []
+            },
+            {
+              "name": "Verify Email with OTP",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"rahim.citizen@example.com\",\n  \"otp\": \"123456\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/auth/verify-email",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "verify-email"
+                  ]
+                },
+                "description": "Verifies citizen account email using OTP received via email."
+              },
+              "response": []
+            },
+            {
+              "name": "Login User",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"rahim.citizen@example.com\",\n  \"password\": \"SecurePassword123!\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Authenticates any role (Citizen, Staff, Admin) and returns accessToken and refreshToken."
+              },
+              "response": []
+            },
+            {
+              "name": "Refresh Access Token",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/auth/refresh-token",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "refresh-token"
+                  ]
+                },
+                "description": "Exchanges refreshToken cookie for a fresh JWT accessToken."
+              },
+              "response": []
+            },
+            {
+              "name": "Google OAuth Login",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idToken\": \"GOOGLE_OAUTH_ID_TOKEN_STRING\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/auth/google",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "google"
+                  ]
+                },
+                "description": "Sign in or register citizen using Google Identity Services ID token."
+              },
+              "response": []
+            },
+            {
+              "name": "Forgot Password (Request OTP)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"rahim.citizen@example.com\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/auth/forgot-password",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "forgot-password"
+                  ]
+                },
+                "description": "Sends a password reset OTP to the registered email address."
+              },
+              "response": []
+            },
+            {
+              "name": "Reset Password with OTP",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"rahim.citizen@example.com\",\n  \"otp\": \"123456\",\n  \"newPassword\": \"BrandNewSecurePassword123!\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/auth/reset-password",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "reset-password"
+                  ]
+                },
+                "description": "Resets user password with valid OTP and sets new password."
+              },
+              "response": []
+            },
+            {
+              "name": "Logout",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{citizenToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/auth/logout",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "logout"
+                  ]
+                },
+                "description": "Clears refresh token and invalidates active session."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Current Auth Profile",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{citizenToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/auth/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "me"
+                  ]
+                },
+                "description": "Retrieves authenticated user ID, email, roles, and status."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Public Discovery",
+          "item": [
+            {
+              "name": "Track Civic Issue Publicly",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/civic-issues/public/:issueNumber",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "civic-issues",
+                    "public",
+                    ":issueNumber"
+                  ],
+                  "variable": [
+                    {
+                      "key": "issueNumber",
+                      "value": "{{issueNumber}}",
+                      "description": "Civic issue tracking code, e.g. ISS-2026-0001"
+                    }
+                  ]
+                },
+                "description": "Public tracking endpoint for citizens to follow civic issue progress without logging in."
+              },
+              "response": []
+            },
+            {
+              "name": "Public Service Categories List",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/categories?isActive=true",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "categories"
+                  ],
+                  "query": [
+                    {
+                      "key": "isActive",
+                      "value": "true",
+                      "description": "Filter active service categories",
+                      "disabled": false
+                    }
+                  ]
+                },
+                "description": "Public catalog of civic service complaint categories."
+              },
+              "response": []
+            },
+            {
+              "name": "Public Municipalities List",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/municipalities",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "municipalities"
+                  ]
+                },
+                "description": "List of participating municipalities and coverage statuses."
+              },
+              "response": []
+            },
+            {
+              "name": "Public Zones List",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/zones",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "zones"
+                  ]
+                },
+                "description": "Public list of administrative zones."
+              },
+              "response": []
+            },
+            {
+              "name": "Public Wards List",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/wards",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "wards"
+                  ]
+                },
+                "description": "Public list of municipal electoral wards."
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "01. Citizen",
+      "description": "APIs exclusive to registered citizens for submitting complaints, tracking requests, giving feedback, and managing their profile.",
+      "item": [
+        {
+          "name": "service-requests",
+          "item": [
+            {
+              "name": "Submit Service Request",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{citizenToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"request\": {\n    \"description\": \"Broken streetlight causing total darkness and safety hazard at night near crossroads.\",\n    \"categoryId\": \"{{categoryId}}\"\n  },\n  \"location\": {\n    \"address\": \"House 24, Road 5, Sector 3, Uttara\",\n    \"latitude\": 23.8732,\n    \"longitude\": 90.3982,\n    \"landmark\": \"Opposite Sector 3 Central Park\",\n    \"postalCode\": \"1230\",\n    \"municipalityId\": \"{{municipalityId}}\",\n    \"wardId\": \"{{wardId}}\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/service-requests",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "service-requests"
+                  ]
+                },
+                "description": "Citizen submits a new service request complaint with location coordinates."
+              },
+              "response": []
+            },
+            {
+              "name": "Get My Service Requests",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{citizenToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/service-requests/my-requests?page=1&limit=10&status=SUBMITTED",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "service-requests",
+                    "my-requests"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1",
+                      "description": "Page number",
+                      "disabled": false
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10",
+                      "description": "Page size",
+                      "disabled": false
+                    },
+                    {
+                      "key": "status",
+                      "value": "SUBMITTED",
+                      "description": "Filter by LifecycleStatus",
+                      "disabled": true
+                    }
+                  ]
+                },
+                "description": "Retrieves paginated list of all service requests submitted by the logged-in citizen."
+              },
+              "response": []
+            },
+            {
+              "name": "Get My Requests Pending Feedback",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{citizenToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/service-requests/pending-feedback",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "service-requests",
+                    "pending-feedback"
+                  ]
+                },
+                "description": "Lists resolved service requests that the citizen has not yet rated with feedback."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Service Request By ID",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{citizenToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/service-requests/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "service-requests",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{serviceRequestId}}",
+                      "description": "Service request UUID"
+                    }
+                  ]
+                },
+                "description": "Retrieves details, timeline, and current resolution status of a service request."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "feedback",
+          "item": [
+            {
+              "name": "Submit Citizen Feedback",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{citizenToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"serviceRequestId\": \"{{serviceRequestId}}\",\n  \"resolutionId\": \"{{resolutionId}}\",\n  \"rating\": 5,\n  \"comment\": \"The streetlight was fixed quickly and the technician was courteous and professional!\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/feedback",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "feedback"
+                  ]
+                },
+                "description": "Citizen submits 1 to 5 star rating and comment for a resolved service request."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Feedback By ID",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{citizenToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/feedback/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "feedback",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{serviceRequestId}}",
+                      "description": "Feedback UUID"
+                    }
+                  ]
+                },
+                "description": "Retrieves details of submitted feedback."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "attachments",
+          "item": [
+            {
+              "name": "Upload Request Evidence Images",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{citizenToken}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "files",
+                      "type": "file",
+                      "src": [],
+                      "description": "Evidence images (JPEG/PNG/WebP, max 3 files)"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/attachments/service-request/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "attachments",
+                    "service-request",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{serviceRequestId}}",
+                      "description": "Service request UUID"
+                    }
+                  ]
+                },
+                "description": "Uploads up to 3 image files (JPEG, PNG, WebP) as evidence for the service request."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Attachment Info",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{citizenToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/attachments/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "attachments",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "att-uuid-1234",
+                      "description": "Attachment UUID"
+                    }
+                  ]
+                },
+                "description": "Fetches attachment metadata, Cloudinary URL, and file details."
+              },
+              "response": []
+            },
+            {
+              "name": "Delete My Attachment",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{citizenToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/attachments/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "attachments",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "att-uuid-1234",
+                      "description": "Attachment UUID"
+                    }
+                  ]
+                },
+                "description": "Removes an uploaded attachment associated with citizen's service request."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "notifications",
+          "item": [
+            {
+              "name": "Get My Notifications",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{citizenToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/notifications",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "notifications"
+                  ]
+                },
+                "description": "Fetches real-time status update notifications for the citizen."
+              },
+              "response": []
+            },
+            {
+              "name": "Mark Notification as Read",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{citizenToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/notifications/:id/read",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "notifications",
+                    ":id",
+                    "read"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "notif-uuid-123",
+                      "description": "Notification UUID"
+                    }
+                  ]
+                },
+                "description": "Marks a specific notification as read."
+              },
+              "response": []
+            },
+            {
+              "name": "Mark All Notifications as Read",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{citizenToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/notifications/mark-all-read",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "notifications",
+                    "mark-all-read"
+                  ]
+                },
+                "description": "Marks all unread notifications for the user as read."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "profile",
+          "item": [
+            {
+              "name": "Get My Profile",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{citizenToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/users/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "users",
+                    "me"
+                  ]
+                },
+                "description": "Fetches citizen user profile, trust level, and account details."
+              },
+              "response": []
+            },
+            {
+              "name": "Update My Profile",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{citizenToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"firstName\": \"Rahim\",\n  \"lastName\": \"Uddin\",\n  \"phone\": \"+8801712345678\",\n  \"nidNumber\": \"19942691234567890\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/users/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "users",
+                    "me"
+                  ]
+                },
+                "description": "Updates citizen personal profile and NID verification number."
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02. Technician",
+      "description": "Field technician APIs for managing assignments, work order lifecycles, submitting on-site updates, and filing resolutions.",
+      "item": [
+        {
+          "name": "technician-dashboard",
+          "item": [
+            {
+              "name": "Get Technician Dashboard",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{technicianToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/staff/me/technician-dashboard",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "staff",
+                    "me",
+                    "technician-dashboard"
+                  ]
+                },
+                "description": "Real-time dashboard for technician: active work orders, assignments pending acceptance, and workload."
+              },
+              "response": []
+            },
+            {
+              "name": "Toggle Technician Availability",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{technicianToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"isAvailable\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/staff/me/availability",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "staff",
+                    "me",
+                    "availability"
+                  ]
+                },
+                "description": "Toggles technician availability flag for receiving new dispatch assignments."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "assignments",
+          "item": [
+            {
+              "name": "Get My Assignments",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{technicianToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/assignments/my-assignments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "assignments",
+                    "my-assignments"
+                  ]
+                },
+                "description": "Lists work order assignments assigned to the logged-in technician."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Assignment Details",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{technicianToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/assignments/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "assignments",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{assignmentId}}",
+                      "description": "Assignment UUID"
+                    }
+                  ]
+                },
+                "description": "Inspects assignment instructions, scheduled window, and linked work order."
+              },
+              "response": []
+            },
+            {
+              "name": "Accept or Reject Assignment",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{technicianToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"ACCEPTED\",\n  \"notes\": \"Accepted assignment. Heading to site at 10:00 AM.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/assignments/:id/status",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "assignments",
+                    ":id",
+                    "status"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{assignmentId}}",
+                      "description": "Assignment UUID"
+                    }
+                  ]
+                },
+                "description": "Technician accepts or rejects assignment (status: ACCEPTED or REJECTED)."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "work-orders",
+          "item": [
+            {
+              "name": "Get My Assigned Work Orders",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{technicianToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/work-orders/my-work-orders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "work-orders",
+                    "my-work-orders"
+                  ]
+                },
+                "description": "Lists all work orders where the technician is the current assignee."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Work Order Details",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{technicianToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/work-orders/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "work-orders",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{workOrderId}}",
+                      "description": "Work order UUID"
+                    }
+                  ]
+                },
+                "description": "Full work order details, issue description, location, and past updates."
+              },
+              "response": []
+            },
+            {
+              "name": "Update Work Order Status",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{technicianToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"IN_PROGRESS\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/work-orders/:id/status",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "work-orders",
+                    ":id",
+                    "status"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{workOrderId}}",
+                      "description": "Work order UUID"
+                    }
+                  ]
+                },
+                "description": "Transitions work order status: IN_PROGRESS, PENDING_VERIFICATION, etc."
+              },
+              "response": []
+            },
+            {
+              "name": "Quick Action Work Order (START / PAUSE / RESUME)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{technicianToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"action\": \"START\",\n  \"notes\": \"Arrived at location and commenced repairs.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/work-orders/:id/quick-action",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "work-orders",
+                    ":id",
+                    "quick-action"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{workOrderId}}",
+                      "description": "Work order UUID"
+                    }
+                  ]
+                },
+                "description": "Executes quick lifecycle action: START, PAUSE, or RESUME."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "work-updates",
+          "item": [
+            {
+              "name": "Submit On-Site Work Update",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{technicianToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"updateType\": \"ON_SITE\",\n  \"notes\": \"Diagnosed broken underground cable connection. Procuring replacement wiring.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/work-orders/:workOrderId/updates",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "work-orders",
+                    ":workOrderId",
+                    "updates"
+                  ],
+                  "variable": [
+                    {
+                      "key": "workOrderId",
+                      "value": "{{workOrderId}}",
+                      "description": "Work order UUID"
+                    }
+                  ]
+                },
+                "description": "Logs field work update with status: ON_SITE, PROGRESS, BLOCKED, DELAYED, or COMPLETED."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "resolutions",
+          "item": [
+            {
+              "name": "Submit Work Order Resolution",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{technicianToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"summary\": \"Replaced damaged 50m cable line, tested voltage levels, and verified streetlight fixture is fully operational.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/work-orders/:workOrderId/resolutions",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "work-orders",
+                    ":workOrderId",
+                    "resolutions"
+                  ],
+                  "variable": [
+                    {
+                      "key": "workOrderId",
+                      "value": "{{workOrderId}}",
+                      "description": "Work order UUID"
+                    }
+                  ]
+                },
+                "description": "Technician files completed resolution summary for verification by dispatchers."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "attachments",
+          "item": [
+            {
+              "name": "Upload Work Update Photo",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{technicianToken}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "files",
+                      "type": "file",
+                      "src": [],
+                      "description": "Evidence images (JPEG/PNG/WebP, max 3 files)"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/attachments/work-update/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "attachments",
+                    "work-update",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "update-uuid-123",
+                      "description": "Work update UUID"
+                    }
+                  ]
+                },
+                "description": "Uploads photos taken during on-site inspection or active repair work."
+              },
+              "response": []
+            },
+            {
+              "name": "Upload Resolution Evidence Photo",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{technicianToken}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "files",
+                      "type": "file",
+                      "src": [],
+                      "description": "Evidence images (JPEG/PNG/WebP, max 3 files)"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/attachments/resolution/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "attachments",
+                    "resolution",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{resolutionId}}",
+                      "description": "Resolution UUID"
+                    }
+                  ]
+                },
+                "description": "Uploads photos showing completed, restored conditions."
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03. Dispatcher",
+      "description": "Department triage and dispatch staff APIs for evaluating incoming service requests, routing issues, assigning crews, and verifying resolutions.",
+      "item": [
+        {
+          "name": "service-requests",
+          "item": [
+            {
+              "name": "Get Department Queue (Pending Triage)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{dispatcherToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/service-requests/department/:departmentId/queue?page=1&limit=20",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "service-requests",
+                    "department",
+                    ":departmentId",
+                    "queue"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1",
+                      "description": "",
+                      "disabled": false
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20",
+                      "description": "",
+                      "disabled": false
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "key": "departmentId",
+                      "value": "{{departmentId}}",
+                      "description": "Department UUID"
+                    }
+                  ]
+                },
+                "description": "Backlog queue of newly submitted requests requiring triage or verification."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Department In-Progress Requests",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{dispatcherToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/service-requests/department/:departmentId/in-progress",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "service-requests",
+                    "department",
+                    ":departmentId",
+                    "in-progress"
+                  ],
+                  "variable": [
+                    {
+                      "key": "departmentId",
+                      "value": "{{departmentId}}",
+                      "description": "Department UUID"
+                    }
+                  ]
+                },
+                "description": "Active service requests currently assigned or undergoing work."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Department Resolved Requests",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{dispatcherToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/service-requests/department/:departmentId/resolved",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "service-requests",
+                    "department",
+                    ":departmentId",
+                    "resolved"
+                  ],
+                  "variable": [
+                    {
+                      "key": "departmentId",
+                      "value": "{{departmentId}}",
+                      "description": "Department UUID"
+                    }
+                  ]
+                },
+                "description": "Resolved requests within the department awaiting verification or archive."
+              },
+              "response": []
+            },
+            {
+              "name": "Get All Department Requests with Filters",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{dispatcherToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/service-requests/department/:departmentId?status=SUBMITTED&stage=queue&searchTerm=street",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "service-requests",
+                    "department",
+                    ":departmentId"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "SUBMITTED",
+                      "description": "",
+                      "disabled": true
+                    },
+                    {
+                      "key": "stage",
+                      "value": "queue",
+                      "description": "",
+                      "disabled": true
+                    },
+                    {
+                      "key": "searchTerm",
+                      "value": "street",
+                      "description": "",
+                      "disabled": true
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "key": "departmentId",
+                      "value": "{{departmentId}}",
+                      "description": "Department UUID"
+                    }
+                  ]
+                },
+                "description": "Full search and filter of department requests."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Service Requests Linked to Civic Issue",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{dispatcherToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/service-requests/civic-issue/:civicIssueId",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "service-requests",
+                    "civic-issue",
+                    ":civicIssueId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "civicIssueId",
+                      "value": "{{civicIssueId}}",
+                      "description": "Civic issue UUID"
+                    }
+                  ]
+                },
+                "description": "Lists all citizen requests aggregated under a single civic issue."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "civic-issues",
+          "item": [
+            {
+              "name": "Get Department Issue Queue",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{dispatcherToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/civic-issues/department/:departmentId/queue",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "civic-issues",
+                    "department",
+                    ":departmentId",
+                    "queue"
+                  ],
+                  "variable": [
+                    {
+                      "key": "departmentId",
+                      "value": "{{departmentId}}",
+                      "description": "Department UUID"
+                    }
+                  ]
+                },
+                "description": "Issues in queue that do not yet have a work order or crew assigned."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Department In-Progress Issues",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{dispatcherToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/civic-issues/department/:departmentId/in-progress",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "civic-issues",
+                    "department",
+                    ":departmentId",
+                    "in-progress"
+                  ],
+                  "variable": [
+                    {
+                      "key": "departmentId",
+                      "value": "{{departmentId}}",
+                      "description": "Department UUID"
+                    }
+                  ]
+                },
+                "description": "Active civic issues being worked on."
+              },
+              "response": []
+            },
+            {
+              "name": "Get All Department Civic Issues",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{dispatcherToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/civic-issues/department/:departmentId?priority=HIGH&isEscalated=true",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "civic-issues",
+                    "department",
+                    ":departmentId"
+                  ],
+                  "query": [
+                    {
+                      "key": "priority",
+                      "value": "HIGH",
+                      "description": "",
+                      "disabled": true
+                    },
+                    {
+                      "key": "isEscalated",
+                      "value": "true",
+                      "description": "",
+                      "disabled": true
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "key": "departmentId",
+                      "value": "{{departmentId}}",
+                      "description": "Department UUID"
+                    }
+                  ]
+                },
+                "description": "Comprehensive list of department issues with filters."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Civic Issue Details",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{dispatcherToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/civic-issues/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "civic-issues",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{civicIssueId}}",
+                      "description": "Civic issue UUID"
+                    }
+                  ]
+                },
+                "description": "Inspect issue metadata, status history, escalations, and linked work orders."
+              },
+              "response": []
+            },
+            {
+              "name": "Update Civic Issue Status",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{dispatcherToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"TRIAGED\",\n  \"notes\": \"Triaged and validated complaint. Scheduling work order creation.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/civic-issues/:id/status",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "civic-issues",
+                    ":id",
+                    "status"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{civicIssueId}}",
+                      "description": "Civic issue UUID"
+                    }
+                  ]
+                },
+                "description": "Updates civic issue lifecycle status."
+              },
+              "response": []
+            },
+            {
+              "name": "Reopen Civic Issue",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{dispatcherToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"reason\": \"Issue re-occurred according to citizen report. Reopening investigation.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/civic-issues/:id/reopen",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "civic-issues",
+                    ":id",
+                    "reopen"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{civicIssueId}}",
+                      "description": "Civic issue UUID"
+                    }
+                  ]
+                },
+                "description": "Reopens a closed or resolved issue if recurrence is detected."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "work-orders",
+          "item": [
+            {
+              "name": "Create Work Order for Issue",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{dispatcherToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"civicIssueId\": \"{{civicIssueId}}\",\n  \"title\": \"Repair underground electrical connection on 5th avenue\",\n  \"description\": \"Check cable continuity, isolate faulty wire, replace with 50m cable.\",\n  \"scheduledAt\": \"2026-10-12T09:00:00.000Z\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/work-orders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "work-orders"
+                  ]
+                },
+                "description": "Creates an operational work order assigned to the department."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Department Work Orders",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{dispatcherToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/work-orders/department/:departmentId",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "work-orders",
+                    "department",
+                    ":departmentId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "departmentId",
+                      "value": "{{departmentId}}",
+                      "description": "Department UUID"
+                    }
+                  ]
+                },
+                "description": "Lists all work orders belonging to the department."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Work Order By ID",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{dispatcherToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/work-orders/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "work-orders",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{workOrderId}}",
+                      "description": "Work order UUID"
+                    }
+                  ]
+                },
+                "description": "Full details of work order."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "assignments",
+          "item": [
+            {
+              "name": "Assign Work Order to Technician or Team",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{dispatcherToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"workOrderId\": \"{{workOrderId}}\",\n  \"assignedToId\": \"{{userId}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/assignments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "assignments"
+                  ]
+                },
+                "description": "Dispatches work order to an individual technician (assignedToId) or team (teamId)."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Department Assignments",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{dispatcherToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/assignments/department/:departmentId",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "assignments",
+                    "department",
+                    ":departmentId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "departmentId",
+                      "value": "{{departmentId}}",
+                      "description": "Department UUID"
+                    }
+                  ]
+                },
+                "description": "Lists all active assignments within the department."
+              },
+              "response": []
+            },
+            {
+              "name": "Reassign Assignment",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{dispatcherToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"assignedToId\": \"new-technician-uuid\",\n  \"reason\": \"Original technician unavailable due to illness.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/assignments/:id/reassign",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "assignments",
+                    ":id",
+                    "reassign"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{assignmentId}}",
+                      "description": "Assignment UUID"
+                    }
+                  ]
+                },
+                "description": "Reassigns a pending/rejected assignment to another technician."
+              },
+              "response": []
+            },
+            {
+              "name": "Unassign Assignment",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{dispatcherToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/assignments/:id/unassign",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "assignments",
+                    ":id",
+                    "unassign"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{assignmentId}}",
+                      "description": "Assignment UUID"
+                    }
+                  ]
+                },
+                "description": "Revokes assignment and places work order back into unassigned pool."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "resolutions",
+          "item": [
+            {
+              "name": "Verify Technician Resolution",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{dispatcherToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"VERIFIED\",\n  \"notes\": \"Inspected photos and technician log. Work verified complete.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/resolutions/:id/verify",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "resolutions",
+                    ":id",
+                    "verify"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{resolutionId}}",
+                      "description": "Resolution UUID"
+                    }
+                  ]
+                },
+                "description": "Dispatcher verifies completed resolution (status: VERIFIED, REJECTED, REOPENED)."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Resolution Details",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{dispatcherToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/resolutions/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "resolutions",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{resolutionId}}",
+                      "description": "Resolution UUID"
+                    }
+                  ]
+                },
+                "description": "Fetches resolution report and verification log."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "locations",
+          "item": [
+            {
+              "name": "Search Nearby Locations (Duplicate Detection)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{dispatcherToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/locations/nearby?latitude=23.8103&longitude=90.4125&radiusMeters=100",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "locations",
+                    "nearby"
+                  ],
+                  "query": [
+                    {
+                      "key": "latitude",
+                      "value": "23.8103",
+                      "description": "",
+                      "disabled": false
+                    },
+                    {
+                      "key": "longitude",
+                      "value": "90.4125",
+                      "description": "",
+                      "disabled": false
+                    },
+                    {
+                      "key": "radiusMeters",
+                      "value": "100",
+                      "description": "",
+                      "disabled": false
+                    }
+                  ]
+                },
+                "description": "Identifies nearby existing incidents to prevent duplicate issue creation."
+              },
+              "response": []
+            },
+            {
+              "name": "Resolve Location Ward",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{dispatcherToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/locations/:locationId/ward",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "locations",
+                    ":locationId",
+                    "ward"
+                  ],
+                  "variable": [
+                    {
+                      "key": "locationId",
+                      "value": "loc-uuid-123",
+                      "description": "Location UUID"
+                    }
+                  ]
+                },
+                "description": "Determines which ward and municipality a geographic location belongs to."
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04. Department Manager",
+      "description": "Department-level supervisory APIs for monitoring crew performance, managing rosters and field teams, and reviewing escalations.",
+      "item": [
+        {
+          "name": "department-overview",
+          "item": [
+            {
+              "name": "Get Department Performance Overview",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{managerToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/departments/:id/overview?timeRange=this_month",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "departments",
+                    ":id",
+                    "overview"
+                  ],
+                  "query": [
+                    {
+                      "key": "timeRange",
+                      "value": "this_month",
+                      "description": "Filter by: today, this_week, this_month, this_year, all_time",
+                      "disabled": false
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{departmentId}}",
+                      "description": "Department UUID"
+                    }
+                  ]
+                },
+                "description": "Full department dashboard: active work orders, team loads, SLA compliance, and open queues."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Department Details",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{managerToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/departments/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "departments",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{departmentId}}",
+                      "description": "Department UUID"
+                    }
+                  ]
+                },
+                "description": "Fetches department configuration, contact info, and active service areas."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "staff-management",
+          "item": [
+            {
+              "name": "Get Department Staff Roster",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{managerToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/staff?departmentId=%7B%7BdepartmentId%7D%7D",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "staff"
+                  ],
+                  "query": [
+                    {
+                      "key": "departmentId",
+                      "value": "{{departmentId}}",
+                      "description": "Filter to department",
+                      "disabled": false
+                    }
+                  ]
+                },
+                "description": "Lists all dispatchers, technicians, and staff belonging to the department."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Department Technicians and Workload",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{managerToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/staff/technicians",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "staff",
+                    "technicians"
+                  ]
+                },
+                "description": "Shows technician availability, active workload count, and capacity."
+              },
+              "response": []
+            },
+            {
+              "name": "Onboard New Technician in Department",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{managerToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"firstName\": \"Kamal\",\n  \"lastName\": \"Hossain\",\n  \"email\": \"kamal.tech@civix.gov\",\n  \"password\": \"TempPassword123!\",\n  \"phone\": \"+8801812345678\",\n  \"designation\": \"Senior Electrician\",\n  \"departmentId\": \"{{departmentId}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/staff/technician",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "staff",
+                    "technician"
+                  ]
+                },
+                "description": "Creates a new TECHNICIAN staff profile assigned to the department."
+              },
+              "response": []
+            },
+            {
+              "name": "Onboard New Dispatcher in Department",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{managerToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"firstName\": \"Nasrin\",\n  \"lastName\": \"Akter\",\n  \"email\": \"nasrin.dispatch@civix.gov\",\n  \"password\": \"TempPassword123!\",\n  \"phone\": \"+8801912345678\",\n  \"designation\": \"Triage Specialist\",\n  \"departmentId\": \"{{departmentId}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/staff/dispatcher",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "staff",
+                    "dispatcher"
+                  ]
+                },
+                "description": "Creates a new DISPATCHER staff profile assigned to the department."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Staff Profile By ID",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{managerToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/staff/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "staff",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{userId}}",
+                      "description": "Staff User UUID"
+                    }
+                  ]
+                },
+                "description": "Inspects staff employment and assignment records."
+              },
+              "response": []
+            },
+            {
+              "name": "Update Staff Profile",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{managerToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"firstName\": \"Kamal\",\n  \"lastName\": \"Hossain\",\n  \"designation\": \"Lead Field Electrician\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/staff/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "staff",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{userId}}",
+                      "description": "Staff User UUID"
+                    }
+                  ]
+                },
+                "description": "Updates designation and contact information."
+              },
+              "response": []
+            },
+            {
+              "name": "Update Staff Active Status (Suspend / Activate)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{managerToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"ACTIVE\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/staff/:id/status",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "staff",
+                    ":id",
+                    "status"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{userId}}",
+                      "description": "Staff User UUID"
+                    }
+                  ]
+                },
+                "description": "Sets status: ACTIVE, INACTIVE, SUSPENDED, or BANNED."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "teams",
+          "item": [
+            {
+              "name": "Get Department Teams",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{managerToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/teams",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "teams"
+                  ]
+                },
+                "description": "Lists all operational field crew teams in the department."
+              },
+              "response": []
+            },
+            {
+              "name": "Create Field Crew Team",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{managerToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Rapid Response Electrical Crew Alpha\",\n  \"code\": \"RR-ELEC-ALPHA\",\n  \"departmentId\": \"{{departmentId}}\",\n  \"leaderId\": \"{{userId}}\",\n  \"memberIds\": [\n    \"{{userId}}\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/teams",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "teams"
+                  ]
+                },
+                "description": "Creates a field team with a designated team lead and members."
+              },
+              "response": []
+            },
+            {
+              "name": "Update Team",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{managerToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Rapid Response Electrical Crew Alpha (Expanded)\",\n  \"status\": \"ACTIVE\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/teams/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "teams",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "team-uuid-123",
+                      "description": "Team UUID"
+                    }
+                  ]
+                },
+                "description": "Updates team name, status, or lead."
+              },
+              "response": []
+            },
+            {
+              "name": "Disband / Delete Team",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{managerToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/teams/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "teams",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "team-uuid-123",
+                      "description": "Team UUID"
+                    }
+                  ]
+                },
+                "description": "Soft deletes or disbands a field team."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "civic-issues",
+          "item": [
+            {
+              "name": "Get Department Escalated / Breached Issues",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{managerToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/civic-issues/department/:departmentId/escalated",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "civic-issues",
+                    "department",
+                    ":departmentId",
+                    "escalated"
+                  ],
+                  "variable": [
+                    {
+                      "key": "departmentId",
+                      "value": "{{departmentId}}",
+                      "description": "Department UUID"
+                    }
+                  ]
+                },
+                "description": "Critical list of issues that have breached response or resolution SLAs."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "feedback",
+          "item": [
+            {
+              "name": "Get Department Feedback and Ratings",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{managerToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/feedback/department/:departmentId",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "feedback",
+                    "department",
+                    ":departmentId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "departmentId",
+                      "value": "{{departmentId}}",
+                      "description": "Department UUID"
+                    }
+                  ]
+                },
+                "description": "Reviews citizen ratings and comments received for department resolutions."
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05. City Admin",
+      "description": "City-wide administration APIs for managing departments, wards, zones, service categories, SLA policies, and city metrics.",
+      "item": [
+        {
+          "name": "municipality-overview",
+          "item": [
+            {
+              "name": "Get Municipality Executive Overview",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{cityAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/municipalities/:municipalityId/overview?timeRange=this_month",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "municipalities",
+                    ":municipalityId",
+                    "overview"
+                  ],
+                  "query": [
+                    {
+                      "key": "timeRange",
+                      "value": "this_month",
+                      "description": "today, this_week, this_month, this_year, all_time",
+                      "disabled": false
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "key": "municipalityId",
+                      "value": "{{municipalityId}}",
+                      "description": "Municipality UUID"
+                    }
+                  ]
+                },
+                "description": "City-wide executive analytics: ward hotspots, department resolution rates, citizen satisfaction."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Municipality Details",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{cityAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/municipalities/:municipalityId",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "municipalities",
+                    ":municipalityId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "municipalityId",
+                      "value": "{{municipalityId}}",
+                      "description": "Municipality UUID"
+                    }
+                  ]
+                },
+                "description": "Fetches municipality code, timezone, country, and status."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "departments",
+          "item": [
+            {
+              "name": "List Municipality Departments",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{cityAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/departments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "departments"
+                  ]
+                },
+                "description": "Lists all active departments operating within the municipality."
+              },
+              "response": []
+            },
+            {
+              "name": "Create Department",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{cityAdminToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"municipalityId\": \"{{municipalityId}}\",\n  \"name\": \"Roads and Infrastructure Department\",\n  \"code\": \"ROADS\",\n  \"description\": \"Responsible for street pavements, potholes, bridges, and footpaths.\",\n  \"email\": \"roads@civix.gov\",\n  \"phone\": \"+88029876543\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/departments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "departments"
+                  ]
+                },
+                "description": "Creates a new civic service department."
+              },
+              "response": []
+            },
+            {
+              "name": "Update Department",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{cityAdminToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Roads & Highways Department\",\n  \"phone\": \"+88029876599\",\n  \"status\": \"ACTIVE\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/departments/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "departments",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{departmentId}}",
+                      "description": "Department UUID"
+                    }
+                  ]
+                },
+                "description": "Updates department name, contacts, or active status."
+              },
+              "response": []
+            },
+            {
+              "name": "Assign Ward Service Area to Department",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{cityAdminToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"wardId\": \"{{wardId}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/departments/:id/service-areas",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "departments",
+                    ":id",
+                    "service-areas"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{departmentId}}",
+                      "description": "Department UUID"
+                    }
+                  ]
+                },
+                "description": "Maps department jurisdiction to serve a specific municipal ward."
+              },
+              "response": []
+            },
+            {
+              "name": "Remove Ward Service Area from Department",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{cityAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/departments/:id/service-areas/:areaId",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "departments",
+                    ":id",
+                    "service-areas",
+                    ":areaId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{departmentId}}",
+                      "description": "Department UUID"
+                    },
+                    {
+                      "key": "areaId",
+                      "value": "area-uuid-123",
+                      "description": "DepartmentServiceArea UUID"
+                    }
+                  ]
+                },
+                "description": "Deactivates department service coverage for a ward."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "categories",
+          "item": [
+            {
+              "name": "Get Service Categories",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{cityAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/categories",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "categories"
+                  ]
+                },
+                "description": "Lists all service complaint categories."
+              },
+              "response": []
+            },
+            {
+              "name": "Create Service Category",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{cityAdminToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Pothole & Pavement Damage\",\n  \"slug\": \"pothole-pavement-damage\",\n  \"departmentId\": \"{{departmentId}}\",\n  \"description\": \"Cracks, holes, or missing road surface layers causing traffic obstruction.\",\n  \"baseSeverity\": 20\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/categories",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "categories"
+                  ]
+                },
+                "description": "Creates a service category routed to a specific department."
+              },
+              "response": []
+            },
+            {
+              "name": "Update Service Category",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{cityAdminToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Major Potholes and Road Degradation\",\n  \"baseSeverity\": 25\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/categories/:categoryId",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "categories",
+                    ":categoryId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "categoryId",
+                      "value": "{{categoryId}}",
+                      "description": "Category UUID"
+                    }
+                  ]
+                },
+                "description": "Updates category name or base severity."
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Service Category",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{cityAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/categories/:categoryId",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "categories",
+                    ":categoryId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "categoryId",
+                      "value": "{{categoryId}}",
+                      "description": "Category UUID"
+                    }
+                  ]
+                },
+                "description": "Deactivates a service category."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "zones-and-wards",
+          "item": [
+            {
+              "name": "Get Zones in Municipality",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{cityAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/zones",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "zones"
+                  ]
+                },
+                "description": "Lists administrative zones."
+              },
+              "response": []
+            },
+            {
+              "name": "Create Zone",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{cityAdminToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Zone 3 (Uttara & Airport)\",\n  \"municipalityId\": \"{{municipalityId}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/zones",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "zones"
+                  ]
+                },
+                "description": "Creates an administrative zone in the municipality."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Zone Wards",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{cityAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/zones/:zoneId/wards",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "zones",
+                    ":zoneId",
+                    "wards"
+                  ],
+                  "variable": [
+                    {
+                      "key": "zoneId",
+                      "value": "{{zoneId}}",
+                      "description": "Zone UUID"
+                    }
+                  ]
+                },
+                "description": "Lists all wards falling inside the zone."
+              },
+              "response": []
+            },
+            {
+              "name": "Create Ward",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{cityAdminToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Ward 04 (Uttara Sector 7)\",\n  \"number\": \"04\",\n  \"zoneId\": \"{{zoneId}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/wards",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "wards"
+                  ]
+                },
+                "description": "Creates an electoral ward under a zone."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Ward Details",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{cityAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/wards/:wardId",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "wards",
+                    ":wardId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "wardId",
+                      "value": "{{wardId}}",
+                      "description": "Ward UUID"
+                    }
+                  ]
+                },
+                "description": "Inspects ward boundaries and coverage."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Departments Serving Ward",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{cityAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/wards/:wardId/departments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "wards",
+                    ":wardId",
+                    "departments"
+                  ],
+                  "variable": [
+                    {
+                      "key": "wardId",
+                      "value": "{{wardId}}",
+                      "description": "Ward UUID"
+                    }
+                  ]
+                },
+                "description": "Lists all departments actively covering this ward."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "staff-management",
+          "item": [
+            {
+              "name": "Onboard Department Manager",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{cityAdminToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"firstName\": \"Dr. Farhan\",\n  \"lastName\": \"Ahmed\",\n  \"email\": \"farhan.manager@civix.gov\",\n  \"password\": \"TempPassword123!\",\n  \"phone\": \"+8801700112233\",\n  \"designation\": \"Chief Drainage Engineer\",\n  \"departmentId\": \"{{departmentId}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/staff/department-manager",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "staff",
+                    "department-manager"
+                  ]
+                },
+                "description": "Creates a DEPARTMENT_MANAGER staff profile for a department."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "sla-policies",
+          "item": [
+            {
+              "name": "Get SLA Policies",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{cityAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sla-policies?municipalityId=%7B%7BmunicipalityId%7D%7D",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sla-policies"
+                  ],
+                  "query": [
+                    {
+                      "key": "municipalityId",
+                      "value": "{{municipalityId}}",
+                      "description": "",
+                      "disabled": false
+                    }
+                  ]
+                },
+                "description": "Lists configured response and resolution SLAs."
+              },
+              "response": []
+            },
+            {
+              "name": "Create SLA Policy",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{cityAdminToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"municipalityId\": \"{{municipalityId}}\",\n  \"categoryId\": \"{{categoryId}}\",\n  \"priorityId\": \"prio-high-uuid\",\n  \"responseMinutes\": 120,\n  \"resolutionMinutes\": 1440,\n  \"assignmentType\": \"INDIVIDUAL\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sla-policies",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sla-policies"
+                  ]
+                },
+                "description": "Sets SLA deadlines (responseMinutes, resolutionMinutes) for category and priority."
+              },
+              "response": []
+            },
+            {
+              "name": "Update SLA Policy",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{cityAdminToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"resolutionMinutes\": 2880\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sla-policies/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sla-policies",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "sla-uuid-123",
+                      "description": "SLA Policy UUID"
+                    }
+                  ]
+                },
+                "description": "Modifies SLA response/resolution thresholds."
+              },
+              "response": []
+            },
+            {
+              "name": "Delete SLA Policy",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{cityAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sla-policies/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sla-policies",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "sla-uuid-123",
+                      "description": "SLA Policy UUID"
+                    }
+                  ]
+                },
+                "description": "Deletes an SLA policy rule."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "analytics",
+          "item": [
+            {
+              "name": "Get Dashboard Summary Stats",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{cityAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/analytics/dashboard?municipalityId=%7B%7BmunicipalityId%7D%7D",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "analytics",
+                    "dashboard"
+                  ],
+                  "query": [
+                    {
+                      "key": "municipalityId",
+                      "value": "{{municipalityId}}",
+                      "description": "",
+                      "disabled": false
+                    }
+                  ]
+                },
+                "description": "Counts of total, resolved, open, and breached issues."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Issues By Department",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{cityAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/analytics/issues-by-department?municipalityId=%7B%7BmunicipalityId%7D%7D",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "analytics",
+                    "issues-by-department"
+                  ],
+                  "query": [
+                    {
+                      "key": "municipalityId",
+                      "value": "{{municipalityId}}",
+                      "description": "",
+                      "disabled": false
+                    }
+                  ]
+                },
+                "description": "Issue distribution breakdown across departments."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Issues By Ward",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{cityAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/analytics/issues-by-ward?municipalityId=%7B%7BmunicipalityId%7D%7D",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "analytics",
+                    "issues-by-ward"
+                  ],
+                  "query": [
+                    {
+                      "key": "municipalityId",
+                      "value": "{{municipalityId}}",
+                      "description": "",
+                      "disabled": false
+                    }
+                  ]
+                },
+                "description": "Issue distribution breakdown across wards."
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "06. Super Admin & Platform Admin",
+      "description": "Platform-wide governance APIs for system stats, onboarding municipalities, managing user accounts, RBAC roles, and global audit tracking.",
+      "item": [
+        {
+          "name": "system-overview",
+          "item": [
+            {
+              "name": "Get Full System Overview (Super Admin Dashboard)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/analytics/overview?timeRange=this_month&startDate=2026-10-01&endDate=2026-10-31&municipalityId=%7B%7BmunicipalityId%7D%7D",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "analytics",
+                    "overview"
+                  ],
+                  "query": [
+                    {
+                      "key": "timeRange",
+                      "value": "this_month",
+                      "description": "Filter by: today, this_week, this_month, this_year, all_time",
+                      "disabled": false
+                    },
+                    {
+                      "key": "startDate",
+                      "value": "2026-10-01",
+                      "description": "Custom date range start (YYYY-MM-DD)",
+                      "disabled": true
+                    },
+                    {
+                      "key": "endDate",
+                      "value": "2026-10-31",
+                      "description": "Custom date range end (YYYY-MM-DD)",
+                      "disabled": true
+                    },
+                    {
+                      "key": "municipalityId",
+                      "value": "{{municipalityId}}",
+                      "description": "Optional UUID to drill down into a single municipality",
+                      "disabled": true
+                    }
+                  ]
+                },
+                "description": "Comprehensive system overview API: KPIs, civic issues, users, work orders, service requests, municipalities comparison, top categories, citizen satisfaction, SLA & escalations, daily trends, and actionable queues."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Super Admin Overview (Alias Endpoint)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/analytics/super-admin/overview?timeRange=all_time",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "analytics",
+                    "super-admin",
+                    "overview"
+                  ],
+                  "query": [
+                    {
+                      "key": "timeRange",
+                      "value": "all_time",
+                      "description": "",
+                      "disabled": false
+                    }
+                  ]
+                },
+                "description": "Alias endpoint for the super admin overview dashboard."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "municipalities",
+          "item": [
+            {
+              "name": "List All Municipalities",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/municipalities",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "municipalities"
+                  ]
+                },
+                "description": "Lists all municipalities registered on the platform."
+              },
+              "response": []
+            },
+            {
+              "name": "Onboard New Municipality",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Dhaka North City Corporation\",\n  \"code\": \"DNCC\",\n  \"countryCode\": \"BGD\",\n  \"timezone\": \"Asia/Dhaka\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/municipalities",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "municipalities"
+                  ]
+                },
+                "description": "Provisions and activates a new municipal tenant on Civix."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Municipality By ID",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/municipalities/:municipalityId",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "municipalities",
+                    ":municipalityId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "municipalityId",
+                      "value": "{{municipalityId}}",
+                      "description": "Municipality UUID"
+                    }
+                  ]
+                },
+                "description": "Inspects municipality profile and config."
+              },
+              "response": []
+            },
+            {
+              "name": "Update Municipality",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Dhaka North City Corporation (DNCC)\",\n  \"coverageStatus\": \"ACTIVE\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/municipalities/:municipalityId",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "municipalities",
+                    ":municipalityId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "municipalityId",
+                      "value": "{{municipalityId}}",
+                      "description": "Municipality UUID"
+                    }
+                  ]
+                },
+                "description": "Updates municipality name, code, or coverage status."
+              },
+              "response": []
+            },
+            {
+              "name": "Deactivate Municipality",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/municipalities/:municipalityId",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "municipalities",
+                    ":municipalityId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "municipalityId",
+                      "value": "{{municipalityId}}",
+                      "description": "Municipality UUID"
+                    }
+                  ]
+                },
+                "description": "Sets municipality coverage status to INACTIVE, pausing new submissions."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "user-management",
+          "item": [
+            {
+              "name": "List All Users (Paginated & Filtered)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/users?page=1&limit=20",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "users"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1",
+                      "description": "",
+                      "disabled": false
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20",
+                      "description": "",
+                      "disabled": false
+                    }
+                  ]
+                },
+                "description": "Lists all platform users (citizens and staff) with role assignments."
+              },
+              "response": []
+            },
+            {
+              "name": "Get User Details By ID",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/users/:userId",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "users",
+                    ":userId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "userId",
+                      "value": "{{userId}}",
+                      "description": "User UUID"
+                    }
+                  ]
+                },
+                "description": "Inspects user account status, profiles, and assigned roles."
+              },
+              "response": []
+            },
+            {
+              "name": "Update User Account Status",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"ACTIVE\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/users/:userId/status",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "users",
+                    ":userId",
+                    "status"
+                  ],
+                  "variable": [
+                    {
+                      "key": "userId",
+                      "value": "{{userId}}",
+                      "description": "User UUID"
+                    }
+                  ]
+                },
+                "description": "Sets user status: ACTIVE, INACTIVE, SUSPENDED, or BANNED."
+              },
+              "response": []
+            },
+            {
+              "name": "Soft Delete User",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/users/:userId",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "users",
+                    ":userId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "userId",
+                      "value": "{{userId}}",
+                      "description": "User UUID"
+                    }
+                  ]
+                },
+                "description": "Soft deletes user account."
+              },
+              "response": []
+            },
+            {
+              "name": "Restore Soft-Deleted User",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/users/:userId/restore",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "users",
+                    ":userId",
+                    "restore"
+                  ],
+                  "variable": [
+                    {
+                      "key": "userId",
+                      "value": "{{userId}}",
+                      "description": "User UUID"
+                    }
+                  ]
+                },
+                "description": "Restores a soft-deleted user account."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "admin-provisioning",
+          "item": [
+            {
+              "name": "Create Platform Admin",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"firstName\": \"Sajib\",\n  \"lastName\": \"Wazed\",\n  \"email\": \"sajib.platform@civix.gov\",\n  \"password\": \"AdminSecurePassword123!\",\n  \"phone\": \"+8801700998877\",\n  \"designation\": \"Platform Operations Director\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/staff/platform-admin",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "staff",
+                    "platform-admin"
+                  ]
+                },
+                "description": "Provisions a new PLATFORM_ADMIN user with multi-municipality management rights."
+              },
+              "response": []
+            },
+            {
+              "name": "Create City Admin for Municipality",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"firstName\": \"Anisur\",\n  \"lastName\": \"Rahman\",\n  \"email\": \"anisur.cityadmin@civix.gov\",\n  \"password\": \"AdminSecurePassword123!\",\n  \"phone\": \"+8801700665544\",\n  \"designation\": \"City Municipal Administrator\",\n  \"municipalityId\": \"{{municipalityId}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/staff/city-admin",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "staff",
+                    "city-admin"
+                  ]
+                },
+                "description": "Provisions a CITY_ADMIN managing a specific municipality."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "roles-and-permissions",
+          "item": [
+            {
+              "name": "List All Roles",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/roles",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "roles"
+                  ]
+                },
+                "description": "Lists all standard system roles and custom defined roles."
+              },
+              "response": []
+            },
+            {
+              "name": "Create Custom Role",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"SENIOR_AUDITOR\",\n  \"description\": \"Auditor role with read-only access to all municipal logs and reports.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/roles",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "roles"
+                  ]
+                },
+                "description": "Creates a new RBAC role."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Role By ID",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/roles/:roleId",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "roles",
+                    ":roleId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "roleId",
+                      "value": "{{roleId}}",
+                      "description": "Role UUID"
+                    }
+                  ]
+                },
+                "description": "Inspects role definition and system flag."
+              },
+              "response": []
+            },
+            {
+              "name": "Update Role",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"description\": \"Updated description for senior municipal auditor.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/roles/:roleId",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "roles",
+                    ":roleId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "roleId",
+                      "value": "{{roleId}}",
+                      "description": "Role UUID"
+                    }
+                  ]
+                },
+                "description": "Updates role description."
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Custom Role",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/roles/:roleId",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "roles",
+                    ":roleId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "roleId",
+                      "value": "{{roleId}}",
+                      "description": "Role UUID"
+                    }
+                  ]
+                },
+                "description": "Deletes non-system role."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Role Permissions",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/roles/:roleId/permissions",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "roles",
+                    ":roleId",
+                    "permissions"
+                  ],
+                  "variable": [
+                    {
+                      "key": "roleId",
+                      "value": "{{roleId}}",
+                      "description": "Role UUID"
+                    }
+                  ]
+                },
+                "description": "Lists all action-resource permissions granted to the role."
+              },
+              "response": []
+            },
+            {
+              "name": "Replace Role Permissions",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"permission_ids\": [\n    \"perm-uuid-1\",\n    \"perm-uuid-2\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/roles/:roleId/permissions",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "roles",
+                    ":roleId",
+                    "permissions"
+                  ],
+                  "variable": [
+                    {
+                      "key": "roleId",
+                      "value": "{{roleId}}",
+                      "description": "Role UUID"
+                    }
+                  ]
+                },
+                "description": "Replaces the entire set of permissions granted to a role."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Roles Assigned to User",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/roles/users/:userId",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "roles",
+                    "users",
+                    ":userId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "userId",
+                      "value": "{{userId}}",
+                      "description": "User UUID"
+                    }
+                  ]
+                },
+                "description": "Lists all roles assigned to a user."
+              },
+              "response": []
+            },
+            {
+              "name": "Assign Role to User",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"roleId\": \"{{roleId}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/roles/users/:userId",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "roles",
+                    "users",
+                    ":userId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "userId",
+                      "value": "{{userId}}",
+                      "description": "User UUID"
+                    }
+                  ]
+                },
+                "description": "Assigns a role to a user."
+              },
+              "response": []
+            },
+            {
+              "name": "Remove Role from User",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/roles/:roleId/users/:userId",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "roles",
+                    ":roleId",
+                    "users",
+                    ":userId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "roleId",
+                      "value": "{{roleId}}",
+                      "description": "Role UUID"
+                    },
+                    {
+                      "key": "userId",
+                      "value": "{{userId}}",
+                      "description": "User UUID"
+                    }
+                  ]
+                },
+                "description": "Revokes a role from a user."
+              },
+              "response": []
+            },
+            {
+              "name": "Get All Permissions",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/permissions",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "permissions"
+                  ]
+                },
+                "description": "Lists all action-resource permissions in Civix."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Permission Details",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/permissions/:permissionId",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "permissions",
+                    ":permissionId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "permissionId",
+                      "value": "perm-uuid-1",
+                      "description": "Permission UUID"
+                    }
+                  ]
+                },
+                "description": "Fetches details of a specific permission."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "global-records",
+          "item": [
+            {
+              "name": "Global Civic Issues (All Municipalities)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/civic-issues?page=1&limit=20&status=IN_PROGRESS",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "civic-issues"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1",
+                      "description": "",
+                      "disabled": false
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20",
+                      "description": "",
+                      "disabled": false
+                    },
+                    {
+                      "key": "status",
+                      "value": "IN_PROGRESS",
+                      "description": "",
+                      "disabled": true
+                    }
+                  ]
+                },
+                "description": "System-wide list of civic issues across all municipalities."
+              },
+              "response": []
+            },
+            {
+              "name": "Global Service Requests (All Municipalities)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/service-requests?page=1&limit=20",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "service-requests"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1",
+                      "description": "",
+                      "disabled": false
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20",
+                      "description": "",
+                      "disabled": false
+                    }
+                  ]
+                },
+                "description": "System-wide list of service requests across all municipalities."
+              },
+              "response": []
+            },
+            {
+              "name": "Global Work Orders",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/work-orders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "work-orders"
+                  ]
+                },
+                "description": "System-wide list of all work orders."
+              },
+              "response": []
+            },
+            {
+              "name": "Global Assignments",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/assignments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "assignments"
+                  ]
+                },
+                "description": "System-wide list of work order assignments."
+              },
+              "response": []
+            },
+            {
+              "name": "Global Resolutions",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/resolutions",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "resolutions"
+                  ]
+                },
+                "description": "System-wide list of submitted resolutions."
+              },
+              "response": []
+            },
+            {
+              "name": "Global Citizen Feedback",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{superAdminToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/feedback",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "feedback"
+                  ]
+                },
+                "description": "System-wide list of all citizen ratings & reviews."
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
