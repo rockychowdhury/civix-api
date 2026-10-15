@@ -99,7 +99,9 @@ export const calculateResolutionDeadline = (
 	return new Date(fromDate.getTime() + resolutionMinutes * 60 * 1000);
 };
 
-export const generateTrackingNumber = async (): Promise<string> => {
+export const generateTrackingNumber = async (
+	client: any = prisma,
+): Promise<string> => {
 	const prefix = "REQ";
 	const date = new Date();
 	const year = date.getFullYear().toString().slice(-2);
@@ -108,15 +110,15 @@ export const generateTrackingNumber = async (): Promise<string> => {
 
 	const dateString = `${year}${month}${day}`;
 
-	// Find the latest request created today to increment the counter
-	const latestRequest = await prisma.serviceRequest.findFirst({
+	// Find the latest request created today to increment the counter using index
+	const latestRequest = await client.serviceRequest.findFirst({
 		where: {
 			trackingNumber: {
 				startsWith: `${prefix}-${dateString}`,
 			},
 		},
 		orderBy: {
-			createdAt: "desc",
+			trackingNumber: "desc",
 		},
 		select: {
 			trackingNumber: true,
@@ -141,7 +143,9 @@ export const generateTrackingNumber = async (): Promise<string> => {
 	return `${prefix}-${dateString}-${sequenceString}`;
 };
 
-export const generateIssueNumber = async (): Promise<string> => {
+export const generateIssueNumber = async (
+	client: any = prisma,
+): Promise<string> => {
 	const prefix = "ISS";
 	const date = new Date();
 	const year = date.getFullYear().toString().slice(-2);
@@ -150,14 +154,14 @@ export const generateIssueNumber = async (): Promise<string> => {
 
 	const dateString = `${year}${month}${day}`;
 
-	const latestIssue = await prisma.civicIssue.findFirst({
+	const latestIssue = await client.civicIssue.findFirst({
 		where: {
 			issueNumber: {
 				startsWith: `${prefix}-${dateString}`,
 			},
 		},
 		orderBy: {
-			createdAt: "desc",
+			issueNumber: "desc",
 		},
 		select: {
 			issueNumber: true,
