@@ -1,7 +1,11 @@
 node_modules
 dist
+generated
 .git
 .env
 .env.*
 npm-debug.log*
 .DS_Store
+*.md
+
+*.md
