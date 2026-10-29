@@ -22,6 +22,7 @@ RUN npm ci --omit=dev && npx prisma generate
 
 
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/src/templates ./src/templates
 
 USER node
 EXPOSE 5000

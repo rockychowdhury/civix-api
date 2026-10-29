@@ -49,6 +49,18 @@ npm run dev
 
 API runs on `http://localhost:5000`.
 
+## Run with Docker
+
+You can build and run the application containerized with Docker:
+
+```bash
+# Build Docker image
+docker build -t civix-api .
+
+# Run container with environment variables
+docker run -p 5000:5000 --env-file .env civix-api
+```
+
 ## Structure
 
 ```
