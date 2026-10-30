@@ -6,8 +6,10 @@ model ServiceRequest {
   municipalityId String
   citizenId      String
   locationId     String?
-  description    String
-  status         LifecycleStatus @default(SUBMITTED)
+  description      String
+  status           LifecycleStatus         @default(SUBMITTED)
+  idempotencyKey   String?                 @unique
+  processingStatus RequestProcessingStatus @default(PENDING)
 
   submittedAt DateTime  @default(now())
   createdAt   DateTime  @default(now())

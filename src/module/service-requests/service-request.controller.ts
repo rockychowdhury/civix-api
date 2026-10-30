@@ -7,18 +7,38 @@ import { ServiceRequestService } from "./service-request.service";
 
 const createServiceRequest = catchAsync(async (req: Request, res: Response) => {
 	const userId = (req as any).user.userId;
+	const idempotencyKey = req.headers["idempotency-key"] as string | undefined;
+
 	const result = await ServiceRequestService.createServiceRequest(
 		userId,
 		req.body,
+		idempotencyKey
 	);
 
 	sendResponse(res, {
-		statusCode: httpStatus.CREATED,
+		statusCode: httpStatus.ACCEPTED,
 		success: true,
-		message: "Service request submitted successfully",
+		message: "Service request accepted for background processing",
 		data: result,
 	});
 });
+
+const getServiceRequestByTrackingNumber = catchAsync(
+	async (req: Request, res: Response) => {
+		const trackingNumber = req.params.trackingNumber as string;
+		const result =
+			await ServiceRequestService.getServiceRequestByTrackingNumber(
+				trackingNumber,
+			);
+
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Service request tracking details retrieved successfully",
+			data: result,
+		});
+	},
+);
 
 const getMyServiceRequests = catchAsync(async (req: Request, res: Response) => {
 	const userId = (req as any).user.userId;
@@ -310,6 +330,7 @@ export const ServiceRequestController = {
 	getMyServiceRequests,
 	getPendingFeedbackRequests,
 	getServiceRequestById,
+	getServiceRequestByTrackingNumber,
 	getAllServiceRequests,
 	getMunicipalityServiceRequests,
 	getServiceRequestsByCivicIssue,
@@ -318,4 +339,3 @@ export const ServiceRequestController = {
 	getDepartmentInProgressServiceRequests,
 	getDepartmentResolvedServiceRequests,
 };
-

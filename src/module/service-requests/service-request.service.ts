@@ -1,337 +1,73 @@
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../utils/AppError";
+import { enqueueIssueProcessing } from "../queue/issueQueue";
 import {
 	checkMunicipalityAccess,
 	checkDepartmentAccess,
 } from "../../utils/abac.utils";
 import httpStatus from "http-status";
 import type { ICreateServiceRequestPayload } from "./service-request.interface";
-
 import {
 	Action,
 	Resource,
-	AttachmentPurpose,
 	LifecycleStatus,
 } from "../../../generated/prisma/enums";
 import { createAuditLog } from "../../utils/auditLogger";
-import { createCivicIssueHistory } from "../../utils/civicIssueHistory";
 import { buildPrismaQuery } from "../../utils/QueryBuilder";
 import { serviceRequestSearchableFields } from "./service-request.constant";
-import {
-	generateIssueTitle,
-	generateIssueDescription,
-	priorityScore,
-	getIssuePriority,
-	calculateResponseDeadline,
-	calculateResolutionDeadline,
-	generateTrackingNumber,
-	generateIssueNumber,
-} from "./service-request.utils";
+import { generateTrackingNumber } from "./service-request.utils";
 
 const createServiceRequest = async (
 	userId: string,
 	payload: ICreateServiceRequestPayload,
+	idempotencyKey?: string,
 ) => {
-	// 1. Fetch static entities, validations, and location names concurrently outside the transaction
-	const [citizen, municipality, category, ward, zone] = await Promise.all([
-		prisma.citizenProfile.findUnique({
-			where: { userId },
-		}),
-		prisma.municipality.findUnique({
-			where: { id: payload.location.municipalityId },
-		}),
-		prisma.serviceCategory.findUnique({
-			where: { id: payload.request.categoryId },
-		}),
-		payload.location.wardId
-			? prisma.ward.findUnique({
-					where: { id: payload.location.wardId },
-				})
-			: Promise.resolve(null),
-		payload.location.zoneId
-			? prisma.zone.findUnique({
-					where: { id: payload.location.zoneId },
-				})
-			: Promise.resolve(null),
-	]);
-
-	if (!citizen) {
-		throw new AppError(
-			httpStatus.FORBIDDEN,
-			"Only registered citizens are allowed to submit requests",
-		);
-	}
-
-	if (!municipality) {
-		throw new AppError(httpStatus.BAD_REQUEST, "Invalid municipality ID");
-	}
-
-	if (!category) {
-		throw new AppError(httpStatus.BAD_REQUEST, "Invalid category ID");
-	}
+	// Validate mandatory fields
+	if (!userId) throw new AppError(httpStatus.FORBIDDEN, "User ID missing");
 
 	const trackingNumber = await generateTrackingNumber();
 
-	// 2. Check for duplicate civic issue in the last 3 days
-	const threeDaysAgo = new Date();
-	threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
-
-	const duplicateIssue = payload.location.wardId
-		? await prisma.civicIssue.findFirst({
-				where: {
-					municipalityId: payload.location.municipalityId,
-					categoryId: category.id,
-					wardId: payload.location.wardId,
-					createdAt: { gte: threeDaysAgo },
-					status: {
-						in: [
-							LifecycleStatus.IN_PROGRESS,
-							LifecycleStatus.REOPENED,
-							LifecycleStatus.ASSIGNED,
-						],
-					},
-				},
-				orderBy: { createdAt: "desc" },
-				include: { priority: true },
-			})
-		: null;
-
-	let issueNumber: string | undefined;
-	let priorityRecord: { id: string } | null = null;
-	let updatePriorityId: string | undefined = undefined;
-	let responseDeadlineAt: Date | null = null;
-	let resolutionDeadlineAt: Date | null = null;
-	let reportedCount = 1;
-
-	if (duplicateIssue) {
-		reportedCount = duplicateIssue.reportedCount + 1;
-		const hoursSinceFirstReport =
-			Math.abs(
-				new Date().getTime() - duplicateIssue.firstReportedAt.getTime(),
-			) / 3600000;
-		const pScore = priorityScore(
-			category.baseSeverity,
-			reportedCount,
-			hoursSinceFirstReport,
-		);
-		const newPriority = getIssuePriority(pScore);
-
-		responseDeadlineAt = duplicateIssue.responseDeadlineAt;
-		resolutionDeadlineAt = duplicateIssue.resolutionDeadlineAt;
-
-		if (
-			newPriority !== duplicateIssue.priority.code &&
-			duplicateIssue.status === LifecycleStatus.IN_PROGRESS
-		) {
-			const [slaPolicy, newPriorityRecord] = await Promise.all([
-				prisma.slaPolicy.findFirst({
-					where: {
-						municipalityId: payload.location.municipalityId,
-						categoryId: category.id,
-						priority: { code: newPriority },
-					},
-				}),
-				prisma.priorityLevel.findUnique({
-					where: { code: newPriority },
-				}),
-			]);
-
-			if (slaPolicy) {
-				responseDeadlineAt = calculateResponseDeadline(
-					slaPolicy.responseMinutes,
-					duplicateIssue.createdAt,
-				);
-				resolutionDeadlineAt = calculateResolutionDeadline(
-					slaPolicy.resolutionMinutes,
-					duplicateIssue.createdAt,
-				);
-			}
-
-			if (newPriorityRecord) {
-				updatePriorityId = newPriorityRecord.id;
-			}
-		}
-	} else {
-		// New issue: generate issue number and load SLA/priority policies
-		const pScore = priorityScore(category.baseSeverity, 1, 0);
-		const initialPriority = getIssuePriority(pScore);
-
-		const [foundPriorityRecord, generatedIssueNum] = await Promise.all([
-			prisma.priorityLevel.findUnique({
-				where: { code: initialPriority },
-			}),
-			generateIssueNumber(),
-		]);
-
-		if (!foundPriorityRecord) {
-			throw new AppError(
-				httpStatus.INTERNAL_SERVER_ERROR,
-				`Priority level ${initialPriority} not found`,
-			);
-		}
-
-		priorityRecord = foundPriorityRecord;
-		issueNumber = generatedIssueNum;
-
-		const slaPolicy = await prisma.slaPolicy.findFirst({
-			where: {
+	return await prisma.$transaction(async (tx) => {
+		const location = await tx.location.create({
+			data: {
+				latitude: payload.location.latitude,
+				longitude: payload.location.longitude,
+				address: payload.location.address,
+				landmark: payload.location.landmark,
+				postalCode: payload.location.postalCode,
+				wardId: payload.location.wardId,
+				zoneId: payload.location.zoneId,
 				municipalityId: payload.location.municipalityId,
-				categoryId: category.id,
-				priorityId: priorityRecord.id,
 			},
 		});
 
-		if (slaPolicy) {
-			responseDeadlineAt = calculateResponseDeadline(
-				slaPolicy.responseMinutes,
-			);
-			resolutionDeadlineAt = calculateResolutionDeadline(
-				slaPolicy.resolutionMinutes,
-			);
-		}
-	}
+		const request = await tx.serviceRequest.create({
+			data: {
+				trackingNumber,
+				description: payload.request.description,
+				municipalityId: payload.location.municipalityId,
+				categoryId: payload.request.categoryId,
+				citizenId: userId,
+				locationId: location.id,
+				status: LifecycleStatus.SUBMITTED,
+				idempotencyKey,
+				processingStatus: "PENDING",
+			},
+		});
 
-	const wardName = ward?.name || payload.location.wardId;
-	const zoneName = zone?.name || payload.location.zoneId;
+		await createAuditLog({
+			userId,
+			action: Action.CREATE,
+			resource: Resource.SERVICE_REQUEST,
+			resourceId: request.id,
+			newValue: request,
+			tx,
+		});
 
-	// 3. Perform atomic state writes inside transaction with optimized timeout/maxWait
-	const createdRequest = await prisma.$transaction(
-		async (tx) => {
-			const location = await tx.location.create({
-				data: {
-					latitude: payload.location.latitude,
-					longitude: payload.location.longitude,
-					address: payload.location.address,
-					landmark: payload.location.landmark,
-					postalCode: payload.location.postalCode,
-					wardId: payload.location.wardId,
-					zoneId: payload.location.zoneId,
-					municipalityId: payload.location.municipalityId,
-				},
-			});
+		// Enqueue background processing
+		await enqueueIssueProcessing(request.id);
 
-			let civicIssueId: string;
-			let finalStatus: LifecycleStatus;
-
-			if (duplicateIssue) {
-				await tx.civicIssue.update({
-					where: { id: duplicateIssue.id },
-					data: {
-						reportedCount,
-						lastReportedAt: new Date(),
-						...(updatePriorityId ? { priorityId: updatePriorityId } : {}),
-						responseDeadlineAt,
-						resolutionDeadlineAt,
-					},
-				});
-
-				civicIssueId = duplicateIssue.id;
-				finalStatus = duplicateIssue.status;
-			} else {
-				const newIssue = await tx.civicIssue.create({
-					data: {
-						issueNumber: issueNumber!,
-						municipalityId: payload.location.municipalityId,
-						categoryId: category.id,
-						locationId: location.id,
-						departmentId: category.departmentId,
-						title: generateIssueTitle(category.name, wardName, zoneName),
-						description: generateIssueDescription(
-							category.name,
-							category.description,
-							{
-								...payload.location,
-								wardId: wardName,
-								zoneId: zoneName,
-							},
-							payload.request.description,
-							new Date(),
-						),
-						status: LifecycleStatus.IN_PROGRESS,
-						priorityId: priorityRecord!.id,
-						reportedCount: 1,
-						wardId: payload.location.wardId || null,
-						responseDeadlineAt,
-						resolutionDeadlineAt,
-					},
-				});
-
-				civicIssueId = newIssue.id;
-				finalStatus = newIssue.status;
-
-				await createCivicIssueHistory({
-					civicIssueId: newIssue.id,
-					changedById: null,
-					previousStatus: null,
-					newStatus: finalStatus,
-					notes: `Auto-created from service request ${trackingNumber}`,
-					tx,
-				});
-			}
-
-			// Create service request once directly with the linked civic issue and status
-			const request = await tx.serviceRequest.create({
-				data: {
-					trackingNumber,
-					description: payload.request.description,
-					municipalityId: payload.location.municipalityId,
-					categoryId: category.id,
-					citizenId: userId,
-					locationId: location.id,
-					civicIssueId,
-					status: finalStatus,
-				},
-			});
-
-			// Register reporter
-			await tx.issueReporter.upsert({
-				where: {
-					civicIssueId_citizenId: {
-						civicIssueId,
-						citizenId: userId,
-					},
-				},
-				update: {
-					serviceRequestId: request.id,
-				},
-				create: {
-					civicIssueId,
-					serviceRequestId: request.id,
-					citizenId: userId,
-				},
-			});
-
-			await tx.citizenProfile.update({
-				where: { userId },
-				data: { totalReports: { increment: 1 } },
-			});
-
-			await createAuditLog({
-				userId,
-				action: Action.CREATE,
-				resource: Resource.SERVICE_REQUEST,
-				resourceId: request.id,
-				newValue: request,
-				tx,
-			});
-
-			return request;
-		},
-		{
-			maxWait: 5000,
-			timeout: 10000,
-		},
-	);
-
-	// 4. Return complete request outside the transaction to release connection immediately
-	return prisma.serviceRequest.findUnique({
-		where: { id: createdRequest.id },
-		include: {
-			attachments: true,
-			location: true,
-			category: true,
-			civicIssue: true,
-		},
+		return request;
 	});
 };
 
@@ -681,14 +417,48 @@ const getDepartmentServiceRequests = async (
 	};
 };
 
+const getServiceRequestByTrackingNumber = async (trackingNumber: string) => {
+	const request = await prisma.serviceRequest.findUnique({
+		where: { trackingNumber },
+		include: {
+			location: true,
+			category: true,
+			attachments: true,
+			civicIssue: {
+				include: {
+					priority: true,
+					department: { select: { id: true, name: true, email: true, phone: true } },
+					history: {
+						orderBy: { createdAt: "desc" },
+					},
+					workOrders: {
+						include: {
+							assignments: {
+								include: { assignedTo: { select: { firstName: true, lastName: true } } },
+							},
+							resolution: true,
+						},
+					},
+				},
+			},
+		},
+	});
+
+	if (!request) {
+		throw new AppError(httpStatus.NOT_FOUND, "Service request not found with this tracking number");
+	}
+
+	return request;
+};
+
 export const ServiceRequestService = {
 	createServiceRequest,
 	getMyServiceRequests,
 	getPendingFeedbackServiceRequests,
 	getServiceRequestById,
+	getServiceRequestByTrackingNumber,
 	getAllServiceRequests,
 	getServiceRequestsByCivicIssue,
 	getMunicipalityServiceRequests,
 	getDepartmentServiceRequests,
 };
-

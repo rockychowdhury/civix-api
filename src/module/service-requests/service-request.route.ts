@@ -15,6 +15,11 @@ router.post(
 );
 
 router.get(
+	"/track/:trackingNumber",
+	ServiceRequestController.getServiceRequestByTrackingNumber,
+);
+
+router.get(
 	"/my-requests",
 	requirePermission(Action.READ, Resource.SERVICE_REQUEST),
 	ServiceRequestController.getMyServiceRequests,

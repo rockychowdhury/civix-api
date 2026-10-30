@@ -109,6 +109,13 @@ enum LifecycleStatus {
   CANCELLED
 }
 
+enum RequestProcessingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
 // ─── Team & Assignment Type ──────────────────────────────────
 
 enum AssignmentType {

@@ -20,4 +20,5 @@ model Location {
 
   @@index([wardId])
   @@index([municipalityId])
+  @@index([latitude, longitude])
 }

@@ -3,6 +3,7 @@ import config from "./config";
 import { transporter } from "./lib/nodemailer";
 import { prisma } from "./lib/prisma";
 import { redisClient } from "./lib/redis";
+import { startIssueWorker } from "./module/queue/issueWorker";
 
 const PORT = config.port;
 
@@ -16,6 +17,9 @@ const main = async () => {
 
 		await transporter.verify();
 		console.log("Nodemailer Connected Successfully.");
+
+		startIssueWorker();
+		console.log("Issue processing worker started.");
 
 		app.listen(PORT, () => {
 			console.log(`Server is running on port ${PORT}`);
