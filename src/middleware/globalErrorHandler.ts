@@ -79,6 +79,13 @@ export const globalErrorHandler = async (
 	const exposeMessage = isDevelopment || isOperationalError;
 	const exposeDetails = isDevelopment;
 
+	// Ensure CORS headers are preserved even on unhandled errors
+	const origin = _req.headers.origin;
+	if (origin && !res.getHeader("Access-Control-Allow-Origin")) {
+		res.setHeader("Access-Control-Allow-Origin", origin);
+		res.setHeader("Access-Control-Allow-Credentials", "true");
+	}
+
 	res.status(statusCode).json({
 		success: false,
 		statusCode: statusCode || httpStatus.INTERNAL_SERVER_ERROR,

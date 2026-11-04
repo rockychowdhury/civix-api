@@ -5,6 +5,16 @@ import { sendResponse } from "../../utils/sendResponse";
 import { AuthService } from "./auth.service";
 import config from "../../config";
 
+const getAuthCookieOptions = () => {
+	const isProduction = config.node_env !== "development";
+	return {
+		httpOnly: true,
+		secure: isProduction,
+		sameSite: isProduction ? ("none" as const) : ("lax" as const),
+		path: "/",
+	};
+};
+
 const registerCitizen = catchAsync(async (req: Request, res: Response) => {
 	const payload = req.body;
 
@@ -22,17 +32,14 @@ const login = catchAsync(async (req: Request, res: Response) => {
 	const payload = req.body;
 
 	const result = await AuthService.loginUser(payload);
+	const cookieOptions = getAuthCookieOptions();
 
 	res.cookie("accessToken", result.accessToken, {
-		httpOnly: true,
-		secure: config.node_env === "development" ? false : true,
-		sameSite: config.node_env === "development" ? "lax" : "none",
-		maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
+		...cookieOptions,
+		maxAge: 1000 * 60 * 60 * 24, // 24 hours
 	});
 	res.cookie("refreshToken", result.refreshToken, {
-		httpOnly: true,
-		secure: config.node_env === "development" ? false : true,
-		sameSite: config.node_env === "development" ? "lax" : "none",
+		...cookieOptions,
 		maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
 	});
 
@@ -48,17 +55,14 @@ const verifyEmail = catchAsync(async (req: Request, res: Response) => {
 	const payload = req.body;
 
 	const result = await AuthService.verifyEmail(payload);
+	const cookieOptions = getAuthCookieOptions();
 
 	res.cookie("accessToken", result.accessToken, {
-		httpOnly: true,
-		secure: config.node_env === "development" ? false : true,
-		sameSite: config.node_env === "development" ? "lax" : "none",
-		maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
+		...cookieOptions,
+		maxAge: 1000 * 60 * 60 * 24, // 24 hours
 	});
 	res.cookie("refreshToken", result.refreshToken, {
-		httpOnly: true,
-		secure: config.node_env === "development" ? false : true,
-		sameSite: config.node_env === "development" ? "lax" : "none",
+		...cookieOptions,
 		maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
 	});
 
@@ -88,17 +92,14 @@ const refreshToken = catchAsync(async (req: Request, res: Response) => {
 	const { refreshToken } = req.cookies;
 
 	const result = await AuthService.refreshToken(refreshToken);
+	const cookieOptions = getAuthCookieOptions();
 
 	res.cookie("accessToken", result.accessToken, {
-		httpOnly: true,
-		secure: config.node_env === "development" ? false : true,
-		sameSite: config.node_env === "development" ? "lax" : "none",
-		maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
+		...cookieOptions,
+		maxAge: 1000 * 60 * 60 * 24, // 24 hours
 	});
 	res.cookie("refreshToken", result.refreshToken, {
-		httpOnly: true,
-		secure: config.node_env === "development" ? false : true,
-		sameSite: config.node_env === "development" ? "lax" : "none",
+		...cookieOptions,
 		maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
 	});
 
@@ -114,17 +115,14 @@ const googleLogin = catchAsync(async (req: Request, res: Response) => {
 	const payload = req.body;
 
 	const result = await AuthService.googleLogin(payload);
+	const cookieOptions = getAuthCookieOptions();
 
 	res.cookie("accessToken", result.accessToken, {
-		httpOnly: true,
-		secure: config.node_env === "development" ? false : true,
-		sameSite: config.node_env === "development" ? "lax" : "none",
-		maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
+		...cookieOptions,
+		maxAge: 1000 * 60 * 60 * 24, // 24 hours
 	});
 	res.cookie("refreshToken", result.refreshToken, {
-		httpOnly: true,
-		secure: config.node_env === "development" ? false : true,
-		sameSite: config.node_env === "development" ? "lax" : "none",
+		...cookieOptions,
 		maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
 	});
 
@@ -137,12 +135,7 @@ const googleLogin = catchAsync(async (req: Request, res: Response) => {
 });
 
 const logout = catchAsync(async (_req: Request, res: Response) => {
-	const cookieOptions = {
-		httpOnly: true,
-		secure: config.node_env !== "development",
-		sameSite:
-			config.node_env === "development" ? ("lax" as const) : ("none" as const),
-	};
+	const cookieOptions = getAuthCookieOptions();
 
 	res.clearCookie("accessToken", cookieOptions);
 	res.clearCookie("refreshToken", cookieOptions);

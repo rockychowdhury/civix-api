@@ -225,7 +225,10 @@ const loginUser = async (payload: ILogin) => {
 
 	const user = await prisma.user.findUnique({
 		where: { email },
-		include: { userRoles: { include: { role: true } } },
+		include: {
+			citizenProfile: true,
+			userRoles: { include: { role: true } },
+		},
 	});
 
 	if (!user) {
@@ -279,7 +282,10 @@ const loginUser = async (payload: ILogin) => {
 		config.jwt_refresh_expires_in as SignOptions,
 	);
 
+	const { passwordHash: _, ...safeUser } = user;
+
 	return {
+		user: safeUser,
 		accessToken,
 		refreshToken,
 	};
@@ -500,7 +506,10 @@ const googleLogin = async (payload: IGoogleAuth) => {
 		config.jwt_refresh_expires_in as SignOptions,
 	);
 
+	const { passwordHash: _, ...safeUser } = user;
+
 	return {
+		user: safeUser,
 		accessToken,
 		refreshToken,
 	};
