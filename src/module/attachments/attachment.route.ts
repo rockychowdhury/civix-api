@@ -13,6 +13,12 @@ router.post(
 	AttachmentController.uploadForServiceRequest,
 );
 
+// Direct upload endpoint for client-side uploads (no auth required)
+router.post(
+	"/direct",
+	AttachmentController.createAttachmentFromPublicId,
+);
+
 router.post(
 	"/work-update/:id",
 	requirePermission(Action.CREATE, Resource.WORK_ORDER),

@@ -62,6 +62,14 @@ const submitResolution = async (
 					data: resolutionData,
 				});
 
+		// Link any uploaded verification photos/attachments
+		if (payload.attachmentIds && payload.attachmentIds.length > 0) {
+			await tx.attachment.updateMany({
+				where: { id: { in: payload.attachmentIds } },
+				data: { resolutionId: resolution.id },
+			});
+		}
+
 		// Update WorkOrder status to PENDING_VERIFICATION
 		await tx.workOrder.update({
 			where: { id: workOrderId },
@@ -134,6 +142,7 @@ const submitResolution = async (
 
 		return tx.resolution.findUnique({
 			where: { id: resolution.id },
+			include: { attachments: true },
 		});
 	});
 
