@@ -69,6 +69,7 @@ enum Resource {
   MUNICIPALITY
   ZONE
   WARD
+  ROAD
   LOCATION
   DEPARTMENT
   TEAM

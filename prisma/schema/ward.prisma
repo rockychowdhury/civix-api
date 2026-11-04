@@ -7,6 +7,7 @@ model Ward {
 
   zone                   Zone                    @relation(fields: [zoneId], references: [id], onDelete: Cascade)
   locations              Location[]
+  roads                  Road[]
   departmentServiceAreas DepartmentServiceArea[]
   civicIssues            CivicIssue[]
 

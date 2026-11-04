@@ -1,0 +1,17 @@
+model Road {
+  id         String   @id @default(uuid())
+  name       String
+  roadNumber String?
+  wardId     String
+  isActive   Boolean  @default(true)
+
+  ward      Ward       @relation(fields: [wardId], references: [id], onDelete: Cascade)
+  locations Location[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, wardId])
+  @@index([wardId])
+}
+
