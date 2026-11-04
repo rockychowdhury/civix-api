@@ -2,33 +2,49 @@ import app from "./app";
 import config from "./config";
 import { transporter } from "./lib/nodemailer";
 import { prisma } from "./lib/prisma";
-import { redisClient } from "./lib/redis";
-import { startIssueWorker } from "./module/queue/issueWorker";
 
-const PORT = config.port;
+const PORT = config.port || 5000;
 
-const main = async () => {
+let isInitialized = false;
+
+export const initServices = async () => {
+	if (isInitialized) return;
+
 	try {
 		await prisma.$connect();
 		console.log("Connected to the database successfully.");
 
-		await redisClient.connect();
-		console.log("Redis Connected Successfully.");
+		transporter
+			.verify()
+			.then(() => {
+				console.log("Nodemailer Connected Successfully.");
+			})
+			.catch((err) => {
+				console.warn("Nodemailer Verify Warning:", err?.message || err);
+			});
 
-		await transporter.verify();
-		console.log("Nodemailer Connected Successfully.");
-
-		startIssueWorker();
-		console.log("Issue processing worker started.");
-
-		app.listen(PORT, () => {
-			console.log(`Server is running on port ${PORT}`);
-		});
+		isInitialized = true;
 	} catch (error) {
-		console.error("Error starting the server:", error);
-		await prisma.$disconnect();
-		process.exit(1);
+		console.error("Error starting services:", error);
+		if (!process.env.VERCEL) {
+			await prisma.$disconnect();
+			process.exit(1);
+		}
 	}
 };
 
-main();
+// If running in local/standalone environment, start listening
+if (!process.env.VERCEL) {
+	initServices().then(() => {
+		app.listen(PORT, () => {
+			console.log(`Server is running on port ${PORT}`);
+		});
+	});
+} else {
+	// In Vercel serverless environment, lazily trigger init without blocking
+	initServices().catch((err) => {
+		console.error("Vercel cold-start initialization error:", err);
+	});
+}
+
+export default app;

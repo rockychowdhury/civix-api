@@ -1,25 +1,39 @@
-import { Queue } from "bullmq";
 import config from "../../config";
+import { qstashClient } from "../../lib/qstash";
+import { processServiceRequestJob } from "./issueProcessor";
 
-export const ISSUE_QUEUE_NAME = "issue-processing";
+export const enqueueIssueProcessing = async (serviceRequestId: string): Promise<void> => {
+  const backendUrl = (config.backend_url || "").trim().replace(/\/$/, "");
+  const isLocalhost =
+    !backendUrl ||
+    backendUrl.includes("localhost") ||
+    backendUrl.includes("127.0.0.1") ||
+    config.node_env === "development";
 
-export const issueQueue = new Queue(ISSUE_QUEUE_NAME, {
-  connection: {
-    host: config.redis_host,
-    port: Number(config.redis_port),
-    username: config.redis_user,
-    password: config.redis_password,
-  },
-  defaultJobOptions: {
-    attempts: 3,
-    backoff: {
-      type: "exponential",
-      delay: 5000,
-    },
-    removeOnComplete: true,
-  },
-});
+  // If in production with a valid public backend URL and QStash token, publish to QStash
+  if (!isLocalhost && config.qstash_token && backendUrl.startsWith("http")) {
+    try {
+      const webhookUrl = `${backendUrl}/api/v1/queue/process-service-request`;
+      console.log(`[QStash] Enqueueing service request ${serviceRequestId} to ${webhookUrl}`);
 
-export const enqueueIssueProcessing = async (serviceRequestId: string) => {
-  await issueQueue.add("process-service-request", { serviceRequestId });
+      await qstashClient.publishJSON({
+        url: webhookUrl,
+        body: { serviceRequestId },
+        retries: 3,
+      });
+      return;
+    } catch (error) {
+      console.error("[QStash] Failed to publish message to QStash, falling back to local background execution:", error);
+    }
+  }
+
+  // Local development / fallback execution
+  console.log(`[Queue] Running service request ${serviceRequestId} via local async background execution`);
+  setImmediate(async () => {
+    try {
+      await processServiceRequestJob(serviceRequestId);
+    } catch (err) {
+      console.error(`[Queue Fallback] Processing error for ${serviceRequestId}:`, err);
+    }
+  });
 };

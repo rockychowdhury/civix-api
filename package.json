@@ -41,8 +41,9 @@
 	"dependencies": {
 		"@prisma/adapter-pg": "^7.10.0",
 		"@prisma/client": "^7.10.0",
+		"@upstash/qstash": "^2.12.1",
+		"@upstash/redis": "^1.41.0",
 		"bcryptjs": "^3.0.3",
-		"bullmq": "^6.5.2",
 		"cloudinary": "^2.11.0",
 		"cookie-parser": "^1.4.7",
 		"cors": "^2.8.6",
@@ -58,7 +59,6 @@
 		"node-cron": "^4.6.0",
 		"nodemailer": "^9.1.1",
 		"pg": "^8.23.0",
-		"redis": "^6.2.1",
 		"zod": "^4.5.4"
 	}
 }
