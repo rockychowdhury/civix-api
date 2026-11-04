@@ -11,6 +11,7 @@ import { seedGeography } from "./seedGeography";
 import { seedDepartments } from "./seedDepartments";
 import { seedServiceCategories } from "./seedServiceCategories";
 import { seedSlaPolicies } from "./seedSlaPolicies";
+import { seedRoads } from "./seedRoads";
 
 export const seedInitialData = async () => {
 	console.log("Starting Initial Data Seeding...");
@@ -22,6 +23,7 @@ export const seedInitialData = async () => {
 
 		// 2. Geography: Required for all locations
 		const municipality = await seedGeography();
+		await seedRoads();
 
 		// 3. Organization: Departments & Categories
 		await seedDepartments(municipality.id);

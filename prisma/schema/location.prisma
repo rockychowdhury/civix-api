@@ -5,15 +5,15 @@ model Location {
   address        String
   landmark       String?
   postalCode     String?
-  wardId         String?
-  roadId         String?
+  wardId         String
+  roadId         String
   zoneId         String?
-  municipalityId String?
+  municipalityId String
 
-  ward            Ward?            @relation(fields: [wardId], references: [id], onDelete: SetNull)
-  road            Road?            @relation(fields: [roadId], references: [id], onDelete: SetNull)
+  ward            Ward             @relation(fields: [wardId], references: [id], onDelete: Restrict)
+  road            Road             @relation(fields: [roadId], references: [id], onDelete: Restrict)
   zone            Zone?            @relation(fields: [zoneId], references: [id], onDelete: SetNull)
-  municipality    Municipality?    @relation(fields: [municipalityId], references: [id], onDelete: SetNull)
+  municipality    Municipality     @relation(fields: [municipalityId], references: [id], onDelete: Restrict)
   civicIssues     CivicIssue[]
   serviceRequests ServiceRequest[]
 
