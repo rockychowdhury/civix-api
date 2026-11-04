@@ -4,17 +4,30 @@ const createServiceRequestSchema = z.object({
 	body: z.object({
 		request: z.object({
 			description: z.string().min(10).max(1000),
-			categoryId: z.string().uuid(),
+			categoryId: z
+				.string()
+				.uuid()
+				.optional()
+				.nullable()
+				.or(z.literal(""))
+				.transform((val) => (val && val.trim() !== "" ? val : undefined)),
 		}),
 		location: z.object({
-			latitude: z.number().optional(),
-			longitude: z.number().optional(),
-			address: z.string(),
-			landmark: z.string().optional(),
-			postalCode: z.string().optional(),
-			wardId: z.string().uuid().optional(),
-			zoneId: z.string().uuid().optional(),
-			municipalityId: z.string().uuid(),
+			latitude: z.number().optional().nullable(),
+			longitude: z.number().optional().nullable(),
+			address: z.string().min(3),
+			landmark: z.string().optional().nullable().transform((val) => val?.trim() || undefined),
+			postalCode: z.string().optional().nullable().transform((val) => val?.trim() || undefined),
+			wardId: z.string().uuid("Ward ID is required"),
+			roadId: z.string().uuid("Road ID is required"),
+			zoneId: z
+				.string()
+				.uuid()
+				.optional()
+				.nullable()
+				.or(z.literal(""))
+				.transform((val) => (val && val.trim() !== "" ? val : undefined)),
+			municipalityId: z.string().uuid("Municipality ID is required"),
 		}),
 	}),
 });

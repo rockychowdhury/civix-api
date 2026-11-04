@@ -36,6 +36,7 @@ const createServiceRequest = async (
 				landmark: payload.location.landmark,
 				postalCode: payload.location.postalCode,
 				wardId: payload.location.wardId,
+				roadId: payload.location.roadId,
 				zoneId: payload.location.zoneId,
 				municipalityId: payload.location.municipalityId,
 			},
@@ -46,7 +47,7 @@ const createServiceRequest = async (
 				trackingNumber,
 				description: payload.request.description,
 				municipalityId: payload.location.municipalityId,
-				categoryId: payload.request.categoryId,
+				categoryId: payload.request.categoryId || null,
 				citizenId: userId,
 				locationId: location.id,
 				status: LifecycleStatus.SUBMITTED,
@@ -421,14 +422,19 @@ const getServiceRequestByTrackingNumber = async (trackingNumber: string) => {
 	const request = await prisma.serviceRequest.findUnique({
 		where: { trackingNumber },
 		include: {
-			location: true,
+			location: {
+				include: {
+					road: true,
+					ward: true,
+				},
+			},
 			category: true,
 			attachments: true,
 			civicIssue: {
 				include: {
 					priority: true,
 					department: { select: { id: true, name: true, email: true, phone: true } },
-					history: {
+					statusHistory: {
 						orderBy: { createdAt: "desc" },
 					},
 					workOrders: {

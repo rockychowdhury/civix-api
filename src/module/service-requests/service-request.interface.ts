@@ -1,13 +1,7 @@
-import { file } from "zod";
-import { LifecycleStatus } from "../../../generated/prisma/enums";
-import { id } from "zod/locales";
-import { title } from "process";
-import { from } from "stream/iter";
-
 export interface ICreateServiceRequestPayload {
 	request: {
 		description: string;
-		categoryId: string;
+		categoryId?: string; // Optional: auto-detected by LLM if not supplied
 	};
 	location: {
 		latitude?: number;
@@ -15,8 +9,9 @@ export interface ICreateServiceRequestPayload {
 		address: string;
 		landmark?: string;
 		postalCode?: string;
-		wardId?: string;
+		wardId: string;       // Mandatory
+		roadId: string;       // Mandatory
 		zoneId?: string;
-		municipalityId: string;
+		municipalityId: string; // Mandatory
 	};
 }
